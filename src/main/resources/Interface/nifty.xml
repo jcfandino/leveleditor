@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nifty xmlns="http://nifty-gui.sourceforge.net/nifty-1.3.xsd"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://nifty-gui.sourceforge.net/nifty-1.3.xsd http://nifty-gui.sourceforge.net/nifty-1.3.xsd">
+    <!-- +++++++++++++++++++++++++++++++++++++++ -->
+    <!-- start screen -->
+    <!-- +++++++++++++++++++++++++++++++++++++++ -->
+    <screen id="title" controller="com.stovokor.state.TitleScreenState">
+       <layer id="title-layer" backgroundColor="#0000" childLayout="center">
+       		<panel id="tb-logo" height="30%" width="60%" alight="center" valign="center" backgroundColor="#0000" childLayout="center">
+                <image id="tg-logo-image" filename="Interface/bomber-logo2.png"/>
+       		</panel>
+			<panel id="tb-presskey" height="30%" width="100%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+				<text id="presskey-label" font="Interface/Fonts/Default.fnt" color="#ffff" text="Space to start" align="center" valign="top" />
+			</panel>
+			<panel id="tb-title-highcore" height="20%" width="100%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+				<text id="title-highscore-label" font="Interface/Fonts/Default.fnt" color="#ffff" text="" />
+			</panel>
+			<!-- Info bar -->
+			<panel id="tb-info-area" width="90%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+				<panel id="tb-controls" height="30px" width="100%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<text id="info-controls" font="Interface/Fonts/Default.fnt" color="#ffff" text="Controls: Bombs: Space - Cannon: Control - Fly: Arrows" align="left" valign="top" />
+				</panel>
+				<panel id="tb-author" height="30px" width="100%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<text id="author-label" font="Interface/Fonts/Default.fnt" color="#ffff" text="Juan Cruz Fandino - 2017" align="right" valign="top" />
+				</panel>
+			</panel>
+		</layer>
+	</screen>
+
+    <!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<!-- in game screen -->
+    <!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<screen id="hud" controller="com.stovokor.bomber.state.HudAppState">
+        <layer id="hud-layer" backgroundColor="#0000" childLayout="center">
+        	<!--  right side -->
+			<panel id="side-area" height="100%" width="95%" align="left" valign="bottom" backgroundColor="#0000" childLayout="vertical">
+				<!-- sum must give 45% -->
+				<panel id="lives-panel" height="10%" width="100%" align="right" valign="bottom" backgroundColor="#0700" childLayout="center">
+<!-- 					<text id="lives-label" font="Interface/Fonts/Orbitron-med.fnt" color="#ffff" text="100" align="right" valign="bottom" /> -->
+				</panel>
+			</panel>
+
+            <!-- Top info bar-->
+            <panel id="top-bar" height="30px" width="100%" align="center" valign="top" backgroundColor="#0000" childLayout="center">
+                <panel id="tb-paddingl" width="5%" align="left" valign="top" backgroundColor="#0000" childLayout="center"/>
+                <panel id="tb-area" width="90%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<panel id="tb-score-area" height="30px" width="40%" align="left" valign="bottom" backgroundColor="#0000" childLayout="center">
+						<panel id="tb-score" height="30px" width="50%" align="left" valign="bottom" backgroundColor="#0000" childLayout="center">
+							<text id="score-label" font="Interface/Fonts/Default.fnt" color="#ff2f" text="Score: 0" />
+						</panel>
+						<panel id="tb-multiplier" height="30px" width="50%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+<!-- 							<text id="multiplier-label" font="Interface/Fonts/Default.fnt" color="#ffff" text="Mult: 1" /> -->
+						</panel>
+						<panel id="tb-nextcombo" height="30px" width="50%" align="right" valign="bottom" backgroundColor="#0000" childLayout="center">
+<!-- 							<text id="nextcombo-label" font="Interface/Fonts/Default.fnt" color="#ffff" text="Next in: 1" /> -->
+						</panel>
+					</panel>
+                    <panel id="tb-highcore" height="30px" width="30%" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+                    </panel>
+                    <panel id="tb-lives" height="30px" width="30%" align="right" valign="bottom" backgroundColor="#0000" childLayout="center">
+<!--                         <text id="lives-label" font="Interface/Fonts/Orbitron-med.fnt" color="#ff2f" text="Lives: 0" /> -->
+                        <text id="health-label" font="Interface/Fonts/Default.fnt" color="#ff2f" text="Health: 0" />
+                    </panel>
+                </panel>
+                <panel id="tb-paddingr" width="5%" align="right" valign="top" backgroundColor="#0000" childLayout="center"/>
+            </panel>
+            <!-- Notice -->
+            <panel id="notice-panel" height="40%" width="100%" align="center" valign="top" backgroundColor="#0000" childLayout="center">
+				<panel id="tb-danger" height="250px" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<text id="danger-label" font="Interface/Fonts/Orbitron-big.fnt" color="#a00f" text="" />
+				</panel>
+				<panel id="tb-notice" height="50px" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<text id="notice-label" font="Interface/Fonts/Orbitron-big.fnt" color="#a00f" text="" />
+				</panel>
+            </panel>
+	   </layer>
+    </screen>
+
+    <!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<!-- game over screen -->
+    <!-- +++++++++++++++++++++++++++++++++++++++ -->
+	<screen id="gameover" controller="com.stovokor.state.GameOverState">
+        <layer id="go-layer" backgroundColor="#0000" childLayout="center">
+            <panel id="go-panel" height="40%" width="100%" align="center" valign="top" backgroundColor="#0000" childLayout="center">
+				<panel id="tb-gameover" height="250px" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<text id="gameover-label" font="Interface/Fonts/Orbitron-big.fnt" color="#ffff" text="Game Over" />
+				</panel>
+				<panel id="tb-go-score" height="50px" align="center" valign="bottom" backgroundColor="#0000" childLayout="center">
+					<text id="go-score-label" font="Interface/Fonts/Orbitron-big.fnt" color="#ffff" text="" />
+				</panel>
+            </panel>
+        </layer>
+    </screen>
+</nifty>
