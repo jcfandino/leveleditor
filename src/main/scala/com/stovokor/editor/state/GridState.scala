@@ -27,7 +27,7 @@ import com.jme3.scene.shape.Quad
 import com.stovokor.util.EventBus
 import com.stovokor.util.GridClick
 
-class GridState extends BaseState {
+class GridState extends BaseState with MaterialFactory {
 
   val spanX = 1000f
   val spanY = 1000f
@@ -58,7 +58,7 @@ class GridState extends BaseState {
   def registerMouseEvents(spatial: Spatial) {
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
-        clicked = event.isPressed()
+        clicked = event.getButtonIndex == 0 && event.isPressed()
         EventBus.trigger(GridClick(mousePos.x, mousePos.y))
         println(s"click -> $mousePos")
       }
@@ -115,12 +115,6 @@ class GridState extends BaseState {
     plane.setCullHint(CullHint.Always)
     plane.move(-spanX, -spanY, 1f)
     plane
-  }
-
-  def plainColor(color: ColorRGBA): Material = {
-    var mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
-    mat.setColor("Color", color)
-    mat
   }
 
   override def update(tpf: Float) {

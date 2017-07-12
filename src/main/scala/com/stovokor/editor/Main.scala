@@ -9,6 +9,7 @@ import com.stovokor.editor.state.GridState
 import com.stovokor.editor.state.CameraState
 import com.simsilica.lemur.event.MouseAppState
 import com.stovokor.editor.state.DrawingState
+import com.stovokor.editor.input.InputFunctionsMapper
 
 object Main extends SimpleApplication {
 
@@ -27,9 +28,15 @@ object Main extends SimpleApplication {
   }
 
   def simpleInitApp() = {
+    // Init lemur
     GuiGlobals.initialize(this)
     BaseStyles.loadGlassStyle()
     GuiGlobals.getInstance().getStyles().setDefaultStyle("glass")
+
+    // Init input
+    InputFunctionsMapper.initialize(GuiGlobals.getInstance.getInputMapper)
+
+    // Init states
     stateManager.attach(new GuiState)
     stateManager.attach(new GridState)
     stateManager.attach(new CameraState)

@@ -6,7 +6,9 @@ object PolygonBuilder {
 
 class PolygonBuilder(val points: List[Point]) {
 
-  def first = points(0)
+  def first = points.head
+  def last = points.last
+
   def size = points.size
 
   def lines = (points zip points.tail) map ((p) => Line(p._1, p._2))

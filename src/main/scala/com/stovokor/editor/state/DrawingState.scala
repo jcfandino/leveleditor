@@ -17,12 +17,23 @@ import com.jme3.scene.Geometry
 import com.jme3.scene.shape.Box
 import com.jme3.scene.shape.Line
 import com.jme3.math.Vector3f
+import com.simsilica.lemur.input.StateFunctionListener
+import com.simsilica.lemur.input.AnalogFunctionListener
+import com.stovokor.editor.input.InputFunction
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
 
-class DrawingState extends BaseState with EditorEventListener with MaterialFactory {
+class DrawingState extends BaseState
+    with EditorEventListener
+    with MaterialFactory
+    with CanMapInput
+    with AnalogFunctionListener
+    with StateFunctionListener {
 
   val minDistance = 1f
 
   var currentBuilder: Option[PolygonBuilder] = None
+  var lastClick = 0l
 
   val polygonRepository = new PolygonRepository
 
@@ -32,6 +43,13 @@ class DrawingState extends BaseState with EditorEventListener with MaterialFacto
     EventBus.subscribeByType(this, classOf[GridClick])
   }
 
+  def setupInput {
+    inputMapper.removeAnalogListener(this,
+      InputFunction.mouseX,
+      InputFunction.mouseY)
+    inputMapper.activateGroup(InputFunction.mouse)
+  }
+
   def onEvent(event: EditorEvent) {
     event match {
       case GridClick(x, y) => addPoint(x, y)
@@ -39,11 +57,13 @@ class DrawingState extends BaseState with EditorEventListener with MaterialFacto
   }
 
   def addPoint(x: Float, y: Float) {
+    val isDoubleClick = System.currentTimeMillis - lastClick < 200
+    lastClick = System.currentTimeMillis
     currentBuilder = currentBuilder match {
       case None => Some(PolygonBuilder.start(Point(x, y)))
       case Some(builder) => {
         val point = Point(x, y)
-        if (point.distance(builder.first) < minDistance) {
+        if (point.distance(builder.first) < minDistance || isDoubleClick) {
           if (builder.size > 2) {
             println(s"polygon completed ${builder.size}")
             val polygon = builder.build()
@@ -54,9 +74,12 @@ class DrawingState extends BaseState with EditorEventListener with MaterialFacto
             println(s"ignored, cannot finish yet")
             Some(builder)
           }
-        } else {
+        } else if (point.distance(builder.last) > minDistance) {
           println(s"adding point ($x,$y) size: ${builder.size}")
           Some(builder.add(Point(x, y)))
+        } else {
+          println(s"ignored, too close to last")
+          Some(builder)
         }
       }
     }
@@ -101,4 +124,13 @@ class DrawingState extends BaseState with EditorEventListener with MaterialFacto
   }
 
   def getDrawNode = rootNode.getChild("currentDraw")
+
+  def isDrawing = currentBuilder.isDefined
+
+  def valueActive(func: FunctionId, value: Double, tpf: Double) {
+  }
+
+  def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
+  }
+
 }
