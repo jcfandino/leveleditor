@@ -10,6 +10,7 @@ import com.stovokor.editor.state.CameraState
 import com.simsilica.lemur.event.MouseAppState
 import com.stovokor.editor.state.DrawingState
 import com.stovokor.editor.input.InputFunctionsMapper
+import com.jme3.input.controls.InputListener
 
 object Main extends SimpleApplication {
 
@@ -35,6 +36,7 @@ object Main extends SimpleApplication {
 
     // Init input
     InputFunctionsMapper.initialize(GuiGlobals.getInstance.getInputMapper)
+    inputManager.removeListener(getInputListener)
 
     // Init states
     stateManager.attach(new GuiState)
@@ -42,6 +44,12 @@ object Main extends SimpleApplication {
     stateManager.attach(new CameraState)
     stateManager.attach(new MouseAppState(this))
     stateManager.attach(new DrawingState)
+  }
+
+  def getInputListener = {
+    val field = classOf[SimpleApplication].getDeclaredField("actionListener")
+    field.setAccessible(true)
+    field.get(this).asInstanceOf[InputListener]
   }
 
 }

@@ -30,7 +30,7 @@ class DrawingState extends BaseState
     with AnalogFunctionListener
     with StateFunctionListener {
 
-  val minDistance = 1f
+  val minDistance = .1f
 
   var currentBuilder: Option[PolygonBuilder] = None
   var lastClick = 0l
@@ -41,13 +41,12 @@ class DrawingState extends BaseState
     super.initialize(stateManager, simpleApp)
     rootNode.attachChild(new Node("currentDraw"))
     EventBus.subscribeByType(this, classOf[GridClick])
+    setupInput
   }
 
   def setupInput {
-    inputMapper.removeAnalogListener(this,
-      InputFunction.mouseX,
-      InputFunction.mouseY)
-    inputMapper.activateGroup(InputFunction.mouse)
+    inputMapper.addStateListener(this, InputFunction.cancel)
+    inputMapper.activateGroup(InputFunction.general)
   }
 
   def onEvent(event: EditorEvent) {
@@ -131,6 +130,15 @@ class DrawingState extends BaseState
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
+    func match {
+      case InputFunction.cancel => cancelPolygon
+      case _                    =>
+    }
+  }
+
+  def cancelPolygon {
+    currentBuilder = None
+    redrawCurrent
   }
 
 }

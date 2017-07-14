@@ -26,8 +26,15 @@ import com.simsilica.lemur.event.CursorMotionEvent
 import com.jme3.scene.shape.Quad
 import com.stovokor.util.EventBus
 import com.stovokor.util.GridClick
+import com.stovokor.editor.input.InputFunction
+import com.simsilica.lemur.input.StateFunctionListener
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
 
-class GridState extends BaseState with MaterialFactory {
+class GridState extends BaseState
+    with MaterialFactory
+    with CanMapInput
+    with StateFunctionListener {
 
   val spanX = 1000f
   val spanY = 1000f
@@ -38,6 +45,7 @@ class GridState extends BaseState with MaterialFactory {
   val zPos = -1000f
 
   var batched = true
+  var snapToGrid = true
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -49,29 +57,39 @@ class GridState extends BaseState with MaterialFactory {
     node.attachChild(createPickPlane())
     node.setCullHint(CullHint.Never)
     rootNode.attachChild(node)
-    registerMouseEvents(node.getChild("pickPlane"))
+    setupInput(node.getChild("pickPlane"))
   }
 
   var clicked = false
   var mousePos: Vector3f = new Vector3f
 
-  def registerMouseEvents(spatial: Spatial) {
+  def setupInput(spatial: Spatial) {
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
         clicked = event.getButtonIndex == 0 && event.isPressed()
-        EventBus.trigger(GridClick(mousePos.x, mousePos.y))
+        EventBus.trigger(GridClick(snapX(mousePos.x), snapY(mousePos.y)))
         println(s"click -> $mousePos")
       }
     })
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def cursorMoved(event: CursorMotionEvent, target: Spatial, capture: Spatial) {
-        //        println(s"moved - ${event.getCollision}")
         val col = event.getCollision
         mousePos.set(col.getContactPoint)
       }
     })
+    inputMapper.addStateListener(this, InputFunction.snapToGrid)
+    inputMapper.activateGroup(InputFunction.general)
   }
 
+  def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
+    if (value == InputState.Positive) func match {
+      case InputFunction.snapToGrid => {
+        snapToGrid = !snapToGrid
+        println(s"snap to grid is $snapToGrid")
+      }
+      case _ =>
+    }
+  }
   def createOrigin(): Spatial = {
     val origin = new Geometry("origin", new Box(0.05f, 0.05f, 0.05f))
     origin.setMaterial(plainColor(ColorRGBA.Orange))
@@ -122,5 +140,12 @@ class GridState extends BaseState with MaterialFactory {
     //      rootNode.getChild("gridParent").asInstanceOf[BatchNode].batch()
     //      batched = true
     //    }
+  }
+
+  def snapX(c: Float) = snapped(c, stepX)
+  def snapY(c: Float) = snapped(c, stepY)
+  def snapped(coor: Float, step: Float) = {
+    if (snapToGrid) step * (coor / step).round
+    else coor
   }
 }

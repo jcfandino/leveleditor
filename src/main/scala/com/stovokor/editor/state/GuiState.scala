@@ -21,14 +21,15 @@ class GuiState extends BaseState {
 
     // Put it somewhere that we will see it.
     // Note: Lemur GUI elements grow down from the upper left corner.
-    window.setLocalTranslation(300, 300, 0)
+    window.setLocalTranslation(0, app.getCamera.getHeight, 0)
 
     // Add some elements
-    window.addChild(new Label("Hello, World."))
-    val clickMe = window.addChild(new Button("Click Me"))
+    window.addChild(new Label("Level Editor"))
+    val clickMe = window.addChild(new Button("Exit"))
     clickMe.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
-        System.out.println("The world is yours.")
+        System.out.println("God bye!")
+        app.stop();
       }
     })
   }

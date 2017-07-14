@@ -25,6 +25,9 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.mouseX, Axis.MOUSE_X)
     inputMapper.map(InputFunction.mouseY, Axis.MOUSE_Y)
     inputMapper.map(InputFunction.mouseWheel, Axis.MOUSE_WHEEL)
+
+    inputMapper.map(InputFunction.cancel, KeyInput.KEY_ESCAPE)
+    inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G)
   }
 }
 
@@ -39,4 +42,9 @@ object InputFunction {
   val mouseX = new FunctionId(mouse, "mouseX")
   val mouseY = new FunctionId(mouse, "mouseY")
   val mouseWheel = new FunctionId(mouse, "mouseWheel")
+
+  val general = "general"
+  val cancel = new FunctionId(general, "cancel")
+  val snapToGrid = new FunctionId(general, "snapToGrid")
+
 }
