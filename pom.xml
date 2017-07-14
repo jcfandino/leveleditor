@@ -85,6 +85,11 @@
             <artifactId>lemur-proto</artifactId>
             <version>1.9.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.github.jcfandino</groupId>
+            <artifactId>earcut4j</artifactId>
+            <version>2.1.2</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>level-editor</finalName>
@@ -263,6 +268,10 @@
                 <enabled>false</enabled>
             </snapshots>
             <url>file://${project.basedir}/repo</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
     </repositories>
 </project>

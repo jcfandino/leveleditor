@@ -2,6 +2,7 @@ package com.stovokor.editor.model
 
 object Point {
   def apply(x: Float, y: Float) = new Point(x, y)
+  def apply(x: Double, y: Double) = new Point(x.toFloat, y.toFloat)
 }
 
 class Point(val x: Float, val y: Float) {

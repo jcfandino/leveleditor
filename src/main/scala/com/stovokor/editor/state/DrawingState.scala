@@ -85,6 +85,8 @@ class DrawingState extends BaseState
     redrawCurrent
   }
 
+  // TODO trigger an event and let another state draw existing polygons
+  // existing polygons will be editable, so this needs extra logic
   def drawPolygon(polygon: Polygon) {
     val node = new Node("polygon")
     for (point <- polygon.points) {
@@ -93,7 +95,9 @@ class DrawingState extends BaseState
       vertex.setMaterial(plainColor(ColorRGBA.White))
       node.attachChild(vertex)
     }
-    for (line <- polygon.lines) {
+    val triangles = polygon.triangulate
+    val lines = triangles.flatMap(_.lines)
+    for (line <- lines) {
       val geo = new Geometry("line", new Line(
         new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
       geo.setMaterial(plainColor(ColorRGBA.LightGray))
