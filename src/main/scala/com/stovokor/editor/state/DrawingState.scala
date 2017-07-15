@@ -22,6 +22,10 @@ import com.simsilica.lemur.input.AnalogFunctionListener
 import com.stovokor.editor.input.InputFunction
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
+import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.editor.factory.MeshFactory
+import com.stovokor.editor.model.Sector
+import com.stovokor.editor.model.Surface
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -103,6 +107,9 @@ class DrawingState extends BaseState
       geo.setMaterial(plainColor(ColorRGBA.LightGray))
       node.attachChild(geo)
     }
+    val sector = Sector(polygon, Surface(0f), Surface(10f))
+    val geom = new MeshFactory(assetManager).createMesh(sector)
+    node.attachChild(geom)
     rootNode.attachChild(node)
   }
 

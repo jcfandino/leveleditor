@@ -30,6 +30,7 @@ import com.stovokor.editor.input.InputFunction
 import com.simsilica.lemur.input.StateFunctionListener
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
+import com.stovokor.editor.factory.MaterialFactory
 
 class GridState extends BaseState
     with MaterialFactory

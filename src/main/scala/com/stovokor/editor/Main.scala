@@ -16,8 +16,7 @@ object Main extends SimpleApplication {
 
   def main(args: Array[String]) {
     val sets = new AppSettings(true)
-    sets.setSettingsDialogImage("/Interface/bomber-logo.png")
-    sets.setGammaCorrection(true)
+    //    sets.setSettingsDialogImage("/Interface/logo.png")
     sets.setWidth(1024)
     sets.setHeight(768)
     sets.setGammaCorrection(false)

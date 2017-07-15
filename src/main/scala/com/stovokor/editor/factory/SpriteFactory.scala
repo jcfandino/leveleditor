@@ -11,14 +11,14 @@ import com.jme3.scene.VertexBuffer.Type
 import com.jme3.util.BufferUtils
 import com.stovokor.editor.tiles.SpriteSheet
 
-object SpriteFactory {
+class SpriteFactory(val assetManager: AssetManager) extends MaterialFactory {
 
   def create(assetManager: AssetManager, name: String, sheet: SpriteSheet, width: Float, height: Float, pos: Vector3f, transparent: Boolean = true) = {
     val mesh = createMesh(sheet, width, height)
     val sprite = new Geometry(name, mesh)
     sprite.setLocalTranslation(pos)
 
-    val mat = MaterialFactory.create(assetManager, sheet.file)
+    val mat = texture(sheet.file)
     sprite.setMaterial(mat)
     if (transparent) {
       mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha)

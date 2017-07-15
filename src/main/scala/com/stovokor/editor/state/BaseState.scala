@@ -8,6 +8,8 @@ import com.jme3.asset.AssetManager
 import com.jme3.scene.Node
 import com.jme3.math.ColorRGBA
 import com.jme3.material.Material
+import com.jme3.texture.Texture.WrapMode
+import com.jme3.material.RenderState.BlendMode
 
 class BaseState extends AbstractAppState {
 
@@ -28,13 +30,3 @@ class BaseState extends AbstractAppState {
   }
 }
 
-trait MaterialFactory {
-
-  def assetManager:AssetManager
-  
-  def plainColor(color: ColorRGBA): Material = {
-    var mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
-    mat.setColor("Color", color)
-    mat
-  }
-}

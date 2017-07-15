@@ -5,7 +5,7 @@ object Point {
   def apply(x: Double, y: Double) = new Point(x.toFloat, y.toFloat)
 }
 
-class Point(val x: Float, val y: Float) {
+case class Point(val x: Float, val y: Float) {
 
   def distance(other: Point) = Math.sqrt(Math.pow(other.x - x, 2) + Math.pow(other.y - y, 2)).toFloat
 
