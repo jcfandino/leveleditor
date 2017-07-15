@@ -12,7 +12,7 @@ import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.stovokor.editor.input.InputFunction
 
-class CameraState extends BaseState
+class Camera2DState extends BaseState
     with CanMapInput
     with AnalogFunctionListener
     with StateFunctionListener {

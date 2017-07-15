@@ -14,19 +14,29 @@ import com.jme3.material.RenderState.BlendMode
 class BaseState extends AbstractAppState {
 
   var app: SimpleApplication = null
-  var guiNode: Node = null
-  var rootNode: Node = null
-  var assetManager: AssetManager = null
+  def stateManager = app.getStateManager
+  def guiNode = app.getGuiNode
+  def rootNode = app.getRootNode
+  def assetManager = app.getAssetManager
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     app = simpleApp.asInstanceOf[SimpleApplication]
-    guiNode = app.getGuiNode
-    rootNode = app.getRootNode
-    assetManager = app.getAssetManager
   }
 
   override def update(tpf: Float) {
+  }
+
+  def get2DNode = getOrCreateNode("2d")
+  def get3DNode = getOrCreateNode("3d")
+
+  def getOrCreateNode(id: String) = {
+    var node = rootNode.getChild(id)
+    if (node == null) {
+      node = new Node(id)
+      rootNode.attachChild(node)
+    }
+    node.asInstanceOf[Node]
   }
 }
 

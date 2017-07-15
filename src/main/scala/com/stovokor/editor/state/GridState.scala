@@ -57,7 +57,7 @@ class GridState extends BaseState
     node.attachChild(createGrid())
     node.attachChild(createPickPlane())
     node.setCullHint(CullHint.Never)
-    rootNode.attachChild(node)
+    get2DNode.attachChild(node)
     setupInput(node.getChild("pickPlane"))
   }
 
@@ -137,10 +137,6 @@ class GridState extends BaseState
   }
 
   override def update(tpf: Float) {
-    //    if (!batched) {
-    //      rootNode.getChild("gridParent").asInstanceOf[BatchNode].batch()
-    //      batched = true
-    //    }
   }
 
   def snapX(c: Float) = snapped(c, stepX)

@@ -10,6 +10,11 @@ import com.jme3.util.BufferUtils
 import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.Sector
 import com.jme3.math.ColorRGBA
+import com.stovokor.editor.model.Triangle
+import com.jme3.scene.Node
+import com.stovokor.editor.model.SurfaceTexture
+import com.stovokor.editor.model.Surface
+import com.stovokor.editor.model.Wall
 
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
 
@@ -22,28 +27,40 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
       .distinct
       .sortBy(p => p.distance(Point(0f, 0f)))
 
+    val node = new Node("sector")
+    val floor = createSurface(triangles, uniquePoints, sec.floor, true)
+    val ceiling = createSurface(triangles, uniquePoints, sec.ceiling, false)
+    node.attachChild(floor)
+    node.attachChild(ceiling)
+    node
+  }
+
+  def createSurface(triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
+    def sortTriangle(t: Triangle) = if (faceUp) t.reverse else t
+    def normal = if (faceUp) Vector3f.UNIT_Y else Vector3f.UNIT_Y.negate
     val m = new Mesh
     m.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(
       uniquePoints
-        .map(p => new Vector3f(p.x, p.y, sec.floor.height))
+        .map(p => new Vector3f(p.x, surface.height, p.y)) // we flip coords
         .toArray: _*))
 
     m.setBuffer(Type.TexCoord, 2, BufferUtils.createFloatBuffer(
       uniquePoints
         .map(p => {
-          val surf = sec.floor.texture
+          val surf = surface.texture
           new Vector2f(surf.uvx(p.x), surf.uvy(p.y))
         })
         .toArray: _*))
 
     m.setBuffer(Type.Index, 1, BufferUtils.createIntBuffer(
       triangles
-        .flatMap(_.points) // TODO sort
+        .map(sortTriangle)
+        .flatMap(_.points)
         .map(uniquePoints.indexOf)
         .toArray: _*))
 
     m.setBuffer(Type.Normal, 3, BufferUtils.createFloatBuffer(
-      uniquePoints.map(_ => Vector3f.UNIT_Z): _*))
+      uniquePoints.map(_ => normal): _*))
     m.updateBound()
     val geom = new Geometry("floor", m)
     //    geom.setMaterial(plainColor(ColorRGBA.Orange))
@@ -51,7 +68,8 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     geom
   }
 
-  def uvx(x: Float, scale: Float) = {
-
+  def createWall(wall: Wall) = {
+    //TODO   
   }
+
 }

@@ -37,6 +37,8 @@ object Triangle {
   def apply(p1: Point, p2: Point, p3: Point) = new Triangle(p1, p2, p3)
 }
 
-class Triangle(p1: Point, p2: Point, p3: Point) extends Polygon(List(p1, p2, p3)) {
+class Triangle(val p1: Point, val p2: Point, val p3: Point) extends Polygon(List(p1, p2, p3)) {
   override def triangulate = List(this)
+
+  def reverse = Triangle(p1, p3, p2)
 }

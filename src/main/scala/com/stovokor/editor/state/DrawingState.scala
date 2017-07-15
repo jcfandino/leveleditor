@@ -26,6 +26,7 @@ import com.stovokor.editor.factory.MaterialFactory
 import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Surface
+import com.stovokor.util.ModeSwitch
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -43,8 +44,9 @@ class DrawingState extends BaseState
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
-    rootNode.attachChild(new Node("currentDraw"))
+    get2DNode.attachChild(new Node("currentDraw"))
     EventBus.subscribeByType(this, classOf[GridClick])
+    EventBus.subscribe(this, ModeSwitch())
     setupInput
   }
 
@@ -55,7 +57,9 @@ class DrawingState extends BaseState
 
   def onEvent(event: EditorEvent) {
     event match {
-      case GridClick(x, y) => addPoint(x, y)
+      case GridClick(x, y) => if (isEnabled) addPoint(x, y)
+      case ModeSwitch()    => cancelPolygon
+      case _               =>
     }
   }
 
@@ -92,25 +96,31 @@ class DrawingState extends BaseState
   // TODO trigger an event and let another state draw existing polygons
   // existing polygons will be editable, so this needs extra logic
   def drawPolygon(polygon: Polygon) {
-    val node = new Node("polygon")
-    for (point <- polygon.points) {
-      val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
-      vertex.setLocalTranslation(point.x, point.y, 0f)
-      vertex.setMaterial(plainColor(ColorRGBA.White))
-      node.attachChild(vertex)
+    def draw2d() {
+      val node = new Node("polygon2d")
+      for (point <- polygon.points) {
+        val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
+        vertex.setLocalTranslation(point.x, point.y, 0f)
+        vertex.setMaterial(plainColor(ColorRGBA.White))
+        node.attachChild(vertex)
+      }
+      for (line <- polygon.lines) {
+        val geo = new Geometry("line", new Line(
+          new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
+        geo.setMaterial(plainColor(ColorRGBA.LightGray))
+        node.attachChild(geo)
+      }
+      get2DNode.attachChild(node)
     }
-    val triangles = polygon.triangulate
-    val lines = triangles.flatMap(_.lines)
-    for (line <- lines) {
-      val geo = new Geometry("line", new Line(
-        new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
-      geo.setMaterial(plainColor(ColorRGBA.LightGray))
-      node.attachChild(geo)
+    def draw3d() {
+      val node = new Node("polygon3d")
+      val sector = Sector(polygon, Surface(0f), Surface(10f))
+      val geom = new MeshFactory(assetManager).createMesh(sector)
+      node.attachChild(geom)
+      get3DNode.attachChild(node)
     }
-    val sector = Sector(polygon, Surface(0f), Surface(10f))
-    val geom = new MeshFactory(assetManager).createMesh(sector)
-    node.attachChild(geom)
-    rootNode.attachChild(node)
+    draw2d()
+    draw3d()
   }
 
   def redrawCurrent {
@@ -130,10 +140,10 @@ class DrawingState extends BaseState
       geo.setMaterial(plainColor(ColorRGBA.Green))
       node.attachChild(geo)
     }
-    rootNode.attachChild(node)
+    get2DNode.attachChild(node)
   }
 
-  def getDrawNode = rootNode.getChild("currentDraw")
+  def getDrawNode = get2DNode.getChild("currentDraw")
 
   def isDrawing = currentBuilder.isDefined
 

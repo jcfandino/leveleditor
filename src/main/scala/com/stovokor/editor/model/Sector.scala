@@ -10,6 +10,7 @@ case class Sector(
     val floor: Surface,
     val ceiling: Surface) {
 
+  def walls = polygon.lines.map(l => Wall(l, SurfaceTexture(1f))) // TODO get in constructor
 }
 
 object Surface {
@@ -40,3 +41,8 @@ case class SurfaceTexture(
   def uvx(x: Float) = x / texScaleX + (texOffsetX / texScaleX)
   def uvy(y: Float) = y / texScaleY + (texOffsetY / texScaleY)
 }
+
+object Wall {
+  def apply(line: Line, texture: SurfaceTexture) = new Wall(line, texture)
+}
+case class Wall(val line: Line, val texture: SurfaceTexture)
