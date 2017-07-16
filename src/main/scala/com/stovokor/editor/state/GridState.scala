@@ -67,9 +67,11 @@ class GridState extends BaseState
   def setupInput(spatial: Spatial) {
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
-        clicked = event.getButtonIndex == 0 && event.isPressed()
-        EventBus.trigger(GridClick(snapX(mousePos.x), snapY(mousePos.y)))
-        println(s"click -> $mousePos")
+        if (event.getButtonIndex == 0) {
+          clicked = event.isPressed()
+          EventBus.trigger(GridClick(snapX(mousePos.x), snapY(mousePos.y)))
+          println(s"grid click -> $mousePos")
+        }
       }
     })
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
@@ -94,6 +96,7 @@ class GridState extends BaseState
   def createOrigin(): Spatial = {
     val origin = new Geometry("origin", new Box(0.05f, 0.05f, 0.05f))
     origin.setMaterial(plainColor(ColorRGBA.Orange))
+    origin.setLocalTranslation(0f,0f,-10f)
     origin
   }
 
@@ -107,6 +110,7 @@ class GridState extends BaseState
     val node = new Node("axis")
     node.attachChild(arrowX)
     node.attachChild(arrowY)
+    node.setLocalTranslation(0f,0f,-10f)
     node
   }
 
@@ -125,6 +129,7 @@ class GridState extends BaseState
       line.setMaterial(mat)
       grid.attachChild(line)
     }
+    grid.setLocalTranslation(0f,0f,-10f)
     grid
   }
 
@@ -132,7 +137,7 @@ class GridState extends BaseState
     val plane = new Geometry("pickPlane", new Quad(2 * spanX, 2 * spanY))
     plane.setMaterial(plainColor(ColorRGBA.Blue))
     plane.setCullHint(CullHint.Always)
-    plane.move(-spanX, -spanY, 1f)
+    plane.move(-spanX, -spanY, -1f)
     plane
   }
 

@@ -1,6 +1,8 @@
 package com.stovokor.util
 
 import com.stovokor.editor.model.Polygon
+import com.stovokor.editor.model.Point
+import com.stovokor.editor.model.Sector
 
 object EventBus {
 
@@ -67,6 +69,8 @@ abstract class EditorEvent
 case class GridClick(x: Float, y: Float) extends EditorEvent
 case class ModeSwitch() extends EditorEvent
 case class PolygonDrawn(p: Polygon) extends EditorEvent
+case class PointMoved(polygonId: Long, from: Point, to: Point) extends EditorEvent
+case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
 
 
 

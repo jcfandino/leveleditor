@@ -11,6 +11,10 @@ case class Sector(
     val ceiling: Surface) {
 
   def walls = polygon.lines.map(l => Wall(l, SurfaceTexture(1f))) // TODO get in constructor
+
+  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling)
+  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling)
+  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated)
 }
 
 object Surface {

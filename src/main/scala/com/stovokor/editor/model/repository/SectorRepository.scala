@@ -3,6 +3,11 @@ package com.stovokor.editor.model.repository
 import com.stovokor.editor.model.Sector
 import java.util.concurrent.atomic.AtomicLong
 
+object SectorRepository {
+  var instance = new SectorRepository()
+  def apply() = instance
+}
+
 class SectorRepository {
 
   var idGenerator = new AtomicLong(0)
