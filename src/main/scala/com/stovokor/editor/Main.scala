@@ -15,6 +15,7 @@ import com.stovokor.editor.state.ModeState
 import com.stovokor.editor.state.Camera3DState
 import com.stovokor.editor.state.SectorPresenterState
 import com.stovokor.editor.state.ModifyingState
+import com.stovokor.editor.state.SelectionState
 
 object Main extends SimpleApplication {
 
@@ -50,6 +51,7 @@ object Main extends SimpleApplication {
     stateManager.attach(new ModeState)
     stateManager.attach(new SectorPresenterState)
     stateManager.attach(new ModifyingState)
+    stateManager.attach(new SelectionState)
   }
 
   def getInputListener = {

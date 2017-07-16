@@ -66,12 +66,17 @@ trait EditorEventListener {
 }
 
 abstract class EditorEvent
+
 case class GridClick(x: Float, y: Float) extends EditorEvent
 case class ModeSwitch() extends EditorEvent
-case class PolygonDrawn(p: Polygon) extends EditorEvent
-case class PointMoved(polygonId: Long, from: Point, to: Point) extends EditorEvent
-case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
+case class SelectionModeSwitch(m: Int) extends EditorEvent
 
+case class PolygonDrawn(p: Polygon) extends EditorEvent
+case class PointMoved(sectorId: Long, from: Point, to: Point) extends EditorEvent
+case class PointSelected(sectorId: Long, point: Point) extends EditorEvent
+//case class LineSelected(polygonId:Long,line:Line)extends EditorEvent
+
+case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
 
 
 

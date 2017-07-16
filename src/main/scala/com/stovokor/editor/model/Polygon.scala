@@ -42,6 +42,7 @@ case class Polygon(val pointsUnsorted: List[Point]) {
   private val limY = 10000000f
 
   def isClockwise = {
+    def areaBelow(a: Point, b: Point) = 0.5f * (b.x - a.x) * (b.y + a.y + 2 * limY)
     val sorted = pointsUnsorted.sortBy(_.x)
     val leftmost = sorted.head
     val rightmost = sorted.last
@@ -53,14 +54,8 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     val path2 = (
       if (i1 > i2) pointsUnsorted.slice(i2, i1 + 1)
       else pointsUnsorted.slice(i2, pointsUnsorted.size) ++ pointsUnsorted.slice(0, i1 + 1)).reverse
-    val area1 = path1.sliding(2).map(ab => {
-      val (a, b) = (ab(0), ab(1))
-      0.5f * (b.x - a.x) * (b.y + a.y + 2 * limY)
-    }).sum
-    val area2 = path2.sliding(2).map(ab => {
-      val (a, b) = (ab(0), ab(1))
-      0.5f * (b.x - a.x) * (b.y + a.y + 2 * limY)
-    }).sum
+    val area1 = path1.sliding(2).map(ab => areaBelow(ab(0), ab(1))).sum
+    val area2 = path2.sliding(2).map(ab => areaBelow(ab(0), ab(1))).sum
     val diff = area1 - area2
     diff > 0 && diff < limY
   }

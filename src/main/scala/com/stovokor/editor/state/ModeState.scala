@@ -59,6 +59,7 @@ class ModeState extends BaseState with EditorEventListener {
       disableStates(
         classOf[GridState],
         classOf[Camera2DState],
+        classOf[SelectionState],
         classOf[DrawingState])
       removeStates(classOf[Camera2DState]) //Problem, it forgets were it was
     }
@@ -67,6 +68,7 @@ class ModeState extends BaseState with EditorEventListener {
       println("entering 2d")
       enableStates(
         classOf[GridState],
+        classOf[SelectionState],
         classOf[DrawingState])
       stateManager.attach(new Camera2DState)
     }

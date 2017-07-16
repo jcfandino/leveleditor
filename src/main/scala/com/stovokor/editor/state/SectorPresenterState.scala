@@ -32,6 +32,7 @@ import com.simsilica.lemur.input.InputState
 import com.stovokor.editor.model.Point
 import com.stovokor.util.PointMoved
 import com.stovokor.util.SectorUpdated
+import com.stovokor.util.PointSelected
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -81,7 +82,7 @@ class SectorPresenterState extends BaseState
         val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
         vertex.setLocalTranslation(point.x, point.y, 0f)
         vertex.setMaterial(plainColor(ColorRGBA.White))
-        vertex.setUserData("polygonId", id)
+        vertex.setUserData("sectorId", id)
         setupDraggableInput(vertex, id, point)
         node.attachChild(vertex)
       }
@@ -105,10 +106,10 @@ class SectorPresenterState extends BaseState
   var oldPos = new Vector3f()
   var newPos = new Vector3f()
 
-  def setupDraggableInput(spatial: Spatial, polygonId: Long, point: Point) {
+  def setupDraggableInput(spatial: Spatial, sectorId: Long, point: Point) {
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def cursorButtonEvent(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
-        println(s"click $target - $event")
+        //        println(s"click $target - $event")
         if (event.getButtonIndex == 0) {
           if (!isDragging) {
             oldPos.set(spatial.getLocalTranslation)
@@ -117,11 +118,13 @@ class SectorPresenterState extends BaseState
               snapY(spatial.getLocalTranslation.y),
               0f)
           } else if (!event.isPressed()) {
-            println(s"released")
+            //            println(s"released")
             if (oldPos.distanceSquared(newPos) > 0.1f) { // button released
               println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
               EventBus.trigger(
-                PointMoved(polygonId, point, Point(snapX(newPos.x), snapY(newPos.y))))
+                PointMoved(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
+            } else {
+              EventBus.trigger(PointSelected(sectorId, point))
             }
           }
           isDragging = event.isPressed()

@@ -11,30 +11,30 @@ import com.simsilica.lemur.Button
 import com.simsilica.lemur.Command
 import com.stovokor.util.EventBus
 import com.stovokor.util.ModeSwitch
+import com.stovokor.util.SelectionModeSwitch
 
 class GuiState extends BaseState {
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
 
-    // Create a simple container for our elements
-    val window = new Container
-    guiNode.attachChild(window)
+    createGeneralWindow()
+    createSelectionWindow()
+  }
 
-    // Put it somewhere that we will see it.
-    // Note: Lemur GUI elements grow down from the upper left corner.
-    window.setLocalTranslation(0, app.getCamera.getHeight, 0)
-
-    // Add some elements
-    window.addChild(new Label("Level Editor"))
-    val clickMe = window.addChild(new Button("Exit"))
+  def createGeneralWindow() {
+    val generalWindow = new Container
+    guiNode.attachChild(generalWindow)
+    generalWindow.setLocalTranslation(0, app.getCamera.getHeight, 0)
+    generalWindow.addChild(new Label("Level Editor"))
+    val clickMe = generalWindow.addChild(new Button("Exit"))
     clickMe.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
         println("God bye!")
         app.stop();
       }
     })
-    val mode3d = window.addChild(new Button("2D/3D"))
+    val mode3d = generalWindow.addChild(new Button("2D/3D"))
     mode3d.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
         println("mode switch")
@@ -42,6 +42,41 @@ class GuiState extends BaseState {
       }
     })
   }
+
+  def createSelectionWindow() {
+    val selectionWindow = new Container
+    guiNode.attachChild(selectionWindow)
+    selectionWindow.setLocalTranslation(0, app.getCamera.getHeight - 100, 0)
+    selectionWindow.addChild(new Label("Selection"))
+    val point = selectionWindow.addChild(new Button("Point"))
+    val line = selectionWindow.addChild(new Button("Line"))
+    val sector = selectionWindow.addChild(new Button("Sector"))
+    point.addClickCommands(new Command[Button]() {
+      def execute(source: Button) {
+        EventBus.trigger(SelectionModeSwitch(0))
+        decorateFirst(point, line, sector)
+      }
+    })
+    line.addClickCommands(new Command[Button]() {
+      def execute(source: Button) {
+        EventBus.trigger(SelectionModeSwitch(1))
+        decorateFirst(line, point, sector)
+      }
+    })
+    sector.addClickCommands(new Command[Button]() {
+      def execute(source: Button) {
+        EventBus.trigger(SelectionModeSwitch(2))
+        decorateFirst(sector, point, line)
+      }
+    })
+  }
+
+  def decorateFirst(b1: Button, bn: Button*) {
+    def clean(s: String) = s.replaceAll("^\\[ ", "").replaceAll(" \\]$", "")
+    b1.setText(s"[ ${clean(b1.getText)} ]")
+    bn.foreach(b => b.setText(clean(b.getText)))
+  }
+
   override def update(tpf: Float) {
   }
 }
