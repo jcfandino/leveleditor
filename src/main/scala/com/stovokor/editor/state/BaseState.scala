@@ -27,14 +27,14 @@ class BaseState extends AbstractAppState {
   override def update(tpf: Float) {
   }
 
-  def get2DNode = getOrCreateNode("2d")
-  def get3DNode = getOrCreateNode("3d")
+  def get2DNode = getOrCreateNode(rootNode, "2d")
+  def get3DNode = getOrCreateNode(rootNode, "3d")
 
-  def getOrCreateNode(id: String) = {
-    var node = rootNode.getChild(id)
+  def getOrCreateNode(parent: Node, id: String) = {
+    var node = parent.getChild(id)
     if (node == null) {
       node = new Node(id)
-      rootNode.attachChild(node)
+      parent.attachChild(node)
     }
     node.asInstanceOf[Node]
   }

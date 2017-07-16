@@ -13,6 +13,7 @@ import com.stovokor.editor.input.InputFunctionsMapper
 import com.jme3.input.controls.InputListener
 import com.stovokor.editor.state.ModeState
 import com.stovokor.editor.state.Camera3DState
+import com.stovokor.editor.state.SectorPresenterState
 
 object Main extends SimpleApplication {
 
@@ -46,6 +47,7 @@ object Main extends SimpleApplication {
     stateManager.attach(new MouseAppState(this))
     stateManager.attach(new DrawingState)
     stateManager.attach(new ModeState)
+    stateManager.attach(new SectorPresenterState)
   }
 
   def getInputListener = {

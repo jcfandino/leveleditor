@@ -27,6 +27,7 @@ import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Surface
 import com.stovokor.util.ModeSwitch
+import com.stovokor.util.PolygonDrawn
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -75,7 +76,8 @@ class DrawingState extends BaseState
             println(s"polygon completed ${builder.size}")
             val polygon = builder.build()
             polygonRepository.add(polygon)
-            drawPolygon(polygon)
+            //            drawPolygon(polygon)
+            EventBus.trigger(PolygonDrawn(polygon))
             None
           } else {
             println(s"ignored, cannot finish yet")
@@ -91,38 +93,6 @@ class DrawingState extends BaseState
       }
     }
     redrawCurrent
-  }
-
-  // TODO trigger an event and let another state draw existing polygons
-  // existing polygons will be editable, so this needs extra logic
-  def drawPolygon(polygon: Polygon) {
-    def draw2d() {
-      val node = new Node("polygon2d")
-      for (point <- polygon.pointsSorted) {
-        val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
-        vertex.setLocalTranslation(point.x, point.y, 0f)
-        vertex.setMaterial(plainColor(ColorRGBA.White))
-        node.attachChild(vertex)
-      }
-      for (line <- polygon.lines) {
-        val geo = new Geometry("line", new Line(
-          new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
-        geo.setMaterial(plainColor(ColorRGBA.LightGray))
-        node.attachChild(geo)
-      }
-      get2DNode.attachChild(node)
-    }
-    def draw3d() {
-      val node = new Node("polygon3d")
-      val sector = Sector(polygon, Surface(0f), Surface(10f))
-      val geom = new MeshFactory(assetManager).createMesh(sector)
-      node.attachChild(geom)
-      get3DNode.attachChild(node)
-    }
-    //    println("polygon angle sum=" + polygon.intAngle)
-    println("polygon is sorted clockwise? " + polygon.isClockwise)
-    draw2d()
-    draw3d()
   }
 
   def redrawCurrent {

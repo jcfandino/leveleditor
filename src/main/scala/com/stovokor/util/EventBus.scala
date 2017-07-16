@@ -1,5 +1,7 @@
 package com.stovokor.util
 
+import com.stovokor.editor.model.Polygon
+
 object EventBus {
 
   var listeners: Map[EditorEvent, Set[EditorEventListener]] =
@@ -64,6 +66,7 @@ trait EditorEventListener {
 abstract class EditorEvent
 case class GridClick(x: Float, y: Float) extends EditorEvent
 case class ModeSwitch() extends EditorEvent
+case class PolygonDrawn(p: Polygon) extends EditorEvent
 
 
 
