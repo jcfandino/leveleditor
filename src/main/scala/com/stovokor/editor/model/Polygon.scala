@@ -8,19 +8,19 @@ import com.jme3.math.Vector2f
 object Polygon {
   def apply(points: List[Point]) = new Polygon(points)
 }
-case class Polygon(pointsUnsorted: List[Point]) {
+case class Polygon(val pointsUnsorted: List[Point]) {
 
-  lazy val points = {
-    if (isSortedClockWise) pointsUnsorted
+  lazy val pointsSorted = {
+    if (isClockwise) pointsUnsorted
     else pointsUnsorted.reverse
   }
 
   lazy val lines = {
-    ((points zip points.tail) map ((p) => Line(p._1, p._2))) ++ List(Line(points.last, points.head))
+    ((pointsSorted zip pointsSorted.tail) map ((p) => Line(p._1, p._2))) ++ List(Line(pointsSorted.last, pointsSorted.head))
   }
 
   def triangulate: List[Triangle] = {
-    val vertices = points
+    val vertices = pointsSorted
       .flatMap(p => List(p.x, p.y))
       .map(_.toDouble)
       .toArray
@@ -34,13 +34,15 @@ case class Polygon(pointsUnsorted: List[Point]) {
       Point(px(l(1)), py(l(1))),
       Point(px(l(2)), py(l(2)))))
       .map(ps => ps match { case (a, b, c) => Triangle(a, b, c) })
+      .map(_.asClockwise)
       .toList
     triangles
   }
 
-  val limY = 10000000f
+  private val limY = 10000000f
 
-  def isSortedClockWise = {
+
+  def isClockwise = {
     //    println(s"> points pointsUnsorted")
     val sorted = pointsUnsorted.sortBy(_.x) //TODO fix same x coor
     val leftmost = sorted.head
@@ -81,5 +83,12 @@ object Triangle {
 class Triangle(val p1: Point, val p2: Point, val p3: Point) extends Polygon(List(p1, p2, p3)) {
   override def triangulate = List(this)
 
-  def reverse = Triangle(p1, p3, p2)
+  def asClockwise = if (isClockwise) this else reverse
+  def asCounterClockwise = if (!isClockwise) this else reverse
+  def reverse = Triangle(p3, p2, p1)
+
+  override def isClockwise = FastMath.counterClockwise(
+    new Vector2f(p1.x, p1.y),
+    new Vector2f(p2.x, p2.y),
+    new Vector2f(p3.x, p3.y)) == -1
 }

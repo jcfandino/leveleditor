@@ -24,7 +24,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     val triangles = sec.polygon.triangulate
 
     val uniquePoints = triangles
-      .flatMap(_.points)
+      .flatMap(_.pointsSorted)
       .distinct
       .sortBy(p => p.distance(Point(0f, 0f)))
 
@@ -41,7 +41,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
 
   // TODO sometimes triangles are backward
   def createSurface(triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
-    def sortTriangle(t: Triangle) = if (faceUp) t.reverse else t
+    def sortTriangle(t: Triangle) = if (faceUp) t.asClockwise else t.asCounterClockwise
     def normal = if (faceUp) Vector3f.UNIT_Y else Vector3f.UNIT_Y.negate
     val m = new Mesh
     m.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(
@@ -60,7 +60,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     m.setBuffer(Type.Index, 1, BufferUtils.createIntBuffer(
       triangles
         .map(sortTriangle)
-        .flatMap(_.points)
+        .flatMap(_.pointsUnsorted)
         .map(uniquePoints.indexOf)
         .toArray: _*))
 

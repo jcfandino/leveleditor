@@ -98,7 +98,7 @@ class DrawingState extends BaseState
   def drawPolygon(polygon: Polygon) {
     def draw2d() {
       val node = new Node("polygon2d")
-      for (point <- polygon.points) {
+      for (point <- polygon.pointsSorted) {
         val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
         vertex.setLocalTranslation(point.x, point.y, 0f)
         vertex.setMaterial(plainColor(ColorRGBA.White))
@@ -120,7 +120,7 @@ class DrawingState extends BaseState
       get3DNode.attachChild(node)
     }
     //    println("polygon angle sum=" + polygon.intAngle)
-    println("polygon is sorted clockwise? " + polygon.isSortedClockWise)
+    println("polygon is sorted clockwise? " + polygon.isClockwise)
     draw2d()
     draw3d()
   }
