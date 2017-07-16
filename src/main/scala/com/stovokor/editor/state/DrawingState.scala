@@ -119,6 +119,8 @@ class DrawingState extends BaseState
       node.attachChild(geom)
       get3DNode.attachChild(node)
     }
+    //    println("polygon angle sum=" + polygon.intAngle)
+    println("polygon is sorted clockwise? " + polygon.isSortedClockWise)
     draw2d()
     draw3d()
   }
