@@ -30,7 +30,7 @@ import com.simsilica.lemur.input.StateFunctionListener
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.stovokor.editor.model.Point
-import com.stovokor.util.PointMoved
+import com.stovokor.util.PointDragged
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.PointClicked
 import com.stovokor.editor.control.SelectableControl
@@ -125,7 +125,7 @@ class SectorPresenterState extends BaseState
             if (oldPos.distanceSquared(newPos) > 0.1f) { // button released
               println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
               EventBus.trigger(
-                PointMoved(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
+                PointDragged(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
             } else {
               EventBus.trigger(PointClicked(sectorId, point))
             }
