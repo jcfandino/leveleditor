@@ -7,10 +7,11 @@ import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.EventBus
-import com.stovokor.util.PointSelected
+import com.stovokor.util.PointClicked
 import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.editor.model.Line
+import com.stovokor.util.PointSelectionChange
 
 // only for 2d
 class SelectionState extends BaseState
@@ -25,13 +26,13 @@ class SelectionState extends BaseState
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[SelectionModeSwitch])
-    EventBus.subscribeByType(this, classOf[PointSelected])
+    EventBus.subscribeByType(this, classOf[PointClicked])
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SelectionModeSwitch(m)         => if (modeIndex != m) setMode(m)
-    case PointSelected(sectorId, point) => selectPoint(sectorId, point)
-    case _                              =>
+    case SelectionModeSwitch(m)        => if (modeIndex != m) setMode(m)
+    case PointClicked(sectorId, point) => selectPoint(sectorId, point)
+    case _                             =>
   }
 
   def setMode(newMode: Int) {
@@ -44,6 +45,7 @@ class SelectionState extends BaseState
 
   def selectPoint(sectorId: Long, point: Point) {
     mode.selectPoint(sectorId, point)
+    EventBus.trigger(PointSelectionChange(selectedPoints.map(p => (sectorId, p)).toSet))
     println(s"Selected points $selectedPoints")
   }
 
@@ -59,7 +61,6 @@ class SelectionState extends BaseState
 
   }
   object ModeLine extends SelectionMode {
-
     def selectPoint(sectorId: Long, point: Point) {
       if (selectedPoints.isEmpty) {
         selectedPoints = List(point)
@@ -82,6 +83,5 @@ class SelectionState extends BaseState
       val polygon = sectorRepository.get(sectorId).polygon
       selectedPoints = polygon.pointsSorted
     }
-
   }
 }

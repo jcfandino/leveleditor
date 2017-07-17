@@ -32,7 +32,8 @@ import com.simsilica.lemur.input.InputState
 import com.stovokor.editor.model.Point
 import com.stovokor.util.PointMoved
 import com.stovokor.util.SectorUpdated
-import com.stovokor.util.PointSelected
+import com.stovokor.util.PointClicked
+import com.stovokor.editor.control.SelectableControl
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -81,8 +82,9 @@ class SectorPresenterState extends BaseState
       for (point <- sector.polygon.pointsSorted) {
         val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
         vertex.setLocalTranslation(point.x, point.y, 0f)
-        vertex.setMaterial(plainColor(ColorRGBA.White))
+        vertex.setMaterial(plainColor(ColorRGBA.LightGray))
         vertex.setUserData("sectorId", id)
+        vertex.addControl(new SelectableControl(ColorRGBA.LightGray, id, Set(point)))
         setupDraggableInput(vertex, id, point)
         node.attachChild(vertex)
       }
@@ -90,6 +92,7 @@ class SectorPresenterState extends BaseState
         val geo = new Geometry("line", new Line(
           new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
         geo.setMaterial(plainColor(ColorRGBA.LightGray))
+        geo.addControl(new SelectableControl(ColorRGBA.LightGray, id, Set(line.a, line.b)))
         node.attachChild(geo)
       }
     }
@@ -124,7 +127,7 @@ class SectorPresenterState extends BaseState
               EventBus.trigger(
                 PointMoved(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
             } else {
-              EventBus.trigger(PointSelected(sectorId, point))
+              EventBus.trigger(PointClicked(sectorId, point))
             }
           }
           isDragging = event.isPressed()

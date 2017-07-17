@@ -73,8 +73,8 @@ case class SelectionModeSwitch(m: Int) extends EditorEvent
 
 case class PolygonDrawn(p: Polygon) extends EditorEvent
 case class PointMoved(sectorId: Long, from: Point, to: Point) extends EditorEvent
-case class PointSelected(sectorId: Long, point: Point) extends EditorEvent
-//case class LineSelected(polygonId:Long,line:Line)extends EditorEvent
+case class PointClicked(sectorId: Long, point: Point) extends EditorEvent
+case class PointSelectionChange(points: Set[(Long, Point)]) extends EditorEvent
 
 case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
 
