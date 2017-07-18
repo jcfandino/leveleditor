@@ -51,7 +51,7 @@ class SelectableControl(
         .filter(p => p._1 == sectorId && points.contains(p._2))
         .map(_._2)
       //      println(s"This point $points - intersection $intersection")
-      setSelected(intersection == points)
+      setSelected(intersection.size == points.size)
     }
     case _ =>
   }

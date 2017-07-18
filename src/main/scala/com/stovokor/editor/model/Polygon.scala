@@ -65,6 +65,21 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     if (idx >= 0) Polygon(pointsSorted.updated(idx, to))
     else this
   }
+
+  def addPoint(between: Line, factor: Float): Polygon = {
+    println(s"Splitting line $between")
+    val idxa = pointsSorted.indexOf(between.a)
+    val idxb = pointsSorted.indexOf(between.b)
+    val (idx1, idx2) = (Math.min(idxa, idxb), Math.max(idxa, idxb))
+    val newPoint = between.split(factor)._1.b
+    if (idx1 == 0 && idx2 == pointsSorted.size - 1)
+      Polygon(pointsSorted ++ List(newPoint))
+    else
+      Polygon(
+        (pointsSorted.slice(0, idx1 + 1) ++
+          List(newPoint)) ++
+          pointsSorted.slice(idx2, pointsSorted.size))
+  }
 }
 
 object Triangle {

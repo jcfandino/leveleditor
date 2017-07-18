@@ -12,6 +12,7 @@ import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.editor.model.Line
 import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SectorUpdated
 
 // only for 2d
 class SelectionState extends BaseState
@@ -19,6 +20,7 @@ class SelectionState extends BaseState
 
   val sectorRepository = SectorRepository()
 
+  var selectedPoints: List[Point] = List()
   var modeIndex = 0
   val modes = List(ModePoint, ModeLine, ModeSector)
   def mode = modes(modeIndex)
@@ -41,11 +43,9 @@ class SelectionState extends BaseState
     modeIndex = newMode
   }
 
-  var selectedPoints: List[Point] = List()
-
   def selectPoint(sectorId: Long, point: Point) {
     mode.selectPoint(sectorId, point)
-    EventBus.trigger(PointSelectionChange(selectedPoints.map(p => (sectorId, p)).toSet))
+    EventBus.trigger(PointSelectionChange(selectedPoints.map(p => (sectorId, p))))
     println(s"Selected points $selectedPoints")
   }
 
@@ -72,8 +72,9 @@ class SelectionState extends BaseState
             case Line(a, b) => a == previousPoint && b == point || a == point && b == previousPoint
             case _          => false
           })
-        if (line.isDefined) selectedPoints = List(line.get.a, line.get.b)
-        else selectedPoints = List(point)
+        if (line.isDefined) {
+          selectedPoints = List(line.get.a, line.get.b)
+        } else selectedPoints = List(point)
       }
     }
   }

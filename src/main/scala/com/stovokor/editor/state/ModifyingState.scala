@@ -12,6 +12,9 @@ import com.stovokor.editor.model.Point
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.PointSelectionChange
 import com.stovokor.editor.model.Sector
+import com.stovokor.util.SplitSelection
+import com.stovokor.util.DeleteSelection
+import com.stovokor.editor.model.Line
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -19,20 +22,25 @@ class ModifyingState extends BaseState
 
   val sectorRepository = SectorRepository()
 
-  var selectedPoints: Set[(Long, Point)] = Set()
+  var selectedPoints: List[(Long, Point)] = List()
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[PointDragged])
     EventBus.subscribeByType(this, classOf[PointSelectionChange])
+    EventBus.subscribeByType(this, classOf[SplitSelection])
+    EventBus.subscribeByType(this, classOf[DeleteSelection])
   }
 
   def onEvent(event: EditorEvent) = event match {
     case PointDragged(id, from, to) => movePoints(id, from, to)
     case PointSelectionChange(ps)   => selectedPoints = ps
+    case SplitSelection()           => splitSelection()
+    case DeleteSelection()          => deleteSelection()
     case _                          =>
   }
 
+  // TODO clean this up
   def movePoints(id: Long, from: Point, to: Point) {
     val (dx, dy) = (to.x - from.x, to.y - from.y)
     var toUpdate: Set[(Long, Sector)] = Set()
@@ -45,5 +53,24 @@ class ModifyingState extends BaseState
       toUpdate = toUpdate ++ Set((id, updated))
     })
     toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2)))
+  }
+
+  def splitSelection() {
+    selectedPoints.map(_._1).foreach(id => {
+      val sector = sectorRepository.get(id)
+      val sectorLines = sector.polygon.lines
+      val newPolygon = selectedPoints
+        .filter(sp => sp._1 == id)
+        .map(_._2)
+        .sliding(2)
+        .map(s => Line(s(0), s(1)))
+        .foldRight(sector.polygon)((line, pol) => pol.addPoint(line, .5f))
+      val newSector = sector.updatedPolygon(newPolygon)
+      sectorRepository.update(id, newSector)
+      EventBus.trigger(SectorUpdated(id, newSector))
+    })
+  }
+
+  def deleteSelection() {
   }
 }

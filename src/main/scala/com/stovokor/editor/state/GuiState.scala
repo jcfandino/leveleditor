@@ -12,6 +12,8 @@ import com.simsilica.lemur.Command
 import com.stovokor.util.EventBus
 import com.stovokor.util.ModeSwitch
 import com.stovokor.util.SelectionModeSwitch
+import com.stovokor.util.DeleteSelection
+import com.stovokor.util.SplitSelection
 
 class GuiState extends BaseState {
 
@@ -20,6 +22,7 @@ class GuiState extends BaseState {
 
     createGeneralWindow()
     createSelectionWindow()
+    createEditWindow()
   }
 
   def createGeneralWindow() {
@@ -67,6 +70,26 @@ class GuiState extends BaseState {
       def execute(source: Button) {
         EventBus.trigger(SelectionModeSwitch(2))
         decorateFirst(sector, point, line)
+      }
+    })
+  }
+  def createEditWindow() {
+    val editWindow = new Container
+    guiNode.attachChild(editWindow)
+    editWindow.setLocalTranslation(0, app.getCamera.getHeight - 200, 0)
+    editWindow.addChild(new Label("Edit"))
+    val split = editWindow.addChild(new Button("Split"))
+    split.addClickCommands(new Command[Button]() {
+      def execute(source: Button) {
+        println("Split")
+        EventBus.trigger(SplitSelection())
+      }
+    })
+    val mode3d = editWindow.addChild(new Button("Delete"))
+    mode3d.addClickCommands(new Command[Button]() {
+      def execute(source: Button) {
+        println("Delete")
+        EventBus.trigger(DeleteSelection())
       }
     })
   }
