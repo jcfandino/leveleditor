@@ -26,7 +26,7 @@ import com.stovokor.editor.factory.MaterialFactory
 import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Surface
-import com.stovokor.util.ModeSwitch
+import com.stovokor.util.ViewModeSwitch
 import com.stovokor.util.PolygonDrawn
 
 class DrawingState extends BaseState
@@ -47,8 +47,14 @@ class DrawingState extends BaseState
     super.initialize(stateManager, simpleApp)
     get2DNode.attachChild(new Node("currentDraw"))
     EventBus.subscribeByType(this, classOf[GridClick])
-    EventBus.subscribe(this, ModeSwitch())
+    EventBus.subscribe(this, ViewModeSwitch())
     setupInput
+  }
+
+  override def cleanup() {
+    super.cleanup
+    EventBus.removeFromAll(this)
+    inputMapper.removeStateListener(this, InputFunction.cancel)
   }
 
   def setupInput {
@@ -59,7 +65,7 @@ class DrawingState extends BaseState
   def onEvent(event: EditorEvent) {
     event match {
       case GridClick(x, y) => if (isEnabled) addPoint(x, y)
-      case ModeSwitch()    => cancelPolygon
+      case ViewModeSwitch()    => cancelPolygon
       case _               =>
     }
   }

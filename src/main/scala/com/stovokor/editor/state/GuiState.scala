@@ -10,10 +10,11 @@ import com.simsilica.lemur.Label
 import com.simsilica.lemur.Button
 import com.simsilica.lemur.Command
 import com.stovokor.util.EventBus
-import com.stovokor.util.ModeSwitch
+import com.stovokor.util.ViewModeSwitch
 import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.DeleteSelection
 import com.stovokor.util.SplitSelection
+import com.stovokor.util.EditModeSwitch
 
 class GuiState extends BaseState {
 
@@ -30,8 +31,8 @@ class GuiState extends BaseState {
     guiNode.attachChild(generalWindow)
     generalWindow.setLocalTranslation(0, app.getCamera.getHeight, 0)
     generalWindow.addChild(new Label("Level Editor"))
-    val clickMe = generalWindow.addChild(new Button("Exit"))
-    clickMe.addClickCommands(new Command[Button]() {
+    val exit = generalWindow.addChild(new Button("Exit"))
+    exit.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
         println("God bye!")
         app.stop();
@@ -41,7 +42,15 @@ class GuiState extends BaseState {
     mode3d.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
         println("mode switch")
-        EventBus.trigger(ModeSwitch())
+        EventBus.trigger(ViewModeSwitch())
+      }
+    })
+    val draw = generalWindow.addChild(new Button("Draw"))
+    draw.addClickCommands(new Command[Button]() {
+      def execute(source: Button) {
+        println("draw mode")
+        EventBus.trigger(SelectionModeSwitch(0))
+        EventBus.trigger(EditModeSwitch(1))
       }
     })
   }
@@ -56,19 +65,22 @@ class GuiState extends BaseState {
     val sector = selectionWindow.addChild(new Button("Sector"))
     point.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
-        EventBus.trigger(SelectionModeSwitch(0))
+        EventBus.trigger(EditModeSwitch(0))
+        EventBus.trigger(SelectionModeSwitch(1))
         decorateFirst(point, line, sector)
       }
     })
     line.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
-        EventBus.trigger(SelectionModeSwitch(1))
+        EventBus.trigger(EditModeSwitch(0))
+        EventBus.trigger(SelectionModeSwitch(2))
         decorateFirst(line, point, sector)
       }
     })
     sector.addClickCommands(new Command[Button]() {
       def execute(source: Button) {
-        EventBus.trigger(SelectionModeSwitch(2))
+        EventBus.trigger(EditModeSwitch(0))
+        EventBus.trigger(SelectionModeSwitch(3))
         decorateFirst(sector, point, line)
       }
     })

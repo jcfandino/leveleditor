@@ -3,16 +3,18 @@ package com.stovokor.editor.state
 import com.jme3.app.state.AppStateManager
 import com.jme3.app.Application
 import com.stovokor.util.EventBus
-import com.stovokor.util.ModeSwitch
+import com.stovokor.util.ViewModeSwitch
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.jme3.scene.Node
 import com.jme3.scene.Spatial.CullHint
 import com.jme3.app.state.AppState
+import com.stovokor.util.SelectionModeSwitch
+import com.stovokor.util.EditModeSwitch
 
-class ModeState extends BaseState with EditorEventListener {
+class ViewModeState extends BaseState with EditorEventListener {
 
-  var current: Mode = M2D()
+  private var current: Mode = M2D()
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -20,12 +22,14 @@ class ModeState extends BaseState with EditorEventListener {
     get3DNode
     M3D().hide
     M3D().exit
-    EventBus.subscribe(this, ModeSwitch())
+    EventBus.subscribe(this, ViewModeSwitch())
+    M2D().show
+    M2D().enter
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case ModeSwitch() => switch()
-    case _            =>
+    case ViewModeSwitch() => switch()
+    case _                =>
   }
 
   def switch() {
@@ -41,7 +45,7 @@ class ModeState extends BaseState with EditorEventListener {
     mode.enter
   }
 
-  abstract class Mode(val id: String) {
+  private abstract class Mode(val id: String) {
     def enter
     def exit
 
@@ -53,28 +57,28 @@ class ModeState extends BaseState with EditorEventListener {
     }
   }
 
-  case class M2D() extends Mode("2d") {
+  private case class M2D() extends Mode("2d") {
 
     def exit {
       disableStates(
         classOf[GridState],
-        classOf[Camera2DState],
-        classOf[SelectionState],
-        classOf[DrawingState])
+        classOf[Camera2DState])
       removeStates(classOf[Camera2DState]) //Problem, it forgets were it was
+      removeStates(classOf[EditModeState])
     }
 
     def enter {
       println("entering 2d")
-      enableStates(
-        classOf[GridState],
-        classOf[SelectionState],
-        classOf[DrawingState])
+      enableStates(classOf[GridState])
       stateManager.attach(new Camera2DState)
+      stateManager.attach(new EditModeState)
+      //      disableStates(classOf[DrawingState]) // we want this to be disable at start
+      EventBus.trigger(SelectionModeSwitch(1))
+      EventBus.trigger(EditModeSwitch(0))
     }
   }
 
-  case class M3D() extends Mode("3d") {
+  private case class M3D() extends Mode("3d") {
     def exit {
       disableStates(classOf[Camera3DState])
       removeStates(classOf[Camera3DState])
@@ -84,23 +88,6 @@ class ModeState extends BaseState with EditorEventListener {
       stateManager.attach(new Camera3DState)
     }
 
-  }
-
-  def enableStates(classes: Class[_ <: AppState]*) = setEnabledToStates(true, classes: _*)
-  def disableStates(classes: Class[_ <: AppState]*) = setEnabledToStates(false, classes: _*)
-
-  def setEnabledToStates(enabled: Boolean, classes: Class[_ <: AppState]*) {
-    for (clazz <- classes) {
-      val st = stateManager.getState(clazz)
-      if (st != null) st.setEnabled(enabled)
-    }
-  }
-
-  def removeStates(classes: Class[_ <: AppState]*) = {
-    for (clazz <- classes) {
-      val st = stateManager.getState(clazz)
-      if (st != null) stateManager.detach(st)
-    }
   }
 
 }

@@ -11,11 +11,12 @@ import com.simsilica.lemur.event.MouseAppState
 import com.stovokor.editor.state.DrawingState
 import com.stovokor.editor.input.InputFunctionsMapper
 import com.jme3.input.controls.InputListener
-import com.stovokor.editor.state.ModeState
+import com.stovokor.editor.state.ViewModeState
 import com.stovokor.editor.state.Camera3DState
 import com.stovokor.editor.state.SectorPresenterState
 import com.stovokor.editor.state.ModifyingState
 import com.stovokor.editor.state.SelectionState
+import com.stovokor.editor.state.EditModeState
 
 object Main extends SimpleApplication {
 
@@ -47,11 +48,8 @@ object Main extends SimpleApplication {
     stateManager.attach(new GridState)
     stateManager.attach(new Camera2DState)
     stateManager.attach(new MouseAppState(this))
-    stateManager.attach(new DrawingState)
-    stateManager.attach(new ModeState)
+    stateManager.attach(new ViewModeState)
     stateManager.attach(new SectorPresenterState)
-    stateManager.attach(new ModifyingState)
-    stateManager.attach(new SelectionState)
   }
 
   def getInputListener = {

@@ -22,13 +22,18 @@ class SelectionState extends BaseState
 
   var selectedPoints: List[Point] = List()
   var modeIndex = 0
-  val modes = List(ModePoint, ModeLine, ModeSector)
+  val modes = List(ModeOff, ModePoint, ModeLine, ModeSector)
   def mode = modes(modeIndex)
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[SelectionModeSwitch])
     EventBus.subscribeByType(this, classOf[PointClicked])
+  }
+
+  override def cleanup() {
+    super.cleanup
+    EventBus.removeFromAll(this)
   }
 
   def onEvent(event: EditorEvent) = event match {
@@ -51,15 +56,20 @@ class SelectionState extends BaseState
 
   abstract trait SelectionMode {
     def selectPoint(sectorId: Long, point: Point)
+  }
 
+  object ModeOff extends SelectionMode {
+    def selectPoint(sectorId: Long, point: Point) {
+      selectedPoints = List()
+    }
   }
 
   object ModePoint extends SelectionMode {
     def selectPoint(sectorId: Long, point: Point) {
       selectedPoints = List(point)
     }
-
   }
+
   object ModeLine extends SelectionMode {
     def selectPoint(sectorId: Long, point: Point) {
       if (selectedPoints.isEmpty) {

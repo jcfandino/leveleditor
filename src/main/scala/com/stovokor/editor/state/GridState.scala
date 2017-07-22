@@ -67,7 +67,7 @@ class GridState extends BaseState
   def setupInput(spatial: Spatial) {
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
-        if (event.getButtonIndex == 0) {
+        if (isEnabled && event.getButtonIndex == 0) {
           clicked = event.isPressed()
           EventBus.trigger(GridClick(snapX(mousePos.x), snapY(mousePos.y)))
           println(s"grid click -> $mousePos")
@@ -76,8 +76,10 @@ class GridState extends BaseState
     })
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def cursorMoved(event: CursorMotionEvent, target: Spatial, capture: Spatial) {
-        val col = event.getCollision
-        mousePos.set(col.getContactPoint)
+        if (isEnabled) {
+          val col = event.getCollision
+          mousePos.set(col.getContactPoint)
+        }
       }
     })
     inputMapper.addStateListener(this, InputFunction.snapToGrid)
@@ -85,7 +87,7 @@ class GridState extends BaseState
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
-    if (value == InputState.Positive) func match {
+    if (isEnabled && value == InputState.Positive) func match {
       case InputFunction.snapToGrid => {
         snapToGrid = !snapToGrid
         println(s"snap to grid is $snapToGrid")
@@ -96,7 +98,7 @@ class GridState extends BaseState
   def createOrigin(): Spatial = {
     val origin = new Geometry("origin", new Box(0.05f, 0.05f, 0.05f))
     origin.setMaterial(plainColor(ColorRGBA.Orange))
-    origin.setLocalTranslation(0f,0f,-10f)
+    origin.setLocalTranslation(0f, 0f, -10f)
     origin
   }
 
@@ -110,7 +112,7 @@ class GridState extends BaseState
     val node = new Node("axis")
     node.attachChild(arrowX)
     node.attachChild(arrowY)
-    node.setLocalTranslation(0f,0f,-10f)
+    node.setLocalTranslation(0f, 0f, -10f)
     node
   }
 
@@ -129,7 +131,7 @@ class GridState extends BaseState
       line.setMaterial(mat)
       grid.attachChild(line)
     }
-    grid.setLocalTranslation(0f,0f,-10f)
+    grid.setLocalTranslation(0f, 0f, -10f)
     grid
   }
 

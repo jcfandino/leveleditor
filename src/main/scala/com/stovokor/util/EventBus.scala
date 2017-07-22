@@ -68,7 +68,8 @@ trait EditorEventListener {
 abstract class EditorEvent
 
 case class GridClick(x: Float, y: Float) extends EditorEvent
-case class ModeSwitch() extends EditorEvent
+case class ViewModeSwitch() extends EditorEvent
+case class EditModeSwitch(m: Int) extends EditorEvent
 case class SelectionModeSwitch(m: Int) extends EditorEvent
 
 case class PolygonDrawn(p: Polygon) extends EditorEvent

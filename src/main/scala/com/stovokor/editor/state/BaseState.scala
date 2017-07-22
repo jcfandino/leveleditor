@@ -10,6 +10,7 @@ import com.jme3.math.ColorRGBA
 import com.jme3.material.Material
 import com.jme3.texture.Texture.WrapMode
 import com.jme3.material.RenderState.BlendMode
+import com.jme3.app.state.AppState
 
 class BaseState extends AbstractAppState {
 
@@ -38,5 +39,23 @@ class BaseState extends AbstractAppState {
     }
     node.asInstanceOf[Node]
   }
+
+  def enableStates(classes: Class[_ <: AppState]*) = setEnabledToStates(true, classes: _*)
+  def disableStates(classes: Class[_ <: AppState]*) = setEnabledToStates(false, classes: _*)
+
+  def setEnabledToStates(enabled: Boolean, classes: Class[_ <: AppState]*) {
+    for (clazz <- classes) {
+      val st = stateManager.getState(clazz)
+      if (st != null) st.setEnabled(enabled)
+    }
+  }
+
+  def removeStates(classes: Class[_ <: AppState]*) = {
+    for (clazz <- classes) {
+      val st = stateManager.getState(clazz)
+      if (st != null) stateManager.detach(st)
+    }
+  }
+
 }
 
