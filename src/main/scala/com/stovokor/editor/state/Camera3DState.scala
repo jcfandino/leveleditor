@@ -23,8 +23,6 @@ class Camera3DState extends BaseState
     with AnalogFunctionListener
     with StateFunctionListener {
 
-  def cam = app.getCamera
-
   var zoom = 10f
   val speed = 10f
 
@@ -43,6 +41,7 @@ class Camera3DState extends BaseState
   }
 
   override def cleanup() {
+    app.getFlyByCamera.setEnabled(false)
   }
 
   override def update(tpf: Float) {
@@ -50,7 +49,7 @@ class Camera3DState extends BaseState
 
   def setupInput() = {
     // rewrite flyCam mappings, ignore mouse, keep keys
-    val inputManager = app.getInputManager
+
     inputManager.setCursorVisible(true)
     inputManager.deleteMapping(CameraInput.FLYCAM_LEFT)
     inputManager.deleteMapping(CameraInput.FLYCAM_RIGHT)

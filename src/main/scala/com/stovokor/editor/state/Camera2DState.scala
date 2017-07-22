@@ -17,8 +17,6 @@ class Camera2DState extends BaseState
     with AnalogFunctionListener
     with StateFunctionListener {
 
-  def cam = app.getCamera
-
   var zoom = 10f
   val speed = 10f
 

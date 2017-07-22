@@ -18,6 +18,7 @@ import com.stovokor.editor.state.ModifyingState
 import com.stovokor.editor.state.SelectionState
 import com.stovokor.editor.state.EditModeState
 
+// Level Editor
 object Main extends SimpleApplication {
 
   def main(args: Array[String]) {
@@ -46,7 +47,6 @@ object Main extends SimpleApplication {
     // Init states
     stateManager.attach(new GuiState)
     stateManager.attach(new GridState)
-    stateManager.attach(new Camera2DState)
     stateManager.attach(new MouseAppState(this))
     stateManager.attach(new ViewModeState)
     stateManager.attach(new SectorPresenterState)

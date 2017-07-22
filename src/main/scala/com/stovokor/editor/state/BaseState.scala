@@ -19,6 +19,8 @@ class BaseState extends AbstractAppState {
   def guiNode = app.getGuiNode
   def rootNode = app.getRootNode
   def assetManager = app.getAssetManager
+  def inputManager = app.getInputManager
+  def cam = app.getCamera
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)

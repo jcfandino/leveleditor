@@ -55,18 +55,20 @@ class DrawingState extends BaseState
     super.cleanup
     EventBus.removeFromAll(this)
     inputMapper.removeStateListener(this, InputFunction.cancel)
+    inputMapper.removeStateListener(this, InputFunction.test1)
   }
 
   def setupInput {
     inputMapper.addStateListener(this, InputFunction.cancel)
+    inputMapper.addStateListener(this, InputFunction.test1)
     inputMapper.activateGroup(InputFunction.general)
   }
 
   def onEvent(event: EditorEvent) {
     event match {
-      case GridClick(x, y) => if (isEnabled) addPoint(x, y)
-      case ViewModeSwitch()    => cancelPolygon
-      case _               =>
+      case GridClick(x, y)  => if (isEnabled) addPoint(x, y)
+      case ViewModeSwitch() => cancelPolygon
+      case _                =>
     }
   }
 
@@ -131,6 +133,7 @@ class DrawingState extends BaseState
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     func match {
       case InputFunction.cancel => cancelPolygon
+      case InputFunction.test1  => drawTestRoom
       case _                    =>
     }
   }
@@ -138,6 +141,19 @@ class DrawingState extends BaseState
   def cancelPolygon {
     currentBuilder = None
     redrawCurrent
+  }
+
+  def drawTestRoom {
+    println("drawing test room")
+    val polygon = PolygonBuilder
+      .start(Point(-10, -10))
+      .add(Point(10, -10))
+      .add(Point(10, 10))
+      .add(Point(-10, 10))
+      .build()
+    polygonRepository.add(polygon)
+    EventBus.trigger(PolygonDrawn(polygon))
+    inputMapper.removeStateListener(this, InputFunction.test1)
   }
 
 }
