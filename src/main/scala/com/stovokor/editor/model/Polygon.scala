@@ -80,6 +80,14 @@ case class Polygon(val pointsUnsorted: List[Point]) {
           List(newPoint)) ++
           pointsSorted.slice(idx2, pointsSorted.size))
   }
+
+  def borderWith(other: Polygon): List[Line] = {
+    println(s"finding border")
+    val otherLines = other.lines
+    val inter = lines.filter(l => otherLines.contains(l) || otherLines.contains(l.reverse))
+    println(s"result: $inter")
+    inter
+  }
 }
 
 object Triangle {

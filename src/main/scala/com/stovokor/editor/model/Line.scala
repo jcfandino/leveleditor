@@ -12,4 +12,6 @@ case class Line(val a: Point, val b: Point) {
     val point = Point(a.x + factor * (b.x - a.x), a.y + factor * (b.y - a.y))
     (Line(a, point), Line(point, b))
   }
+
+  def reverse = Line(b, a)
 }

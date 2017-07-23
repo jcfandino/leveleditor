@@ -1,20 +1,24 @@
 package com.stovokor.editor.model
 
 object Sector {
-  def apply(polygon: Polygon, floor: Surface, ceiling: Surface) =
-    new Sector(polygon, floor, ceiling)
+  def apply(polygon: Polygon, floor: Surface, ceiling: Surface, openWalls: List[Wall]) =
+    new Sector(polygon, floor, ceiling, openWalls)
 }
 
 case class Sector(
     val polygon: Polygon,
     val floor: Surface,
-    val ceiling: Surface) {
+    val ceiling: Surface,
+    val openWalls: List[Wall]) {
 
-  def walls = polygon.lines.map(l => Wall(l, SurfaceTexture(1f))) // TODO get in constructor
+  def closedWalls = polygon.lines
+    .map(l => Wall(l, SurfaceTexture(1f)))
+    .filterNot(openWalls.contains)
 
-  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling)
-  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling)
-  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated)
+  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls)
+  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls)
+  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls)
+  def updatedOpenWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling, updated)
 }
 
 object Surface {

@@ -1,20 +1,19 @@
 package com.stovokor.editor.state
 
-import com.jme3.app.state.AppStateManager
-import com.stovokor.util.PolygonDrawn
-import com.stovokor.util.EventBus
 import com.jme3.app.Application
-import com.stovokor.util.EditorEventListener
-import com.stovokor.util.PointDragged
-import com.stovokor.util.EditorEvent
-import com.stovokor.editor.model.repository.SectorRepository
-import com.stovokor.editor.model.Point
-import com.stovokor.util.SectorUpdated
-import com.stovokor.util.PointSelectionChange
-import com.stovokor.editor.model.Sector
-import com.stovokor.util.SplitSelection
-import com.stovokor.util.DeleteSelection
+import com.jme3.app.state.AppStateManager
 import com.stovokor.editor.model.Line
+import com.stovokor.editor.model.Point
+import com.stovokor.editor.model.Sector
+import com.stovokor.editor.model.repository.SectorRepository
+import com.stovokor.util.DeleteSelection
+import com.stovokor.util.EditorEvent
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EventBus
+import com.stovokor.util.PointDragged
+import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SectorUpdated
+import com.stovokor.util.SplitSelection
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -30,6 +29,11 @@ class ModifyingState extends BaseState
     EventBus.subscribeByType(this, classOf[PointSelectionChange])
     EventBus.subscribeByType(this, classOf[SplitSelection])
     EventBus.subscribeByType(this, classOf[DeleteSelection])
+  }
+
+  override def cleanup() {
+    super.cleanup
+    EventBus.removeFromAll(this)
   }
 
   def onEvent(event: EditorEvent) = event match {

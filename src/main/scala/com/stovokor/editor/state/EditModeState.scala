@@ -18,8 +18,6 @@ class EditModeState extends BaseState with EditorEventListener {
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
-    //    setMode(0)
-    //    setMode(1)
     EventBus.subscribeByType(this, classOf[EditModeSwitch])
     modes(1).exit
     mode.enter

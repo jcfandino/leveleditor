@@ -33,7 +33,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     val ceiling = createSurface(triangles, uniquePoints, sec.ceiling, false)
     node.attachChild(floor)
     node.attachChild(ceiling)
-    sec.walls
+    sec.closedWalls
       .map(w => createWall(w, sec.floor.height, sec.ceiling.height))
       .foreach(node.attachChild)
     node

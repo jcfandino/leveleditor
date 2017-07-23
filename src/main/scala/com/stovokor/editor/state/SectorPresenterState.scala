@@ -9,7 +9,7 @@ import com.stovokor.editor.model.SurfaceTexture
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
-import com.stovokor.util.PolygonDrawn
+import com.stovokor.util.SectorDrawn
 import com.jme3.math.Vector3f
 import com.jme3.scene.Geometry
 import com.stovokor.editor.factory.MeshFactory
@@ -48,7 +48,7 @@ class SectorPresenterState extends BaseState
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
-    EventBus.subscribeByType(this, classOf[PolygonDrawn])
+    EventBus.subscribeByType(this, classOf[SectorDrawn])
     EventBus.subscribeByType(this, classOf[SectorUpdated])
   }
 
@@ -56,16 +56,12 @@ class SectorPresenterState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case PolygonDrawn(polygon)     => saveNewSector(polygon)
+    case SectorDrawn(sectorId)     => saveNewSector(sectorRepository.get(sectorId))
     case SectorUpdated(id, sector) => redrawSector(id, sector)
     case _                         =>
   }
 
-  def saveNewSector(polygon: Polygon) {
-    val sector = Sector(
-      polygon = polygon,
-      floor = Surface(0f, SurfaceTexture()),
-      ceiling = Surface(2f, SurfaceTexture()))
+  def saveNewSector(sector: Sector) {
     val id = sectorRepository.add(sector)
     drawSector(id, sector)
   }
@@ -121,11 +117,13 @@ class SectorPresenterState extends BaseState
               snapY(spatial.getLocalTranslation.y),
               0f)
           } else if (!event.isPressed()) {
-            //            println(s"released")
+            // released
             if (oldPos.distanceSquared(newPos) > 0.1f) { // button released
               println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
               EventBus.trigger(
                 PointDragged(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
+              spatial.setLocalTranslation(oldPos) //move back.
+              //TODO improve, disable dragging if not in selection
             } else {
               EventBus.trigger(PointClicked(sectorId, point))
             }
