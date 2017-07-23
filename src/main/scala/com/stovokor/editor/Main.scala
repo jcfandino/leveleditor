@@ -16,7 +16,7 @@ import com.stovokor.editor.state.Camera3DState
 import com.stovokor.editor.state.SectorPresenterState
 import com.stovokor.editor.state.ModifyingState
 import com.stovokor.editor.state.SelectionState
-import com.stovokor.editor.state.EditModeState
+import com.stovokor.editor.state.Edit2DModeState
 
 // Level Editor
 object Main extends SimpleApplication {

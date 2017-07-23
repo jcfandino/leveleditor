@@ -2,38 +2,37 @@ package com.stovokor.editor.state
 
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
+import com.jme3.math.ColorRGBA
+import com.jme3.math.Vector3f
+import com.jme3.scene.Geometry
+import com.jme3.scene.Spatial
+import com.jme3.scene.shape.Box
+import com.jme3.scene.shape.Line
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
+import com.simsilica.lemur.input.StateFunctionListener
+import com.stovokor.editor.control.SelectableControl
+import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.editor.factory.MeshFactory
+import com.stovokor.editor.input.InputFunction
+import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.Polygon
 import com.stovokor.editor.model.Sector
-import com.stovokor.editor.model.Surface
-import com.stovokor.editor.model.SurfaceTexture
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
-import com.stovokor.util.SectorDrawn
-import com.jme3.math.Vector3f
-import com.jme3.scene.Geometry
-import com.stovokor.editor.factory.MeshFactory
-import com.jme3.scene.shape.Box
-import com.jme3.scene.Node
-import com.jme3.math.ColorRGBA
-import com.stovokor.editor.factory.MaterialFactory
-import com.jme3.scene.shape.Line
 import com.stovokor.util.EventBus
-import com.simsilica.lemur.event.DefaultCursorListener
-import com.simsilica.lemur.event.CursorEventControl
-import com.stovokor.editor.input.InputFunction
-import com.jme3.scene.Spatial
-import com.simsilica.lemur.event.CursorMotionEvent
-import com.stovokor.util.GridClick
-import com.simsilica.lemur.event.CursorButtonEvent
-import com.simsilica.lemur.input.StateFunctionListener
-import com.simsilica.lemur.input.FunctionId
-import com.simsilica.lemur.input.InputState
-import com.stovokor.editor.model.Point
-import com.stovokor.util.PointDragged
-import com.stovokor.util.SectorUpdated
+import com.stovokor.util.LemurExtensions._
+import com.stovokor.util.JmeExtensions._
+import scala.collection.JavaConverters._
 import com.stovokor.util.PointClicked
-import com.stovokor.editor.control.SelectableControl
+import com.stovokor.util.PointDragged
+import com.stovokor.util.SectorDrawn
+import com.stovokor.util.SectorUpdated
+import com.stovokor.editor.factory.MeshFactory
+import com.jme3.scene.Node
+import com.stovokor.editor.factory.MeshFactory
+import com.stovokor.util.PointerTargetChange
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -94,8 +93,9 @@ class SectorPresenterState extends BaseState
     }
     def draw3d() {
       val node = getOrCreateNode(get3DNode, "polygon-" + id)
-      val geom = new MeshFactory(assetManager).createMesh(sector)
-      node.attachChild(geom)
+      val meshNode = new MeshFactory(assetManager).createMesh(sector)
+      setup3dInput(id, meshNode)
+      node.attachChild(meshNode)
     }
     draw2d()
     draw3d()
@@ -106,44 +106,62 @@ class SectorPresenterState extends BaseState
   var newPos = new Vector3f()
 
   def setupDraggableInput(spatial: Spatial, sectorId: Long, point: Point) {
-    CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
-      override def cursorButtonEvent(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
-        //        println(s"click $target - $event")
-        if (event.getButtonIndex == 0) {
-          if (!isDragging) {
-            oldPos.set(spatial.getLocalTranslation)
-            newPos.set(
-              snapX(spatial.getLocalTranslation.x),
-              snapY(spatial.getLocalTranslation.y),
-              0f)
-          } else if (!event.isPressed()) {
-            // released
-            if (oldPos.distanceSquared(newPos) > 0.1f) { // button released
-              println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
-              EventBus.trigger(
-                PointDragged(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
-              spatial.setLocalTranslation(oldPos) //move back.
-              //TODO improve, disable dragging if not in selection
-            } else {
-              EventBus.trigger(PointClicked(sectorId, point))
-            }
+    spatial.onCursorClick((event, target, capture) => {
+      if (event.getButtonIndex == 0) {
+        if (!isDragging) {
+          oldPos.set(spatial.getLocalTranslation)
+          newPos.set(
+            snapX(spatial.getLocalTranslation.x),
+            snapY(spatial.getLocalTranslation.y),
+            0f)
+        } else if (!event.isPressed()) {
+          // released
+          if (oldPos.distanceSquared(newPos) > 0.1f) { // button released
+            println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
+            EventBus.trigger(
+              PointDragged(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
+            spatial.setLocalTranslation(oldPos) //move back.
+            //TODO improve, disable dragging if not in selection
+          } else {
+            EventBus.trigger(PointClicked(sectorId, point))
           }
-          isDragging = event.isPressed()
         }
+        isDragging = event.isPressed()
       }
     })
-    CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
-      override def cursorMoved(event: CursorMotionEvent, target: Spatial, capture: Spatial) {
-        if (isDragging) {
-          val cam = event.getViewPort.getCamera
-          val coord = cam.getWorldCoordinates(event.getLocation, 0f)
-          newPos.set(snapX(coord.x), snapY(coord.y), 0f)
-          spatial.setLocalTranslation(newPos)
-        }
+    spatial.onCursorMove((event, target, capture) => {
+      if (isDragging) {
+        val cam = event.getViewPort.getCamera
+        val coord = cam.getWorldCoordinates(event.getLocation, 0f)
+        newPos.set(snapX(coord.x), snapY(coord.y), 0f)
+        spatial.setLocalTranslation(newPos)
       }
     })
     inputMapper.addStateListener(this, InputFunction.snapToGrid)
     inputMapper.activateGroup(InputFunction.general)
+  }
+
+  var lastTarget: Option[(Long, String)] = None
+
+  def setup3dInput(sectorId: Long, meshNode: Node) {
+    meshNode.getChild("floor").onCursorMove((event, spatial, target) => {
+      updateTarget(sectorId, "floor")
+    })
+    meshNode.getChild("ceiling").onCursorMove((event, spatial, target) => {
+      updateTarget(sectorId, "ceiling")
+    })
+    meshNode.getChildren.asScala
+      .filter(_.getName.startsWith("wall"))
+      .foreach(_.onCursorMove((event, spatial, target) => {
+        updateTarget(sectorId, spatial.getName)
+      }))
+  }
+
+  def updateTarget(sectorId: Long, target: String) {
+    if (lastTarget != Some((sectorId, target))) {
+      lastTarget = Some((sectorId, target))
+      EventBus.trigger(PointerTargetChange(sectorId, target))
+    }
   }
 
   //TODO duplicated

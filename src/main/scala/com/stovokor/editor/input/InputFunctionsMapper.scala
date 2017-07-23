@@ -32,6 +32,20 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.test2, KeyInput.KEY_F2)
     inputMapper.map(InputFunction.test3, KeyInput.KEY_F3)
     inputMapper.map(InputFunction.test4, KeyInput.KEY_F4)
+
+    // TODO try to reuse pgup and pgdn
+    inputMapper.map(InputFunction.editHeight, KeyInput.KEY_P)
+    inputMapper.map(InputFunction.editHeight, InputState.Negative, KeyInput.KEY_O)
+    inputMapper.map(InputFunction.editTextureOffsetX, KeyInput.KEY_L)
+    inputMapper.map(InputFunction.editTextureOffsetX, InputState.Negative, KeyInput.KEY_H)
+    inputMapper.map(InputFunction.editTextureOffsetY, KeyInput.KEY_K)
+    inputMapper.map(InputFunction.editTextureOffsetY, InputState.Negative, KeyInput.KEY_J)
+
+    // TODO map to ctrl+hjkl
+    inputMapper.map(InputFunction.editTextureScaleX, KeyInput.KEY_PERIOD)
+    inputMapper.map(InputFunction.editTextureScaleX, InputState.Negative, KeyInput.KEY_N)
+    inputMapper.map(InputFunction.editTextureScaleY, KeyInput.KEY_COMMA)
+    inputMapper.map(InputFunction.editTextureScaleY, InputState.Negative, KeyInput.KEY_M)
   }
 }
 
@@ -55,4 +69,10 @@ object InputFunction {
   val test3 = new FunctionId(general, "test3")
   val test4 = new FunctionId(general, "test4")
 
+  val edit3d = "edit3d"
+  val editHeight = new FunctionId(edit3d, "editHeight")
+  val editTextureOffsetX = new FunctionId(edit3d, "editTextureOffsetX")
+  val editTextureOffsetY = new FunctionId(edit3d, "editTextureOffsetY")
+  val editTextureScaleX = new FunctionId(edit3d, "editTextureScaleX")
+  val editTextureScaleY = new FunctionId(edit3d, "editTextureScaleY")
 }

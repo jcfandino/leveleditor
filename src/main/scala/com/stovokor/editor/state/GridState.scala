@@ -64,6 +64,16 @@ class GridState extends BaseState
   var clicked = false
   var mousePos: Vector3f = new Vector3f
 
+  override def setEnabled(enabled: Boolean) {
+    super.setEnabled(enabled)
+    println(s"set enabled $enabled")
+    if (enabled) {
+      inputMapper.activateGroup(InputFunction.general)
+    } else {
+      inputMapper.deactivateGroup(InputFunction.general)
+    }
+  }
+
   def setupInput(spatial: Spatial) {
     CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
       override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {

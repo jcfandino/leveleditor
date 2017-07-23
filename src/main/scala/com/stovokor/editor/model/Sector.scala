@@ -2,23 +2,29 @@ package com.stovokor.editor.model
 
 object Sector {
   def apply(polygon: Polygon, floor: Surface, ceiling: Surface, openWalls: List[Wall]) =
-    new Sector(polygon, floor, ceiling, openWalls)
+    new Sector(polygon, floor, ceiling, openWalls, defaultClosedWalls(polygon, openWalls))
+
+  def apply(polygon: Polygon, floor: Surface, ceiling: Surface, openWalls: List[Wall], closedWalls: List[Wall]) =
+    new Sector(polygon, floor, ceiling, openWalls, closedWalls)
+
+  def defaultClosedWalls(polygon: Polygon, openWalls: List[Wall]) = polygon.lines
+    .map(l => Wall(l, SurfaceTexture(1f)))
+    .filterNot(openWalls.contains)
 }
 
 case class Sector(
     val polygon: Polygon,
     val floor: Surface,
     val ceiling: Surface,
-    val openWalls: List[Wall]) {
+    val openWalls: List[Wall],
+    val closedWalls: List[Wall]) {
 
-  def closedWalls = polygon.lines
-    .map(l => Wall(l, SurfaceTexture(1f)))
-    .filterNot(openWalls.contains)
-
-  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls)
-  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls)
-  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls)
-  def updatedOpenWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling, updated)
+  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls, closedWalls)
+  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls, closedWalls)
+  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls, closedWalls)
+  def updatedOpenWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling, updated, closedWalls)
+  def updatedClosedWall(idx: Int, updated: Wall) = Sector(polygon, floor, ceiling, openWalls,
+    closedWalls.updated(idx, updated))
 }
 
 object Surface {
@@ -27,8 +33,12 @@ object Surface {
 }
 
 case class Surface(
-  val height: Float,
-  val texture: SurfaceTexture)
+    val height: Float,
+    val texture: SurfaceTexture) {
+
+  def move(d: Float) = Surface(height + d, texture)
+  def updateTexture(t: SurfaceTexture) = Surface(height, t)
+}
 
 object SurfaceTexture {
   def apply(
@@ -48,9 +58,20 @@ case class SurfaceTexture(
 
   def uvx(x: Float) = x / texScaleX + (texOffsetX / texScaleX)
   def uvy(y: Float) = y / texScaleY + (texOffsetY / texScaleY)
+
+  def move(dx: Float, dy: Float) = //TODO wrap values (1.1 => 0.1)
+    SurfaceTexture(texScaleX, texScaleY, texOffsetX + dx, texOffsetY + dy)
+
+  def scale(dx: Float, dy: Float) = SurfaceTexture(
+    Math.max(0.01f, texScaleX + dx),
+    Math.max(0.01f, texScaleY + dy),
+    texOffsetX,
+    texOffsetY)
 }
 
 object Wall {
   def apply(line: Line, texture: SurfaceTexture) = new Wall(line, texture)
 }
-case class Wall(val line: Line, val texture: SurfaceTexture)
+case class Wall(val line: Line, val texture: SurfaceTexture) {
+  def updateTexture(t: SurfaceTexture) = Wall(line, t)
+}

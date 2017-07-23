@@ -64,14 +64,14 @@ class ViewModeState extends BaseState with EditorEventListener {
         classOf[GridState],
         classOf[Camera2DState])
       removeStates(classOf[Camera2DState]) //Problem, it forgets were it was
-      removeStates(classOf[EditModeState])
+      removeStates(classOf[Edit2DModeState])
     }
 
     def enter {
       println("entering 2d")
       enableStates(classOf[GridState])
       stateManager.attach(new Camera2DState)
-      stateManager.attach(new EditModeState)
+      stateManager.attach(new Edit2DModeState)
       //      disableStates(classOf[DrawingState]) // we want this to be disable at start
       EventBus.trigger(SelectionModeSwitch(1))
       EventBus.trigger(EditModeSwitch(0))
@@ -80,12 +80,13 @@ class ViewModeState extends BaseState with EditorEventListener {
 
   private case class M3D() extends Mode("3d") {
     def exit {
-      disableStates(classOf[Camera3DState])
-      removeStates(classOf[Camera3DState])
+      disableStates(classOf[Camera3DState], classOf[Edit3DState])
+      removeStates(classOf[Camera3DState], classOf[Edit3DState])
     }
     def enter {
       println("entering 3d")
       stateManager.attach(new Camera3DState)
+      stateManager.attach(new Edit3DState)
     }
 
   }

@@ -15,6 +15,7 @@ import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.DeleteSelection
 import com.stovokor.util.SplitSelection
 import com.stovokor.util.EditModeSwitch
+import com.stovokor.util.LemurExtensions._
 
 class GuiState extends BaseState {
 
@@ -32,26 +33,13 @@ class GuiState extends BaseState {
     generalWindow.setLocalTranslation(0, app.getCamera.getHeight, 0)
     generalWindow.addChild(new Label("Level Editor"))
     val exit = generalWindow.addChild(new Button("Exit"))
-    exit.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        println("God bye!")
-        app.stop();
-      }
-    })
+    exit.addClickCommands(_ => app.stop)
     val mode3d = generalWindow.addChild(new Button("2D/3D"))
-    mode3d.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        println("mode switch")
-        EventBus.trigger(ViewModeSwitch())
-      }
-    })
+    mode3d.addClickCommands(_ => EventBus.trigger(ViewModeSwitch()))
     val draw = generalWindow.addChild(new Button("Draw"))
-    draw.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        println("draw mode")
-        EventBus.trigger(SelectionModeSwitch(0))
-        EventBus.trigger(EditModeSwitch(1))
-      }
+    draw.addClickCommands(_ => {
+      EventBus.trigger(SelectionModeSwitch(0))
+      EventBus.trigger(EditModeSwitch(1))
     })
   }
 
@@ -63,26 +51,20 @@ class GuiState extends BaseState {
     val point = selectionWindow.addChild(new Button("Point"))
     val line = selectionWindow.addChild(new Button("Line"))
     val sector = selectionWindow.addChild(new Button("Sector"))
-    point.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        EventBus.trigger(EditModeSwitch(0))
-        EventBus.trigger(SelectionModeSwitch(1))
-        decorateFirst(point, line, sector)
-      }
+    point.addClickCommands(_ => {
+      EventBus.trigger(EditModeSwitch(0))
+      EventBus.trigger(SelectionModeSwitch(1))
+      decorateFirst(point, line, sector)
     })
-    line.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        EventBus.trigger(EditModeSwitch(0))
-        EventBus.trigger(SelectionModeSwitch(2))
-        decorateFirst(line, point, sector)
-      }
+    line.addClickCommands(_ => {
+      EventBus.trigger(EditModeSwitch(0))
+      EventBus.trigger(SelectionModeSwitch(2))
+      decorateFirst(line, point, sector)
     })
-    sector.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        EventBus.trigger(EditModeSwitch(0))
-        EventBus.trigger(SelectionModeSwitch(3))
-        decorateFirst(sector, point, line)
-      }
+    sector.addClickCommands(_ => {
+      EventBus.trigger(EditModeSwitch(0))
+      EventBus.trigger(SelectionModeSwitch(3))
+      decorateFirst(sector, point, line)
     })
   }
   def createEditWindow() {
@@ -91,19 +73,9 @@ class GuiState extends BaseState {
     editWindow.setLocalTranslation(0, app.getCamera.getHeight - 200, 0)
     editWindow.addChild(new Label("Edit"))
     val split = editWindow.addChild(new Button("Split"))
-    split.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        println("Split")
-        EventBus.trigger(SplitSelection())
-      }
-    })
+    split.addClickCommands(_ => EventBus.trigger(SplitSelection()))
     val mode3d = editWindow.addChild(new Button("Delete"))
-    mode3d.addClickCommands(new Command[Button]() {
-      def execute(source: Button) {
-        println("Delete")
-        EventBus.trigger(DeleteSelection())
-      }
-    })
+    mode3d.addClickCommands(_ => EventBus.trigger(DeleteSelection()))
   }
 
   def decorateFirst(b1: Button, bn: Button*) {

@@ -34,12 +34,12 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     node.attachChild(floor)
     node.attachChild(ceiling)
     sec.closedWalls
-      .map(w => createWall(w, sec.floor.height, sec.ceiling.height))
+      .zipWithIndex
+      .map(w => createWall(w._1, w._2, sec.floor.height, sec.ceiling.height))
       .foreach(node.attachChild)
     node
   }
 
-  // TODO sometimes triangles are backward
   def createSurface(triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
     def sortTriangle(t: Triangle) = if (faceUp) t.asClockwise else t.asCounterClockwise
     def normal = if (faceUp) Vector3f.UNIT_Y else Vector3f.UNIT_Y.negate
@@ -67,12 +67,13 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     m.setBuffer(Type.Normal, 3, BufferUtils.createFloatBuffer(
       uniquePoints.map(_ => normal): _*))
     m.updateBound()
-    val geom = new Geometry("floor", m)
+    val name = if (faceUp) "floor" else "ceiling"
+    val geom = new Geometry(name, m)
     geom.setMaterial(texture("Textures/Debug1.png"))
     geom
   }
 
-  def createWall(wall: Wall, bottom: Float, top: Float): Geometry = {
+  def createWall(wall: Wall, idx: Int, bottom: Float, top: Float): Geometry = {
     val line = wall.line
     val tex = wall.texture
     val m = new Mesh
@@ -100,7 +101,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     m.setBuffer(Type.Index, 1, BufferUtils.createIntBuffer(2, 0, 1, 1, 3, 2))
     m.setBuffer(Type.Normal, 3, BufferUtils.createFloatBuffer(normal, normal, normal, normal))
     m.updateBound()
-    val geom = new Geometry("wall", m)
+    val geom = new Geometry("wall-" + idx, m)
     geom.setMaterial(texture("Textures/Debug1.png"))
     geom
   }

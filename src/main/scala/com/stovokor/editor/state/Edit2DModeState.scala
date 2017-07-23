@@ -10,7 +10,7 @@ import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
 import com.stovokor.util.PointSelectionChange
 
-class EditModeState extends BaseState with EditorEventListener {
+class Edit2DModeState extends BaseState with EditorEventListener {
 
   var modeIndex = 0
   val modes: List[EditMode] = List(SelectionMode, DrawingMode)
