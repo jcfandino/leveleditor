@@ -14,6 +14,7 @@ import com.stovokor.util.PointDragged
 import com.stovokor.util.PointSelectionChange
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.SplitSelection
+import com.stovokor.editor.model.Wall
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -21,7 +22,8 @@ class ModifyingState extends BaseState
 
   val sectorRepository = SectorRepository()
 
-  var selectedPoints: List[(Long, Point)] = List()
+  //  var selectedPoints: List[(Long, Point)] = List()
+  var selectedPoints: Set[Point] = Set()
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -37,39 +39,39 @@ class ModifyingState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case PointDragged(id, from, to) => movePoints(id, from, to)
-    case PointSelectionChange(ps)   => selectedPoints = ps
-    case SplitSelection()           => splitSelection()
-    case DeleteSelection()          => deleteSelection()
-    case _                          =>
+    case PointDragged(from, to)   => movePoints(from, to)
+    case PointSelectionChange(ps) => selectedPoints = ps
+    case SplitSelection()         => splitSelection()
+    case DeleteSelection()        => deleteSelection()
+    case _                        =>
   }
 
   // TODO clean this up
-  def movePoints(id: Long, from: Point, to: Point) {
+  def movePoints(from: Point, to: Point) {
     val (dx, dy) = (to.x - from.x, to.y - from.y)
     var toUpdate: Set[(Long, Sector)] = Set()
-    (selectedPoints ++ Set((id, from))).foreach(pair => {
-      val pp = pair._2
-      val sector = sectorRepository.get(pair._1)
-      val polygon = sector.polygon.changePoint(pp, Point(pp.x + dx, pp.y + dy))
-      val updated = sector.updatedPolygon(polygon)
-      sectorRepository.update(pair._1, updated)
-      toUpdate = toUpdate ++ Set((id, updated))
+    (selectedPoints ++ Set(from)).foreach(point => {
+      val sectors = sectorRepository.find(point)
+      for ((sectorId, getter) <- sectors) {
+        val updated = getter().moveSinglePoint(point, dx, dy)
+        sectorRepository.update(sectorId, updated)
+        toUpdate = toUpdate ++ Set((sectorId, updated))
+      }
     })
     toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2)))
   }
 
   def splitSelection() {
-    selectedPoints.map(_._1).foreach(id => {
-      val sector = sectorRepository.get(id)
+    selectedPoints.flatMap(sectorRepository.find).foreach(result => {
+      val id = result._1
+      val sector = result._2()
+      val sectorPoints = sector.polygon.pointsUnsorted
       val sectorLines = sector.polygon.lines
-      val newPolygon = selectedPoints
-        .filter(sp => sp._1 == id)
-        .map(_._2)
+      val newSector = selectedPoints.toList
         .sliding(2)
         .map(s => Line(s(0), s(1)))
-        .foldRight(sector.polygon)((line, pol) => pol.addPoint(line, .5f))
-      val newSector = sector.updatedPolygon(newPolygon)
+        .filter(sectorLines.contains)
+        .foldRight(sector)((line, sec) => sec.addPoint(line, .5f))
       sectorRepository.update(id, newSector)
       EventBus.trigger(SectorUpdated(id, newSector))
     })

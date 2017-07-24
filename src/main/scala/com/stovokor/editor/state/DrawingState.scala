@@ -4,7 +4,6 @@ import com.stovokor.editor.model.PolygonBuilder
 import com.jme3.app.state.AppStateManager
 import com.jme3.app.Application
 import com.stovokor.util.EventBus
-import com.stovokor.util.GridClick
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.editor.model.Point
@@ -27,10 +26,10 @@ import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Surface
 import com.stovokor.util.ViewModeSwitch
-import com.stovokor.util.SectorDrawn
 import com.stovokor.util.PointClicked
 import com.stovokor.editor.model.SectorBuilder
 import com.stovokor.editor.model.repository.SectorRepository
+import com.stovokor.util.SectorUpdated
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -46,12 +45,9 @@ class DrawingState extends BaseState
 
   val sectorRepository = SectorRepository()
 
-  //  val polygonRepository = new PolygonRepository
-
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     get2DNode.attachChild(new Node("currentDraw"))
-    EventBus.subscribeByType(this, classOf[GridClick])
     EventBus.subscribeByType(this, classOf[PointClicked])
     EventBus.subscribe(this, ViewModeSwitch())
     setupInput
@@ -72,10 +68,11 @@ class DrawingState extends BaseState
 
   def onEvent(event: EditorEvent) {
     event match {
-      case GridClick(x, y) => if (isEnabled) addPoint(x, y)
-      case PointClicked(sectorId, Point(x, y)) => if (isEnabled) {
-        addPoint(x, y)
-        currentBuilder = currentBuilder.map(_.add(sectorId))
+      case PointClicked(point) => if (isEnabled) {
+        addPoint(point.x, point.y)
+        for ((sectorId, _) <- sectorRepository.find(point)) {
+          currentBuilder = currentBuilder.map(_.add(sectorId))
+        }
       }
       case ViewModeSwitch() => cancelPolygon
       case _                =>
@@ -92,8 +89,9 @@ class DrawingState extends BaseState
         if (point.distance(builder.first) < minDistance || isDoubleClick) {
           if (builder.size > 2) {
             println(s"polygon completed ${builder.size}")
-            val sectorId = builder.build(sectorRepository)
-            EventBus.trigger(SectorDrawn(sectorId))
+            val (sectorId, sector) = builder.build(sectorRepository)
+            //            EventBus.trigger(SectorDrawn(sectorId))
+            EventBus.trigger(SectorUpdated(sectorId, sector))
             None
           } else {
             println(s"ignored, cannot finish yet")
@@ -160,7 +158,7 @@ class DrawingState extends BaseState
       .add(Point(-10, 10))
       .build()
     val sectorId = sectorRepository.add(sector)
-    EventBus.trigger(SectorDrawn(sectorId))
+    EventBus.trigger(SectorUpdated(sectorId, sector))
     inputMapper.removeStateListener(this, InputFunction.test1)
   }
 

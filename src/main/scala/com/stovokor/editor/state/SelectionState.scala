@@ -13,6 +13,7 @@ import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.editor.model.Line
 import com.stovokor.util.PointSelectionChange
 import com.stovokor.util.SectorUpdated
+import com.stovokor.editor.model.Sector
 
 // only for 2d
 class SelectionState extends BaseState
@@ -37,9 +38,9 @@ class SelectionState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SelectionModeSwitch(m)        => if (modeIndex != m) setMode(m)
-    case PointClicked(sectorId, point) => selectPoint(sectorId, point)
-    case _                             =>
+    case SelectionModeSwitch(m) => if (modeIndex != m) setMode(m)
+    case PointClicked(point)    => selectPoint(point)
+    case _                      =>
   }
 
   def setMode(newMode: Int) {
@@ -48,36 +49,37 @@ class SelectionState extends BaseState
     modeIndex = newMode
   }
 
-  def selectPoint(sectorId: Long, point: Point) {
-    mode.selectPoint(sectorId, point)
-    EventBus.trigger(PointSelectionChange(selectedPoints.map(p => (sectorId, p))))
+  def selectPoint(point: Point) {
+    val sectors = sectorRepository.find(point).map(_._2())
+    mode.selectPoint(point, sectors)
+    EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
     println(s"Selected points $selectedPoints")
   }
 
   abstract trait SelectionMode {
-    def selectPoint(sectorId: Long, point: Point)
+    def selectPoint(point: Point, sectors: Set[Sector])
   }
 
   object ModeOff extends SelectionMode {
-    def selectPoint(sectorId: Long, point: Point) {
+    def selectPoint(point: Point, sectors: Set[Sector]) {
       selectedPoints = List()
     }
   }
 
   object ModePoint extends SelectionMode {
-    def selectPoint(sectorId: Long, point: Point) {
+    def selectPoint(point: Point, sectors: Set[Sector]) {
       selectedPoints = List(point)
     }
   }
 
   object ModeLine extends SelectionMode {
-    def selectPoint(sectorId: Long, point: Point) {
+    def selectPoint(point: Point, sectors: Set[Sector]) {
       if (selectedPoints.isEmpty) {
         selectedPoints = List(point)
       } else {
         val previousPoint = selectedPoints.last
-        val polygon = sectorRepository.get(sectorId).polygon
-        val line = polygon.lines
+        val line = sectors.map(_.polygon)
+          .flatMap(_.lines)
           .find(line => line match {
             case Line(a, b) => a == previousPoint && b == point || a == point && b == previousPoint
             case _          => false
@@ -90,9 +92,9 @@ class SelectionState extends BaseState
   }
 
   object ModeSector extends SelectionMode {
-    def selectPoint(sectorId: Long, point: Point) {
-      val polygon = sectorRepository.get(sectorId).polygon
-      selectedPoints = polygon.pointsSorted
+    def selectPoint(point: Point, sectors: Set[Sector]) {
+      val polygons = sectors.toList.map(_.polygon)
+      selectedPoints = polygons.flatMap(_.pointsSorted)
     }
   }
 }

@@ -27,7 +27,6 @@ import com.stovokor.util.JmeExtensions._
 import scala.collection.JavaConverters._
 import com.stovokor.util.PointClicked
 import com.stovokor.util.PointDragged
-import com.stovokor.util.SectorDrawn
 import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.factory.MeshFactory
 import com.jme3.scene.Node
@@ -47,7 +46,6 @@ class SectorPresenterState extends BaseState
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
-    EventBus.subscribeByType(this, classOf[SectorDrawn])
     EventBus.subscribeByType(this, classOf[SectorUpdated])
   }
 
@@ -55,44 +53,40 @@ class SectorPresenterState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SectorDrawn(sectorId)     => saveNewSector(sectorRepository.get(sectorId))
     case SectorUpdated(id, sector) => redrawSector(id, sector)
     case _                         =>
   }
 
-  def saveNewSector(sector: Sector) {
-    val id = sectorRepository.add(sector)
-    drawSector(id, sector)
-  }
-
   def redrawSector(id: Long, sector: Sector) {
-    getOrCreateNode(get2DNode, "polygon-" + id).removeFromParent
-    getOrCreateNode(get3DNode, "polygon-" + id).removeFromParent
+    getOrCreateNode(get2DNode, "sector-" + id).removeFromParent
+    getOrCreateNode(get3DNode, "sector-" + id).removeFromParent
     drawSector(id, sector)
   }
 
   def drawSector(id: Long, sector: Sector) {
     def draw2d() {
-      val node = getOrCreateNode(get2DNode, "polygon-" + id)
+      val node = getOrCreateNode(get2DNode, "sector-" + id)
       for (point <- sector.polygon.pointsSorted) {
         val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
         vertex.setLocalTranslation(point.x, point.y, 0f)
         vertex.setMaterial(plainColor(ColorRGBA.LightGray))
         vertex.setUserData("sectorId", id)
         vertex.addControl(new SelectableControl(ColorRGBA.LightGray, id, Set(point)))
-        setupDraggableInput(vertex, id, point)
+        setupDraggableInput(vertex, point)
         node.attachChild(vertex)
       }
-      for (line <- sector.polygon.lines) {
+      def draw2dLine(node: Node, color: ColorRGBA, line: com.stovokor.editor.model.Line) {
         val geo = new Geometry("line", new Line(
           new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
-        geo.setMaterial(plainColor(ColorRGBA.LightGray))
-        geo.addControl(new SelectableControl(ColorRGBA.LightGray, id, Set(line.a, line.b)))
+        geo.setMaterial(plainColor(color))
+        geo.addControl(new SelectableControl(color, id, Set(line.a, line.b)))
         node.attachChild(geo)
       }
+      sector.openWalls.foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
+      sector.closedWalls.foreach(w => draw2dLine(node, ColorRGBA.LightGray, w.line))
     }
     def draw3d() {
-      val node = getOrCreateNode(get3DNode, "polygon-" + id)
+      val node = getOrCreateNode(get3DNode, "sector-" + id)
       val meshNode = new MeshFactory(assetManager).createMesh(sector)
       setup3dInput(id, meshNode)
       node.attachChild(meshNode)
@@ -105,7 +99,7 @@ class SectorPresenterState extends BaseState
   var oldPos = new Vector3f()
   var newPos = new Vector3f()
 
-  def setupDraggableInput(spatial: Spatial, sectorId: Long, point: Point) {
+  def setupDraggableInput(spatial: Spatial, point: Point) {
     spatial.onCursorClick((event, target, capture) => {
       if (event.getButtonIndex == 0) {
         if (!isDragging) {
@@ -119,11 +113,11 @@ class SectorPresenterState extends BaseState
           if (oldPos.distanceSquared(newPos) > 0.1f) { // button released
             println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
             EventBus.trigger(
-              PointDragged(sectorId, point, Point(snapX(newPos.x), snapY(newPos.y))))
+              PointDragged(point, Point(snapX(newPos.x), snapY(newPos.y))))
             spatial.setLocalTranslation(oldPos) //move back.
             //TODO improve, disable dragging if not in selection
           } else {
-            EventBus.trigger(PointClicked(sectorId, point))
+            EventBus.trigger(PointClicked(point))
           }
         }
         isDragging = event.isPressed()

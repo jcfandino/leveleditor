@@ -25,12 +25,13 @@ import com.simsilica.lemur.event.CursorButtonEvent
 import com.simsilica.lemur.event.CursorMotionEvent
 import com.jme3.scene.shape.Quad
 import com.stovokor.util.EventBus
-import com.stovokor.util.GridClick
 import com.stovokor.editor.input.InputFunction
 import com.simsilica.lemur.input.StateFunctionListener
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.util.PointClicked
+import com.stovokor.editor.model.Point
 
 class GridState extends BaseState
     with MaterialFactory
@@ -79,7 +80,7 @@ class GridState extends BaseState
       override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
         if (isEnabled && event.getButtonIndex == 0) {
           clicked = event.isPressed()
-          EventBus.trigger(GridClick(snapX(mousePos.x), snapY(mousePos.y)))
+          EventBus.trigger(PointClicked(Point(snapX(mousePos.x), snapY(mousePos.y))))
           println(s"grid click -> $mousePos")
         }
       }

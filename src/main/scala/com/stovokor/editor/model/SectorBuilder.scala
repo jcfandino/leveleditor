@@ -59,6 +59,6 @@ class SectorBuilder(
       .flatMap(other => polygon.borderWith(other._2.polygon))
       .map(l => Wall(l, SurfaceTexture()))
     val newSector = Sector(polygon, floor, ceiling, openWalls)
-    repo.add(newSector)
+    (repo.add(newSector), newSector)
   }
 }

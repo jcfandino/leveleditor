@@ -47,10 +47,7 @@ class SelectableControl(
 
   def onEvent(event: EditorEvent) = event match {
     case PointSelectionChange(ps) => {
-      val intersection = ps
-        .filter(p => p._1 == sectorId && points.contains(p._2))
-        .map(_._2)
-      //      println(s"This point $points - intersection $intersection")
+      val intersection = points.intersect(ps)
       setSelected(intersection.size == points.size)
     }
     case _ =>

@@ -67,15 +67,14 @@ trait EditorEventListener {
 
 abstract class EditorEvent
 
-case class GridClick(x: Float, y: Float) extends EditorEvent
 case class ViewModeSwitch() extends EditorEvent
 case class EditModeSwitch(m: Int) extends EditorEvent
 case class SelectionModeSwitch(m: Int) extends EditorEvent
 
-case class SectorDrawn(id: Long) extends EditorEvent
-case class PointDragged(sectorId: Long, from: Point, to: Point) extends EditorEvent
-case class PointClicked(sectorId: Long, point: Point) extends EditorEvent
-case class PointSelectionChange(points: List[(Long, Point)]) extends EditorEvent
+case class PointDragged(from: Point, to: Point) extends EditorEvent
+
+case class PointClicked(point: Point) extends EditorEvent
+case class PointSelectionChange(points: Set[Point]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent
 
 case class SplitSelection() extends EditorEvent

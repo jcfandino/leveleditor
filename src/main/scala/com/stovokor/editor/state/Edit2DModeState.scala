@@ -37,7 +37,7 @@ class Edit2DModeState extends BaseState with EditorEventListener {
     println(s"new edit mode $newMode")
     if (newMode != modeIndex) {
       mode.exit
-      EventBus.trigger(PointSelectionChange(List()))
+      EventBus.trigger(PointSelectionChange(Set()))
       modeIndex = newMode
       mode.enter
     }

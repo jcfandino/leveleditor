@@ -2,6 +2,7 @@ package com.stovokor.editor.model.repository
 
 import com.stovokor.editor.model.Sector
 import java.util.concurrent.atomic.AtomicLong
+import com.stovokor.editor.model.Point
 
 object SectorRepository {
   var instance = new SectorRepository()
@@ -14,24 +15,33 @@ class SectorRepository {
 
   var sectors: Map[Long, Sector] = Map()
 
+  val index = SectorIndex()
+
   def add(sector: Sector) = {
     val id = idGenerator.getAndIncrement
     sectors = sectors.updated(id, sector)
+    index.indexSector(id, sector)
     id
   }
 
   def update(id: Long, sector: Sector) = {
     sectors = sectors.updated(id, sector)
+    index.indexSector(id, sector)
     sector // maybe should return old?
   }
 
   def remove(id: Long) = {
     val old = sectors(id)
     sectors = sectors - id
+    index.removeSector(id)
     old
   }
 
   def get(id: Long) = {
     sectors(id)
+  }
+
+  def find(point: Point) = {
+    index.find(point).map(id => (id, () => get(id)))
   }
 }
