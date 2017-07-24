@@ -22,8 +22,11 @@ case class Sector(
   def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls, closedWalls)
   def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls, closedWalls)
   def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls, closedWalls)
-  def updatedOpenWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling, updated, closedWalls)
-  def updatedClosedWall(idx: Int, updated: Wall) = Sector(polygon, floor, ceiling, openWalls,
+
+  def updatedOpenWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling, updated,
+    closedWalls.filterNot(updated.contains))
+  def updatedClosedWall(idx: Int, updated: Wall) = Sector(polygon, floor, ceiling,
+    openWalls.filterNot(updated.equals),
     closedWalls.updated(idx, updated))
 }
 
