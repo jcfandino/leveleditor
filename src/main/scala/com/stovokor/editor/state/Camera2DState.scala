@@ -55,7 +55,7 @@ class Camera2DState extends BaseState
   def moveZoom(delta: Float) {
     zoom = Math.max(1f, zoom + delta)
     val aspect = cam.getWidth() / cam.getHeight()
-    cam.setFrustum(0f, 10000,
+    cam.setFrustum(0f, 10000f,
       -zoom * aspect, zoom * aspect,
       zoom, -zoom)
     cam.update()

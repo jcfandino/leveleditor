@@ -1,35 +1,29 @@
 package com.stovokor.editor.state
 
-import com.stovokor.editor.model.PolygonBuilder
-import com.jme3.app.state.AppStateManager
 import com.jme3.app.Application
-import com.stovokor.util.EventBus
-import com.stovokor.util.EditorEventListener
-import com.stovokor.util.EditorEvent
-import com.stovokor.editor.model.Point
-import com.stovokor.editor.model.repository.PolygonRepository
-import com.stovokor.editor.model.Polygon
-import com.jme3.math.ColorRGBA
-import com.jme3.material.Material
-import com.jme3.scene.Node
-import com.jme3.scene.Geometry
-import com.jme3.scene.shape.Box
-import com.jme3.scene.shape.Line
+import com.jme3.app.state.AppStateManager
 import com.jme3.math.Vector3f
-import com.simsilica.lemur.input.StateFunctionListener
+import com.jme3.scene.Geometry
+import com.jme3.scene.Node
+import com.jme3.scene.shape.Line
 import com.simsilica.lemur.input.AnalogFunctionListener
-import com.stovokor.editor.input.InputFunction
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
+import com.simsilica.lemur.input.StateFunctionListener
+import com.stovokor.editor.control.ConstantSizeOnScreenControl
 import com.stovokor.editor.factory.MaterialFactory
-import com.stovokor.editor.factory.MeshFactory
-import com.stovokor.editor.model.Sector
-import com.stovokor.editor.model.Surface
-import com.stovokor.util.ViewModeSwitch
-import com.stovokor.util.PointClicked
+import com.stovokor.editor.gui.K
+import com.stovokor.editor.gui.Palette
+import com.stovokor.editor.input.InputFunction
+import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.SectorBuilder
 import com.stovokor.editor.model.repository.SectorRepository
+import com.stovokor.util.EditorEvent
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EventBus
+import com.stovokor.util.PointClicked
 import com.stovokor.util.SectorUpdated
+import com.stovokor.util.ViewModeSwitch
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -115,15 +109,16 @@ class DrawingState extends BaseState
     getDrawNode.removeFromParent
     val node = new Node("currentDraw")
     for (point <- points) {
-      val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
+      val vertex = new Geometry("point", K.vertexBox)
       vertex.setLocalTranslation(point.x, point.y, 0f)
-      vertex.setMaterial(plainColor(ColorRGBA.Green))
+      vertex.setMaterial(plainColor(Palette.drawing))
+      vertex.addControl(new ConstantSizeOnScreenControl())
       node.attachChild(vertex)
     }
     for (line <- lines) {
       val geo = new Geometry("line", new Line(
         new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
-      geo.setMaterial(plainColor(ColorRGBA.Green))
+      geo.setMaterial(plainColor(Palette.drawing))
       node.attachChild(geo)
     }
     get2DNode.attachChild(node)
@@ -152,10 +147,10 @@ class DrawingState extends BaseState
   def drawTestRoom {
     println("drawing test room")
     val sector = SectorBuilder
-      .start(Point(-10, -10))
-      .add(Point(10, -10))
-      .add(Point(10, 10))
-      .add(Point(-10, 10))
+      .start(Point(-5, -5))
+      .add(Point(5, -5))
+      .add(Point(5, 5))
+      .add(Point(-5, 5))
       .build()
     val sectorId = sectorRepository.add(sector)
     EventBus.trigger(SectorUpdated(sectorId, sector))

@@ -32,6 +32,9 @@ import com.stovokor.editor.factory.MeshFactory
 import com.jme3.scene.Node
 import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.util.PointerTargetChange
+import com.stovokor.editor.control.ConstantSizeOnScreenControl
+import com.jme3.scene.Spatial.CullHint
+import com.stovokor.editor.gui.K
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -67,11 +70,21 @@ class SectorPresenterState extends BaseState
     def draw2d() {
       val node = getOrCreateNode(get2DNode, "sector-" + id)
       for (point <- sector.polygon.pointsSorted) {
-        val vertex = new Geometry("point", new Box(0.05f, 0.05f, 0.05f))
+        val vertex = new Node("point")
+        // visual point
+        val pointView = new Geometry("point", K.vertexBox)
+        pointView.setMaterial(plainColor(ColorRGBA.LightGray))
+        pointView.addControl(new SelectableControl(ColorRGBA.LightGray, Set(point)))
+        // clickable point
+        val clickableRadius = 0.2f
+        val clickableVertex = new Geometry("clickablePoint", new Box(clickableRadius, clickableRadius, clickableRadius))
+        clickableVertex.setMaterial(plainColor(ColorRGBA.DarkGray))
+        clickableVertex.setCullHint(CullHint.Always)
+
+        vertex.attachChild(pointView)
+        vertex.attachChild(clickableVertex)
         vertex.setLocalTranslation(point.x, point.y, 0f)
-        vertex.setMaterial(plainColor(ColorRGBA.LightGray))
-        vertex.setUserData("sectorId", id)
-        vertex.addControl(new SelectableControl(ColorRGBA.LightGray, id, Set(point)))
+        vertex.addControl(new ConstantSizeOnScreenControl())
         setupDraggableInput(vertex, point)
         node.attachChild(vertex)
       }
@@ -79,7 +92,7 @@ class SectorPresenterState extends BaseState
         val geo = new Geometry("line", new Line(
           new Vector3f(line.a.x, line.a.y, 0f), new Vector3f(line.b.x, line.b.y, 0f)))
         geo.setMaterial(plainColor(color))
-        geo.addControl(new SelectableControl(color, id, Set(line.a, line.b)))
+        geo.addControl(new SelectableControl(color, Set(line.a, line.b)))
         node.attachChild(geo)
       }
       sector.openWalls.foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
@@ -101,7 +114,7 @@ class SectorPresenterState extends BaseState
 
   def setupDraggableInput(spatial: Spatial, point: Point) {
     spatial.onCursorClick((event, target, capture) => {
-      if (event.getButtonIndex == 0) {
+      if (event.getButtonIndex == 0 && spatial.isVisible) {
         if (!isDragging) {
           oldPos.set(spatial.getLocalTranslation)
           newPos.set(
@@ -124,7 +137,7 @@ class SectorPresenterState extends BaseState
       }
     })
     spatial.onCursorMove((event, target, capture) => {
-      if (isDragging) {
+      if (isDragging && spatial.isVisible) {
         val cam = event.getViewPort.getCamera
         val coord = cam.getWorldCoordinates(event.getLocation, 0f)
         newPos.set(snapX(coord.x), snapY(coord.y), 0f)
@@ -139,15 +152,15 @@ class SectorPresenterState extends BaseState
 
   def setup3dInput(sectorId: Long, meshNode: Node) {
     meshNode.getChild("floor").onCursorMove((event, spatial, target) => {
-      updateTarget(sectorId, "floor")
+      if (spatial.isVisible) updateTarget(sectorId, "floor")
     })
     meshNode.getChild("ceiling").onCursorMove((event, spatial, target) => {
-      updateTarget(sectorId, "ceiling")
+      if (spatial.isVisible) updateTarget(sectorId, "ceiling")
     })
     meshNode.getChildren.asScala
       .filter(_.getName.startsWith("wall"))
       .foreach(_.onCursorMove((event, spatial, target) => {
-        updateTarget(sectorId, spatial.getName)
+        if (spatial.isVisible) updateTarget(sectorId, spatial.getName)
       }))
   }
 

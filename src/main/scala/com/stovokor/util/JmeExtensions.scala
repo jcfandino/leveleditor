@@ -4,6 +4,7 @@ import com.jme3.scene.Spatial
 import com.jme3.scene.SceneGraphVisitor
 import com.jme3.scene.control.Control
 import com.jme3.scene.Node
+import com.jme3.scene.Spatial.CullHint
 
 object JmeExtensions {
 
@@ -35,6 +36,8 @@ object JmeExtensions {
     def childOption(name: String) =
       if (s.isNode && s.asNode.getChild(name) != null) Some(s.asNode.getChild(name))
       else None
+
+    def isVisible = s.getCullHint != CullHint.Always
   }
 
 }

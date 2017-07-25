@@ -16,10 +16,11 @@ class ViewModeState extends BaseState with EditorEventListener {
 
   private var current: Mode = M2D()
 
+  var nodes: Map[String, Node] = Map()
+
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
-    get2DNode
-    get3DNode
+    nodes = nodes.updated("2d", get2DNode).updated("3d", get3DNode)
     M3D().hide
     M3D().exit
     EventBus.subscribe(this, ViewModeSwitch())

@@ -5,6 +5,7 @@ import com.jme3.renderer.RenderManager
 import com.jme3.renderer.ViewPort
 import com.jme3.scene.Geometry
 import com.jme3.scene.control.AbstractControl
+import com.stovokor.editor.gui.Palette
 import com.stovokor.editor.model.Point
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
@@ -12,11 +13,9 @@ import com.stovokor.util.EventBus
 import com.stovokor.util.PointSelectionChange
 
 class SelectableControl(
-  val baseColor: ColorRGBA, sectorId: Long, points: Set[Point])
+  val baseColor: ColorRGBA, points: Set[Point])
     extends AbstractControl
     with EditorEventListener {
-
-  val selectedColor = ColorRGBA.Red
 
   var selected = false
   var initialized = false
@@ -35,7 +34,7 @@ class SelectableControl(
     selected = s
   }
 
-  def getColor(select: Boolean) = if (select) selectedColor else baseColor
+  def getColor(select: Boolean) = if (select) Palette.selectedElement else baseColor
 
   def doIfGeometry(action: Geometry => Unit) {
     if (spatial.isInstanceOf[Geometry]) {
@@ -43,7 +42,8 @@ class SelectableControl(
     }
   }
 
-  def controlRender(rm: RenderManager, vp: ViewPort) {}
+  def controlRender(rm: RenderManager, vp: ViewPort) {
+  }
 
   def onEvent(event: EditorEvent) = event match {
     case PointSelectionChange(ps) => {

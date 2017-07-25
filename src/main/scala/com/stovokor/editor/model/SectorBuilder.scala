@@ -1,7 +1,6 @@
 package com.stovokor.editor.model
 
 import com.stovokor.editor.model.repository.SectorRepository
-import scala.util.Random
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.EventBus
 
@@ -25,7 +24,7 @@ class SectorBuilder(
   def build() = Sector(
     polygon = polygonBuilder.build,
     floor = Surface(0f, SurfaceTexture()),
-    ceiling = Surface(2f, SurfaceTexture()),
+    ceiling = Surface(3f, SurfaceTexture()),
     openWalls = List())
 
   //TODO move this out of the builder
@@ -33,9 +32,9 @@ class SectorBuilder(
     println(s"drawing with neighbours $neighbours")
     def floorAndCeiling(nextSector: Option[Sector]) = {
       val floor = nextSector.map(_.floor)
-        .orElse(Some(Surface(Random.nextFloat, SurfaceTexture()))).get
+        .orElse(Some(Surface(0f, SurfaceTexture()))).get
       val ceiling = nextSector.map(_.ceiling)
-        .orElse(Some(Surface(2 + Random.nextFloat, SurfaceTexture()))).get
+        .orElse(Some(Surface(3f, SurfaceTexture()))).get
       (floor, ceiling)
     }
     def updateNeighbour(id: Long, sector: Sector, border: List[Line]) {

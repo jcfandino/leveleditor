@@ -19,14 +19,10 @@ trait MaterialFactory {
 
   def texture(file: String): Material = {
     val tex = assetManager.loadTexture(file)
-    //    tex.setMagFilter(Texture.MagFilter.Nearest)
-    //    tex.setMinFilter(Texture.MinFilter.NearestNoMipMaps)
-    //    tex.setAnisotropicFilter(0)
     tex.setWrap(WrapMode.Repeat)
 
     val mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
     mat.setTexture("ColorMap", tex)
-    //    mat.setColor("Color", ColorRGBA.White.mult(2))
     mat.getAdditionalRenderState().setBlendMode(BlendMode.Alpha)
     mat
   }
