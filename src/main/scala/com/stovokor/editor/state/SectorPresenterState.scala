@@ -152,14 +152,17 @@ class SectorPresenterState extends BaseState
 
   def setup3dInput(sectorId: Long, meshNode: Node) {
     meshNode.getChild("floor").onCursorMove((event, spatial, target) => {
+      event.setConsumed()
       if (spatial.isVisible) updateTarget(sectorId, "floor")
     })
     meshNode.getChild("ceiling").onCursorMove((event, spatial, target) => {
+      event.setConsumed()
       if (spatial.isVisible) updateTarget(sectorId, "ceiling")
     })
     meshNode.getChildren.asScala
       .filter(_.getName.startsWith("wall"))
       .foreach(_.onCursorMove((event, spatial, target) => {
+        event.setConsumed()
         if (spatial.isVisible) updateTarget(sectorId, spatial.getName)
       }))
   }
