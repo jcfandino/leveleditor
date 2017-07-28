@@ -35,6 +35,7 @@ import com.stovokor.util.PointerTargetChange
 import com.stovokor.editor.control.ConstantSizeOnScreenControl
 import com.jme3.scene.Spatial.CullHint
 import com.stovokor.editor.gui.K
+import com.stovokor.editor.model.repository.BorderRepository
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -44,6 +45,7 @@ class SectorPresenterState extends BaseState
     with StateFunctionListener {
 
   val sectorRepository = SectorRepository()
+  val borderRepository = BorderRepository()
 
   // TODO make this async, check PathFindScheduler
 
@@ -100,7 +102,8 @@ class SectorPresenterState extends BaseState
     }
     def draw3d() {
       val node = getOrCreateNode(get3DNode, "sector-" + id)
-      val meshNode = new MeshFactory(assetManager).createMesh(sector)
+      var borders = borderRepository.findFrom(id).map(_._2)
+      val meshNode = MeshFactory(assetManager).createMesh(sector, borders)
       setup3dInput(id, meshNode)
       node.attachChild(meshNode)
     }

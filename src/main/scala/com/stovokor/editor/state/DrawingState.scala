@@ -24,6 +24,7 @@ import com.stovokor.util.EventBus
 import com.stovokor.util.PointClicked
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.ViewModeSwitch
+import com.stovokor.editor.model.repository.BorderRepository
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -38,6 +39,7 @@ class DrawingState extends BaseState
   var lastClick = 0l
 
   val sectorRepository = SectorRepository()
+  val borderRepository = BorderRepository()
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -52,11 +54,13 @@ class DrawingState extends BaseState
     EventBus.removeFromAll(this)
     inputMapper.removeStateListener(this, InputFunction.cancel)
     inputMapper.removeStateListener(this, InputFunction.test1)
+    inputMapper.removeStateListener(this, InputFunction.test2)
   }
 
   def setupInput {
     inputMapper.addStateListener(this, InputFunction.cancel)
     inputMapper.addStateListener(this, InputFunction.test1)
+    inputMapper.addStateListener(this, InputFunction.test2)
     inputMapper.activateGroup(InputFunction.general)
   }
 
@@ -83,9 +87,9 @@ class DrawingState extends BaseState
         if (point.distance(builder.first) < minDistance || isDoubleClick) {
           if (builder.size > 2) {
             println(s"polygon completed ${builder.size}")
-            val (sectorId, sector) = builder.build(sectorRepository)
+            val (sectorId, sector) = builder.build(sectorRepository, borderRepository)
             //            EventBus.trigger(SectorDrawn(sectorId))
-            EventBus.trigger(SectorUpdated(sectorId, sector))
+            //            EventBus.trigger(SectorUpdated(sectorId, sector))
             None
           } else {
             println(s"ignored, cannot finish yet")
@@ -134,7 +138,8 @@ class DrawingState extends BaseState
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     func match {
       case InputFunction.cancel => cancelPolygon
-      case InputFunction.test1  => drawTestRoom
+      case InputFunction.test1  => if (value == InputState.Positive) drawTestRoom(0f, 0f)
+      case InputFunction.test2  => if (value == InputState.Positive) drawTestRoom(0f, 10f)
       case _                    =>
     }
   }
@@ -144,17 +149,16 @@ class DrawingState extends BaseState
     redrawCurrent
   }
 
-  def drawTestRoom {
+  def drawTestRoom(x: Float, y: Float) {
     println("drawing test room")
-    val sector = SectorBuilder
-      .start(Point(-5, -5))
-      .add(Point(5, -5))
-      .add(Point(5, 5))
-      .add(Point(-5, 5))
-      .build()
-    val sectorId = sectorRepository.add(sector)
-    EventBus.trigger(SectorUpdated(sectorId, sector))
-    inputMapper.removeStateListener(this, InputFunction.test1)
+    EventBus.trigger(PointClicked(Point(-5, -5).move(x, y)))
+    Thread.sleep(200)
+    EventBus.trigger(PointClicked(Point(5, -5).move(x, y)))
+    Thread.sleep(200)
+    EventBus.trigger(PointClicked(Point(5, 5).move(x, y)))
+    Thread.sleep(200)
+    EventBus.trigger(PointClicked(Point(-5, 5).move(x, y)))
+    EventBus.trigger(PointClicked(Point(-5, 5).move(x, y)))
   }
 
 }

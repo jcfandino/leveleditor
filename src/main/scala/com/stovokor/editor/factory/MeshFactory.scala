@@ -16,10 +16,14 @@ import com.stovokor.editor.model.SurfaceTexture
 import com.stovokor.editor.model.Surface
 import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.Line
+import com.stovokor.editor.model.Border
 
+object MeshFactory {
+  def apply(assetManager: AssetManager) = new MeshFactory(assetManager)
+}
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
 
-  def createMesh(sec: Sector) = {
+  def createMesh(sec: Sector, borders: List[Border] = List()) = {
 
     val triangles = sec.polygon.triangulate
 
@@ -35,9 +39,30 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     node.attachChild(ceiling)
     sec.closedWalls
       .zipWithIndex
-      .map(w => createWall(w._1, w._2, sec.floor.height, sec.ceiling.height))
+      .map(w => createWall(w._1, "wall-" + w._2, sec.floor.height, sec.ceiling.height))
       .foreach(node.attachChild)
+    createBordersMesh(node, sec, borders)
     node
+  }
+
+  def createBordersMesh(node: Node, sector: Sector, borders: List[Border]) = {
+    borders.foreach(b => println(s"Border found $b"))
+    borders
+      .zipWithIndex
+      .flatMap(b => b match {
+        case (border, idx) => List(
+          createWall(
+            Wall(border.line, border.surfaceFloor.texture),
+            "borderLow-" + idx,
+            Math.min(sector.floor.height, sector.floor.height + border.surfaceFloor.height),
+            Math.max(sector.floor.height, sector.floor.height + border.surfaceFloor.height)),
+          createWall(
+            Wall(border.line, border.surfaceCeiling.texture),
+            "borderHigh-" + idx,
+            Math.min(sector.ceiling.height, sector.ceiling.height - border.surfaceCeiling.height),
+            Math.max(sector.ceiling.height, sector.ceiling.height - border.surfaceCeiling.height)))
+      })
+      .foreach(node.attachChild)
   }
 
   def createSurface(triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
@@ -73,7 +98,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     geom
   }
 
-  def createWall(wall: Wall, idx: Int, bottom: Float, top: Float): Geometry = {
+  def createWall(wall: Wall, name: String, bottom: Float, top: Float): Geometry = {
     val line = wall.line
     val tex = wall.texture
     val m = new Mesh
@@ -101,7 +126,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     m.setBuffer(Type.Index, 1, BufferUtils.createIntBuffer(2, 0, 1, 1, 3, 2))
     m.setBuffer(Type.Normal, 3, BufferUtils.createFloatBuffer(normal, normal, normal, normal))
     m.updateBound()
-    val geom = new Geometry("wall-" + idx, m)
+    val geom = new Geometry(name, m)
     geom.setMaterial(texture("Textures/Debug1.png"))
     geom
   }
