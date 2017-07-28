@@ -13,6 +13,9 @@ import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.FunctionId
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.SectorUpdated
+import com.stovokor.editor.model.Sector
+import com.stovokor.editor.model.repository.BorderRepository
+import com.stovokor.editor.model.creation.BorderFactory
 
 class Edit3DState extends BaseState
     with EditorEventListener
@@ -20,6 +23,7 @@ class Edit3DState extends BaseState
     with StateFunctionListener {
 
   val sectorRepository = SectorRepository()
+  val borderRepository = BorderRepository()
 
   var lastTarget: Option[(Long, String)] = None
 
@@ -80,6 +84,7 @@ class Edit3DState extends BaseState
       val updated =
         if (target == "floor") sector.updatedFloor(sector.floor.move(factor))
         else sector.updatedCeiling(sector.ceiling.move(factor))
+      recalculateBorders(sectorId, updated)
       sectorRepository.update(sectorId, updated)
       EventBus.trigger(SectorUpdated(sectorId, updated))
     }
@@ -136,5 +141,28 @@ class Edit3DState extends BaseState
       sectorRepository.update(sectorId, updated)
       EventBus.trigger(SectorUpdated(sectorId, updated))
     }
+  }
+
+  def recalculateBorders(sectorId: Long, sector: Sector) {
+    val bordersFrom = borderRepository.findFrom(sectorId)
+    bordersFrom.foreach(pair => pair match {
+      case (id, border) => {
+        val other = sectorRepository.get(border.sectorB)
+        val updated = border.updateHeights(sector, other)
+        borderRepository.update(id, updated)
+      }
+    })
+    val bordersTo = borderRepository.findTo(sectorId)
+    val sectorsToUpdate = bordersTo.map(pair => pair match {
+      case (id, border) => {
+        val from = sectorRepository.get(border.sectorA)
+        val updated = border.updateHeights(from, sector)
+        borderRepository.update(id, updated)
+        (border.sectorA, from)
+      }
+    })
+    sectorsToUpdate.distinct.foreach(pair => pair match {
+      case (id, sec) => EventBus.trigger(SectorUpdated(id, sec))
+    })
   }
 }

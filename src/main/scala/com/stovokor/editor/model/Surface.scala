@@ -10,8 +10,9 @@ case class Surface(
     val height: Float,
     val texture: SurfaceTexture) {
 
-  def move(d: Float) = Surface(height + d, texture)
+  def move(d: Float) = updateHeight(height + d)
   def updateTexture(t: SurfaceTexture) = Surface(height, t)
+  def updateHeight(h: Float) = Surface(h, texture)
 }
 
 object SurfaceTexture {
