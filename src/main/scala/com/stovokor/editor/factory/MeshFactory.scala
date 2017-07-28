@@ -47,21 +47,31 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
 
   def createBordersMesh(node: Node, sector: Sector, borders: List[Border]) = {
     borders.foreach(b => println(s"Border found $b"))
+    def bottomMaybe(border: Border, idx: Int) = {
+      if (border.surfaceFloor.height > 0f) {
+        Some(createWall(
+          Wall(border.line, border.surfaceFloor.texture),
+          "borderLow-" + idx,
+          sector.floor.height,
+          sector.floor.height + border.surfaceFloor.height))
+      } else None
+    }
+    def topMaybe(border: Border, idx: Int) = {
+      if (border.surfaceCeiling.height > 0f) {
+        Some(createWall(
+          Wall(border.line, border.surfaceCeiling.texture),
+          "borderHi-" + idx,
+          sector.ceiling.height - border.surfaceCeiling.height,
+          sector.ceiling.height))
+      } else None
+    }
     borders
       .zipWithIndex
       .flatMap(b => b match {
-        case (border, idx) => List(
-          createWall(
-            Wall(border.line, border.surfaceFloor.texture),
-            "borderLow-" + idx,
-            Math.min(sector.floor.height, sector.floor.height + border.surfaceFloor.height),
-            Math.max(sector.floor.height, sector.floor.height + border.surfaceFloor.height)),
-          createWall(
-            Wall(border.line, border.surfaceCeiling.texture),
-            "borderHigh-" + idx,
-            Math.min(sector.ceiling.height, sector.ceiling.height - border.surfaceCeiling.height),
-            Math.max(sector.ceiling.height, sector.ceiling.height - border.surfaceCeiling.height)))
+        case (border, idx) => List(bottomMaybe(border, idx), topMaybe(border, idx))
       })
+      .filter(_.isDefined)
+      .map(_.get)
       .foreach(node.attachChild)
   }
 

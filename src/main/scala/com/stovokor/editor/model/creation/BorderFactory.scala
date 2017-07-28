@@ -22,20 +22,17 @@ object BorderFactory {
   }
 
   def createBorders(fromId: Long, from: Sector, otherId: Long, other: Sector, lines: List[Line]): List[Border] = {
-    val lowHeightAB = Math.max(0f, other.floor.height - from.floor.height)
-    val highHeightAB = Math.max(0f, from.ceiling.height - other.ceiling.height)
-    // these are negative
-    val lowHeightBA = -Math.max(0f, from.floor.height - other.floor.height)
-    val highHeightBA = -Math.max(0f, other.ceiling.height - from.ceiling.height)
     lines.flatMap(line => {
       val textureAB = findTexture(from, line)
       val textureBA = findTexture(other, line)
       println(s"creating border $fromId -> $otherId = $line")
       List(
         Border(fromId, otherId, line,
-          Surface(lowHeightAB, textureAB), Surface(highHeightAB, textureAB)),
-        Border(fromId, otherId, line.reverse,
-          Surface(lowHeightBA, textureBA), Surface(highHeightBA, textureBA)))
+          Surface(0f, textureAB), Surface(0f, textureAB))
+          .updateHeights(from, other),
+        Border(otherId, fromId, line.reverse,
+          Surface(0f, textureBA), Surface(0f, textureBA))
+          .updateHeights(other, from))
     })
   }
 

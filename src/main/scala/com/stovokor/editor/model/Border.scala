@@ -6,7 +6,7 @@ object Border {
             surfaceMiddle: Surface = Surface.empty) = new Border(
     sectorA, sectorB, line,
     surfaceFloor, surfaceCeiling,
-    surfaceMiddle = Surface.empty)
+    surfaceMiddle)
 }
 /**
  * A border (aka portal) between two sectors
@@ -29,9 +29,6 @@ case class Border(val sectorA: Long, val sectorB: Long, val line: Line,
   def updateSurfaceMiddle(updated: Surface) = updateAny(surfaceMiddleUpdated = updated)
 
   def updateHeights(from: Sector, other: Sector) = {
-    //    val lowHeight = Math.max(0f, other.floor.height - from.floor.height)
-    //    val highHeight = Math.max(0f, from.ceiling.height - other.ceiling.height)
-    //TODO this duplicates the borders 
     val lowHeight = other.floor.height - from.floor.height
     val highHeight = from.ceiling.height - other.ceiling.height
     updateSurfaceFloor(surfaceFloor.updateHeight(lowHeight))
