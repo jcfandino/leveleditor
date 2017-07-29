@@ -16,6 +16,7 @@ import com.stovokor.util.SectorUpdated
 import com.stovokor.util.SplitSelection
 import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.repository.BorderRepository
+import com.stovokor.editor.model.creation.BorderFactory
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -81,19 +82,29 @@ class ModifyingState extends BaseState
   }
 
   def splitSelection() {
-    selectedPoints.flatMap(sectorRepository.find).foreach(result => {
-      val id = result._1
-      val sector = result._2()
-      val sectorPoints = sector.polygon.pointsUnsorted
-      val sectorLines = sector.polygon.lines
-      val newSector = selectedPoints.toList
-        .sliding(2)
-        .map(s => Line(s(0), s(1)))
-        .filter(sectorLines.contains)
-        .foldRight(sector)((line, sec) => sec.addPoint(line, .5f))
-      sectorRepository.update(id, newSector)
-      EventBus.trigger(SectorUpdated(id, newSector))
-    })
+    selectedPoints
+      .flatMap(sectorRepository.find)
+      .foreach(result => {
+        val (id, sector) = (result._1, result._2())
+        val sectorPoints = sector.polygon.pointsUnsorted
+        val sectorLines = sector.polygon.lines
+        val newSector = sectorLines
+          .filter(l => selectedPoints.filter(l.isEnd).size == 2)
+          .foldRight(sector)((line, sec) => {
+            val updated = sec.addPoint(line, .5f)
+            val newLines = updated.polygon.lines.filterNot(sec.polygon.lines.contains)
+            borderRepository.find(line).foreach(pair => pair match {
+              case (id, border) => {
+                val old = borderRepository.remove(id)
+                borderRepository.add(old.updateLine(newLines(0)))
+                borderRepository.add(old.updateLine(newLines(1)))
+              }
+            })
+            updated
+          })
+        sectorRepository.update(id, newSector)
+        EventBus.trigger(SectorUpdated(id, newSector))
+      })
   }
 
   def deleteSelection() {
