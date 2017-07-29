@@ -47,20 +47,25 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
 
   def createBordersMesh(node: Node, sector: Sector, borders: List[Border]) = {
     borders.foreach(b => println(s"Border found $b"))
-    def bottomMaybe(border: Border, idx: Int) = {
+    def idx(border: Border) = {
+      sector.openWalls
+        .zipWithIndex.find(w => w._1.line == border.line)
+        .map(_._2).orElse(Some(-1)).get
+    }
+    def bottomMaybe(border: Border) = {
       if (border.surfaceFloor.height > 0f) {
         Some(createWall(
           Wall(border.line, border.surfaceFloor.texture),
-          "borderLow-" + idx,
+          "borderLow-" + idx(border),
           sector.floor.height,
           sector.floor.height + border.surfaceFloor.height))
       } else None
     }
-    def topMaybe(border: Border, idx: Int) = {
+    def topMaybe(border: Border) = {
       if (border.surfaceCeiling.height > 0f) {
         Some(createWall(
           Wall(border.line, border.surfaceCeiling.texture),
-          "borderHi-" + idx,
+          "borderHi-" + idx(border),
           sector.ceiling.height - border.surfaceCeiling.height,
           sector.ceiling.height))
       } else None
@@ -68,7 +73,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
     borders
       .zipWithIndex
       .flatMap(b => b match {
-        case (border, idx) => List(bottomMaybe(border, idx), topMaybe(border, idx))
+        case (border, idx) => List(bottomMaybe(border), topMaybe(border))
       })
       .filter(_.isDefined)
       .map(_.get)

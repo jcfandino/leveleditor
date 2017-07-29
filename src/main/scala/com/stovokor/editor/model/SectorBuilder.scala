@@ -40,8 +40,7 @@ class SectorBuilder(
         .orElse(Some(Surface(0f, SurfaceTexture()))).get
       val ceiling = nextSector.map(_.ceiling)
         .orElse(Some(Surface(3f, SurfaceTexture()))).get
-      //      (floor, ceiling) // TODO uncomment, this is a test
-      (Surface(1f, SurfaceTexture()), Surface(2f, SurfaceTexture()))
+      (floor, ceiling)
     }
 
     def updateNeighbour(id: Long, sector: Sector, border: List[Line]) = {

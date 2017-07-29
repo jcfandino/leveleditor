@@ -111,6 +111,28 @@ class Edit3DState extends BaseState
           sector.updatedClosedWall(idx,
             wall.updateTexture(
               wall.texture.move(factorX, factorY)))
+        } else if (target.startsWith("borderLow-")) {
+          val idx = target.replace("borderLow-", "").toInt
+          val wall = sector.openWalls(idx)
+          borderRepository.find(wall.line).foreach(pair => pair match {
+            case (id, border) => {
+              borderRepository.update(id, border.updateSurfaceFloor(
+                border.surfaceFloor.updateTexture(
+                  border.surfaceFloor.texture.move(factorX, factorY))))
+            }
+          })
+          sector
+        } else if (target.startsWith("borderHi-")) {
+          val idx = target.replace("borderHi-", "").toInt
+          val wall = sector.openWalls(idx)
+          borderRepository.find(wall.line).foreach(pair => pair match {
+            case (id, border) => {
+              borderRepository.update(id, border.updateSurfaceCeiling(
+                border.surfaceCeiling.updateTexture(
+                  border.surfaceCeiling.texture.move(factorX, factorY))))
+            }
+          })
+          sector
         } else sector
       sectorRepository.update(sectorId, updated)
       EventBus.trigger(SectorUpdated(sectorId, updated))
@@ -137,6 +159,28 @@ class Edit3DState extends BaseState
           sector.updatedClosedWall(idx,
             wall.updateTexture(
               wall.texture.scale(factorX, factorY)))
+        } else if (target.startsWith("borderLow-")) {
+          val idx = target.replace("borderLow-", "").toInt
+          val wall = sector.openWalls(idx)
+          borderRepository.find(wall.line).foreach(pair => pair match {
+            case (id, border) => {
+              borderRepository.update(id, border.updateSurfaceFloor(
+                border.surfaceFloor.updateTexture(
+                  border.surfaceFloor.texture.scale(factorX, factorY))))
+            }
+          })
+          sector
+        } else if (target.startsWith("borderHi-")) {
+          val idx = target.replace("borderHi-", "").toInt
+          val wall = sector.openWalls(idx)
+          borderRepository.find(wall.line).foreach(pair => pair match {
+            case (id, border) => {
+              borderRepository.update(id, border.updateSurfaceCeiling(
+                border.surfaceCeiling.updateTexture(
+                  border.surfaceCeiling.texture.scale(factorX, factorY))))
+            }
+          })
+          sector
         } else sector
       sectorRepository.update(sectorId, updated)
       EventBus.trigger(SectorUpdated(sectorId, updated))

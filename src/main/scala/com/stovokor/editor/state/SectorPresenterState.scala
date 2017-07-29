@@ -168,6 +168,12 @@ class SectorPresenterState extends BaseState
         event.setConsumed()
         if (spatial.isVisible) updateTarget(sectorId, spatial.getName)
       }))
+    meshNode.getChildren.asScala
+      .filter(_.getName.startsWith("border"))
+      .foreach(_.onCursorMove((event, spatial, target) => {
+        event.setConsumed()
+        if (spatial.isVisible) updateTarget(sectorId, spatial.getName)
+      }))
   }
 
   def updateTarget(sectorId: Long, target: String) {
