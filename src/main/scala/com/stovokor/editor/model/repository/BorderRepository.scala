@@ -4,6 +4,7 @@ import com.stovokor.editor.model.Sector
 import java.util.concurrent.atomic.AtomicLong
 import com.stovokor.editor.model.Border
 import com.stovokor.editor.model.Line
+import com.stovokor.editor.model.Point
 
 object BorderRepository {
   val instance = new BorderRepository()
@@ -43,6 +44,10 @@ class BorderRepository {
   }
   def findTo(sectorId: Long): List[(Long, Border)] = {
     find((id, border) => border.sectorB == sectorId) // Only to sectorId
+  }
+
+  def find(point: Point): List[(Long, Border)] = {
+    find((id, border) => border.line.isEnd(point))
   }
 
   def find(line: Line): List[(Long, Border)] = {

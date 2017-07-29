@@ -14,4 +14,11 @@ case class Line(val a: Point, val b: Point) {
   }
 
   def reverse = Line(b, a)
+
+  def isEnd(point: Point) = a == point || b == point
+
+  def moveEnd(from: Point, to: Point) =
+    if (a == from) Line(to, b)
+    else if (b == from) Line(a, to)
+    else this
 }

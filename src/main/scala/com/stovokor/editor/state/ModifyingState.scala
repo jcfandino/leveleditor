@@ -15,12 +15,14 @@ import com.stovokor.util.PointSelectionChange
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.SplitSelection
 import com.stovokor.editor.model.Wall
+import com.stovokor.editor.model.repository.BorderRepository
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
     with EditorEventListener {
 
   val sectorRepository = SectorRepository()
+  val borderRepository = BorderRepository()
 
   //  var selectedPoints: List[(Long, Point)] = List()
   var selectedPoints: Set[Point] = Set()
@@ -50,7 +52,8 @@ class ModifyingState extends BaseState
   def movePoints(from: Point, to: Point) {
     val (dx, dy) = (to.x - from.x, to.y - from.y)
     var toUpdate: Set[(Long, Sector)] = Set()
-    (selectedPoints ++ Set(from)).foreach(point => {
+    val pointsToMove = (selectedPoints ++ Set(from))
+    pointsToMove.foreach(point => {
       val sectors = sectorRepository.find(point)
       for ((sectorId, getter) <- sectors) {
         val updated = getter().moveSinglePoint(point, dx, dy)
@@ -59,6 +62,22 @@ class ModifyingState extends BaseState
       }
     })
     toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2)))
+    //update borders
+    pointsToMove.foreach(point => {
+      borderRepository
+        .find(point)
+        .map(pair => pair match {
+          case (id, border) => {
+            val updated = border.updateLine(border.line.moveEnd(point, point.move(dx, dy)))
+            borderRepository.update(id, updated)
+            updated.sectorA
+          }
+        })
+        .distinct
+        .foreach(sectorId => {
+          EventBus.trigger(SectorUpdated(sectorId, sectorRepository.get(sectorId)))
+        })
+    })
   }
 
   def splitSelection() {
