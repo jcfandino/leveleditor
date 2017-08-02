@@ -36,6 +36,7 @@ import com.stovokor.editor.control.ConstantSizeOnScreenControl
 import com.jme3.scene.Spatial.CullHint
 import com.stovokor.editor.gui.K
 import com.stovokor.editor.model.repository.BorderRepository
+import com.stovokor.util.SectorDeleted
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -52,6 +53,7 @@ class SectorPresenterState extends BaseState
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[SectorUpdated])
+    EventBus.subscribeByType(this, classOf[SectorDeleted])
   }
 
   override def update(tpf: Float) {
@@ -59,12 +61,16 @@ class SectorPresenterState extends BaseState
 
   def onEvent(event: EditorEvent) = event match {
     case SectorUpdated(id, sector) => redrawSector(id, sector)
+    case SectorDeleted(id)         => eraseSector(id)
     case _                         =>
   }
 
-  def redrawSector(id: Long, sector: Sector) {
+  def eraseSector(id: Long) {
     getOrCreateNode(get2DNode, "sector-" + id).removeFromParent
     getOrCreateNode(get3DNode, "sector-" + id).removeFromParent
+  }
+  def redrawSector(id: Long, sector: Sector) {
+    eraseSector(id)
     drawSector(id, sector)
   }
 

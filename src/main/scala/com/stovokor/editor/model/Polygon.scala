@@ -46,18 +46,23 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     val sorted = pointsUnsorted.sortBy(_.x)
     val leftmost = sorted.head
     val rightmost = sorted.last
-    val i1 = pointsUnsorted.indexOf(leftmost)
-    val i2 = pointsUnsorted.indexOf(rightmost)
+    val (path1, path2) = findPathsBetween(leftmost, rightmost)
+    val area1 = path1.sliding(2).map(ab => areaBelow(ab(0), ab(1))).sum
+    val area2 = path2.sliding(2).map(ab => areaBelow(ab(0), ab(1))).sum
+    val diff = area1 - area2
+    diff > 0 && diff < limY
+  }
+
+  def findPathsBetween(p1: Point, p2: Point) = {
+    val i1 = pointsUnsorted.indexOf(p1)
+    val i2 = pointsUnsorted.indexOf(p2)
     val path1 =
       if (i1 < i2) pointsUnsorted.slice(i1, i2 + 1)
       else pointsUnsorted.slice(i1, pointsUnsorted.size) ++ pointsUnsorted.slice(0, i2 + 1)
     val path2 = (
       if (i1 > i2) pointsUnsorted.slice(i2, i1 + 1)
       else pointsUnsorted.slice(i2, pointsUnsorted.size) ++ pointsUnsorted.slice(0, i1 + 1)).reverse
-    val area1 = path1.sliding(2).map(ab => areaBelow(ab(0), ab(1))).sum
-    val area2 = path2.sliding(2).map(ab => areaBelow(ab(0), ab(1))).sum
-    val diff = area1 - area2
-    diff > 0 && diff < limY
+    (path1, path2)
   }
 
   def changePoint(from: Point, to: Point): Polygon = {
@@ -87,6 +92,24 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     val inter = lines.filter(l => otherLines.contains(l) || otherLines.contains(l.reverse))
     println(s"result: $inter")
     inter
+  }
+
+  def divideBy(cut: List[Point]): List[Polygon] = {
+    def innerPoints(ps: List[Point]) = if (ps.length < 3) List() else ps.slice(1, ps.length - 1)
+    def createPolygons(path1: List[Point], path2: List[Point], cut: List[Point]) = {
+      List(Polygon(path1 ++ cut), Polygon(path2 ++ cut))
+    }
+    if (cut.size < 2 ||
+      !pointsUnsorted.contains(cut.head) ||
+      !pointsUnsorted.contains(cut.last) ||
+      cut.sliding(2).map(s => Line(s(0), s(1))).forall(lines.contains)) {
+      println(s"Cannot divide polygon, cutting line is border")
+      List(this)
+    }
+    val (path1, path2) = findPathsBetween(cut.head, cut.last)
+    val sortedCut = innerPoints(if (path1.head == cut.head) cut else cut.reverse)
+    val polys = createPolygons(path1, path2, sortedCut)
+    polys
   }
 }
 

@@ -7,12 +7,12 @@ import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.creation.BorderFactory
 
 object SectorBuilder {
-  def start(p: Point) = new SectorBuilder(PolygonBuilder.start(p), Set())
-  def start(p: Point, id: Long) = new SectorBuilder(PolygonBuilder.start(p), Set(id))
+  def start(p: Point) = new SectorBuilder(PolygonBuilder.start(p), List())
+  def start(p: Point, id: Long) = new SectorBuilder(PolygonBuilder.start(p), List(id))
 }
 
 class SectorBuilder(
-    val polygonBuilder: PolygonBuilder, val neighbours: Set[Long]) {
+    val polygonBuilder: PolygonBuilder, val neighbours: List[Long]) {
 
   def first = polygonBuilder.first
   def last = polygonBuilder.last
@@ -21,7 +21,14 @@ class SectorBuilder(
   def points = polygonBuilder.points
 
   def add(p: Point) = new SectorBuilder(polygonBuilder.add(p), neighbours)
-  def add(id: Long) = new SectorBuilder(polygonBuilder, neighbours ++ Set(id))
+  def add(id: Long) = new SectorBuilder(polygonBuilder, neighbours ++ List(id))
+
+  def isCuttingSector(sectorId: Long, sectorRepository: SectorRepository) = {
+    neighbours.filter(sectorId.equals).size > 1
+    //TODO need to check it's not a border of the polygon something like
+    // points.sliding(2).map(s => Line(s(0), s(1))).forall(polygon.lines.contains))
+    // need to get the sector for that.
+  }
 
   def build() = Sector(
     polygon = polygonBuilder.build,

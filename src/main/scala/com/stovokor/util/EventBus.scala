@@ -81,6 +81,7 @@ case class SplitSelection() extends EditorEvent
 case class DeleteSelection() extends EditorEvent
 
 case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
+case class SectorDeleted(id: Long) extends EditorEvent
 
 
 

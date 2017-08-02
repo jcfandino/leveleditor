@@ -64,6 +64,18 @@ case class Sector(
       .updatedOpenWalls(updateWalls(openWalls))
       .updatedClosedWalls(updateWalls(closedWalls))
   }
+
+  def divideBy(cut: List[Point]): List[Sector] = {
+    val polys = polygon.divideBy(cut)
+    val closedByLine = closedWalls.groupBy(_.line).withDefault(_ => List())
+    val openByLine = openWalls.groupBy(_.line).withDefault(_ => List())
+    polys.map(poly => {
+      val newClosedWalls = poly.lines.flatMap(closedByLine)
+      val newOpenWalls = poly.lines.flatMap(openByLine) ++
+        poly.lines.filterNot(polygon.lines.contains).map(l => Wall(l, SurfaceTexture()))
+      Sector(poly, floor, ceiling, newOpenWalls, newClosedWalls)
+    })
+  }
 }
 
 object Wall {
