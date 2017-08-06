@@ -13,7 +13,11 @@ case class Line(val a: Point, val b: Point) {
     (Line(a, point), Line(point, b))
   }
 
-  def reverse = Line(b, a)
+  lazy val reverse = Line(b, a)
+
+  lazy val andReverse = List(this, reverse)
+
+  def alike(other: Line) = other == this || other == reverse
 
   def isEnd(point: Point) = a == point || b == point
 

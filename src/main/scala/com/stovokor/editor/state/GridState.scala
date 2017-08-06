@@ -26,6 +26,7 @@ import com.stovokor.editor.input.InputFunction
 import com.stovokor.editor.model.Point
 import com.stovokor.util.EventBus
 import com.stovokor.util.PointClicked
+import com.stovokor.util.LemurExtensions._
 
 class GridState extends BaseState
     with MaterialFactory
@@ -70,21 +71,19 @@ class GridState extends BaseState
   }
 
   def setupInput(spatial: Spatial) {
-    CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
-      override def click(event: CursorButtonEvent, target: Spatial, capture: Spatial) {
-        if (isEnabled && event.getButtonIndex == 0) {
-          clicked = event.isPressed()
-          EventBus.trigger(PointClicked(Point(snapX(mousePos.x), snapY(mousePos.y))))
-          println(s"grid click -> $mousePos")
-        }
+    spatial.onCursorClick((event, target, capture) => {
+      if (isEnabled && event.getButtonIndex == 0) {
+        event.setConsumed()
+        clicked = event.isPressed()
+        EventBus.trigger(PointClicked(Point(snapX(mousePos.x), snapY(mousePos.y))))
+        println(s"grid click -> $mousePos")
       }
     })
-    CursorEventControl.addListenersToSpatial(spatial, new DefaultCursorListener() {
-      override def cursorMoved(event: CursorMotionEvent, target: Spatial, capture: Spatial) {
-        if (isEnabled) {
-          val col = event.getCollision
-          mousePos.set(col.getContactPoint)
-        }
+    spatial.onCursorMove((event: CursorMotionEvent, target, capture) => {
+      if (isEnabled) {
+        event.setConsumed()
+        val col = event.getCollision
+        mousePos.set(col.getContactPoint)
       }
     })
     inputMapper.addStateListener(this, InputFunction.snapToGrid)

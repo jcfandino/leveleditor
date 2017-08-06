@@ -53,7 +53,11 @@ class SelectionState extends BaseState
     val sectors = sectorRepository.find(point).map(_._2())
     mode.selectPoint(point, sectors)
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
-    println(s"Selected points $selectedPoints")
+    //println(s"Selected points $selectedPoints")
+    // TODO TEST remove
+    for ((id, sec) <- sectorRepository.sectors) {
+      println(s"Sector $id: LTA $point? ${sec.polygon.contains(point)}")
+    }
   }
 
   abstract trait SelectionMode {

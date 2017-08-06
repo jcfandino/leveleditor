@@ -53,17 +53,29 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     diff > 0 && diff < limY
   }
 
-  def findPathsBetween(p1: Point, p2: Point) = {
-    val i1 = pointsUnsorted.indexOf(p1)
-    val i2 = pointsUnsorted.indexOf(p2)
+  def findPathsBetween(points: List[Point], p1: Point, p2: Point) = {
+    val i1 = points.indexOf(p1)
+    val i2 = points.indexOf(p2)
     val path1 =
-      if (i1 < i2) pointsUnsorted.slice(i1, i2 + 1)
-      else pointsUnsorted.slice(i1, pointsUnsorted.size) ++ pointsUnsorted.slice(0, i2 + 1)
+      if (i1 < i2) points.slice(i1, i2 + 1)
+      else points.slice(i1, points.size) ++ points.slice(0, i2 + 1)
     val path2 = (
-      if (i1 > i2) pointsUnsorted.slice(i2, i1 + 1)
-      else pointsUnsorted.slice(i2, pointsUnsorted.size) ++ pointsUnsorted.slice(0, i1 + 1)).reverse
+      if (i1 > i2) points.slice(i2, i1 + 1)
+      else points.slice(i2, points.size) ++ points.slice(0, i1 + 1)).reverse
     (path1, path2)
   }
+  /**
+   * path1 = p1->p2 Can be counter clockwise or clockwise
+   * path2 = p2->p1 The second one is the way back
+   */
+  def findPathsBetween(p1: Point, p2: Point): (List[Point], List[Point]) =
+    findPathsBetween(pointsUnsorted, p1, p2)
+
+  /**
+   * Same but with sorted paths, always clockwise
+   */
+  def findPathsBetweenSorted(p1: Point, p2: Point): (List[Point], List[Point]) =
+    findPathsBetween(pointsSorted, p1, p2)
 
   def changePoint(from: Point, to: Point): Polygon = {
     val idx = pointsSorted.indexOf(from)
@@ -94,10 +106,37 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     inter
   }
 
+  // if the point is right in the border, the result in undetermined!
+  def contains(point: Point) = {
+    // https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
+    lines
+      .map(line => (line.a.y > point.y) != (line.b.y > point.y) &&
+        (point.x < (line.b.x - line.a.x) * (point.y - line.a.y) /
+          (line.b.y - line.a.y) + line.a.x))
+      .count(identity) % 2 == 1
+  }
+
+  def cutInside(cut: List[Point]) = cut.size == 2 || cut.find(contains).isDefined
+
+  def sharedLines(other: Polygon): List[Line] = {
+    val otherLines = (other.lines.flatMap(_.andReverse)).toSet
+    lines.filter(otherLines.contains)
+  }
+
   def divideBy(cut: List[Point]): List[Polygon] = {
     def innerPoints(ps: List[Point]) = if (ps.length < 3) List() else ps.slice(1, ps.length - 1)
     def createPolygons(path1: List[Point], path2: List[Point], cut: List[Point]) = {
-      List(Polygon(path1 ++ cut), Polygon(path2 ++ cut))
+      List(Polygon(path1 ++ innerPoints(cut.reverse)),
+        Polygon(innerPoints(cut.reverse) ++ path2)) // I don't understand why reverse here
+    }
+    def extend(path1: List[Point], path2: List[Point], cut: List[Point]): List[Polygon] = {
+      // assume the cut is outside and goes in path1 direction
+      val candidate = Polygon(path2 ++ innerPoints(cut))
+      if (candidate.cutInside(path1)) { // candidate was wrong
+        List(Polygon(path1 ++ innerPoints(cut.reverse)), this)
+      } else {
+        List(candidate, this)
+      }
     }
     if (cut.size < 2 ||
       !pointsUnsorted.contains(cut.head) ||
@@ -106,9 +145,15 @@ case class Polygon(val pointsUnsorted: List[Point]) {
       println(s"Cannot divide polygon, cutting line is border")
       List(this)
     }
-    val (path1, path2) = findPathsBetween(cut.head, cut.last)
-    val sortedCut = innerPoints(if (path1.head == cut.head) cut else cut.reverse)
-    val polys = createPolygons(path1, path2, sortedCut)
+    val isInside = cutInside(cut)
+    println(s"Cutted inside $isInside")
+    val (path1, path2) = findPathsBetweenSorted(cut.head, cut.last)
+    val cutSorted = if (path1.head == cut.head) cut else cut.reverse // same dir as path1
+    val polys = if (isInside)
+      createPolygons(path1, path2, cutSorted)
+    else
+      extend(path1, path2, cutSorted)
+    //createPolygons(path1,cut, innerPoints(if (path1.head == cut.head) cut else cut.reverse), path2) // ???
     polys
   }
 }

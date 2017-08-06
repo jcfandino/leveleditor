@@ -27,6 +27,7 @@ object Main extends SimpleApplication {
     sets.setWidth(1024)
     sets.setHeight(768)
     sets.setGammaCorrection(false)
+    sets.setTitle("M8 Editor")
     setSettings(sets)
     setDisplayFps(true)
     setDisplayStatView(true)

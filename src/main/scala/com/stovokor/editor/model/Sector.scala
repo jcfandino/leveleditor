@@ -67,14 +67,28 @@ case class Sector(
 
   def divideBy(cut: List[Point]): List[Sector] = {
     val polys = polygon.divideBy(cut)
-    val closedByLine = closedWalls.groupBy(_.line).withDefault(_ => List())
-    val openByLine = openWalls.groupBy(_.line).withDefault(_ => List())
-    polys.map(poly => {
-      val newClosedWalls = poly.lines.flatMap(closedByLine)
-      val newOpenWalls = poly.lines.flatMap(openByLine) ++
-        poly.lines.filterNot(polygon.lines.contains).map(l => Wall(l, SurfaceTexture()))
-      Sector(poly, floor, ceiling, newOpenWalls, newClosedWalls)
-    })
+    if (polys.size == 1) {
+      List(this) // wasn't divided, don't do the rest
+    } else {
+      def other(poly: Polygon) = polys.filterNot(poly.equals).head
+      val closedByLine = closedWalls.groupBy(_.line).withDefault(_ => List())
+      val openByLine = openWalls.groupBy(_.line).withDefault(_ => List())
+      polys.map(poly => {
+        val shared = poly.sharedLines(other(poly))
+        val newClosedWalls = poly.lines.flatMap(l => {
+          // check if there is already such wall, or create it
+          val existing = closedByLine(l)
+          if (shared.contains(l)) List()
+          else if (!existing.isEmpty) existing
+          else if (!openByLine(l).isEmpty) List()
+          else List(Wall(l, SurfaceTexture()))
+        })
+        val newOpenWalls = poly.lines
+          .flatMap(openByLine) ++
+          shared.map(l => Wall(l, SurfaceTexture()))
+        Sector(poly, floor, ceiling, newOpenWalls, newClosedWalls)
+      })
+    }
   }
 }
 

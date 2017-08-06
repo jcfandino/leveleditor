@@ -168,8 +168,8 @@ class DrawingState extends BaseState
       if (builder.isCuttingSector(sectorId, sectorRepository)) {
         val newSectors = sector.divideBy(builder.points)
         println(s"~~ Sector divided ~~")
-        println(s"Old sector $sector")
-        println(s"New sectors $newSectors")
+        println(s"Old sector ${sector.polygon}")
+        for (sector <- newSectors) { println(s"- New sector ${sector}") }
         sectorRepository.remove(sectorId)
         val newIdAndSec = newSectors.map(s => (sectorRepository.add(s), s))
         val secsByLine = newIdAndSec.flatMap(p => p._2.openWalls.map(w => (w.line, p))).toMap
@@ -181,24 +181,31 @@ class DrawingState extends BaseState
             val replacement = BorderFactory
               .createBorder(fromId, from, border.sectorB, other, border.line)
             borderRepository.add(replacement)
-            println(s"Changed Border: $replacement from sector: $from")
+            println(s"Changed Border to: $replacement from sector: $from")
           }
         }
         for ((borderId, border) <- borderRepository.findTo(sectorId)) {
+          //          println(s"''''found to ${border}")
+          //          println(s"''''secsByLine ${secsByLine.get(border.line)}")
+          //          println(s"''''secsByLine inverted? ${secsByLine.get(border.line.reverse)}")
           borderRepository.remove(borderId)
-          for ((toId, to) <- secsByLine.get(border.line)) {
+          for (
+            (toId, to) <- secsByLine.get(border.line)
+              .orElse(secsByLine.get(border.line.reverse))
+          ) {
             val from = sectorRepository.get(border.sectorA)
             val replacement = BorderFactory
               .createBorder(border.sectorA, from, toId, to, border.line)
             borderRepository.add(replacement)
-            println(s"Changed Border: $replacement to sector: $to")
+            println(s"Changed Border from: $replacement to sector: $to")
             EventBus.trigger(SectorUpdated(border.sectorA, from))
           }
         }
         // generate new ones
         newIdAndSec.sliding(2).foreach(pair => pair match {
           case List((newIdA, newSecA), (newIdB, newSecB)) => {
-            val newBorders = BorderFactory.createBorders(newIdA, newSecA, newIdB, newSecB, builder.lines)
+            val lines = newSecA.polygon.sharedLines(newSecB.polygon) //builder.lines //TODO may not be these
+            val newBorders = BorderFactory.createBorders(newIdA, newSecA, newIdB, newSecB, lines)
             println(s"New borders: $newBorders")
             newBorders.map(borderRepository.add)
           }
