@@ -36,7 +36,7 @@ class GuiState extends BaseState {
     generalWindow.addChild(new Label("M8 Editor"))
     guiNode.attachChild(generalWindow)
     generalWindow.setLocalTranslation(0, app.getCamera.getHeight, 0)
-        generalWindow.setSize(new Vector3f(0f, app.getCamera.getHeight, 0))
+    generalWindow.setSize(new Vector3f(0f, app.getCamera.getHeight, 0))
     generalWindow
   }
   def createGeneralPanel() = {
@@ -44,11 +44,10 @@ class GuiState extends BaseState {
     val exit = generalPanel.addChild(new Button("Exit"))
     val restart = generalPanel.addChild(new Button("New"))
     restart.addClickCommands(_ => {
-      val repo = SectorRepository()
-      for ((id, sec) <- repo.sectors) {
-        repo.remove(id)
+      for ((id, sec) <- SectorRepository().sectors) {
         EventBus.trigger(SectorDeleted(id))
       }
+      SectorRepository().removeAll
     })
     exit.addClickCommands(_ => app.stop)
     val mode3d = generalPanel.addChild(new Button("2D/3D"))

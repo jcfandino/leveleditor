@@ -21,7 +21,7 @@ import com.stovokor.editor.model.Border
 object MeshFactory {
   def apply(assetManager: AssetManager) = new MeshFactory(assetManager)
 }
-class MeshFactory(val assetManager: AssetManager) extends MaterialFactory {
+class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
   def createMesh(sec: Sector, borders: List[Border] = List()) = {
 

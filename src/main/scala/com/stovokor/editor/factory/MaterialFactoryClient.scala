@@ -7,17 +7,32 @@ import com.jme3.texture.Texture.WrapMode
 import com.jme3.texture.Texture
 import com.jme3.math.ColorRGBA
 
-trait MaterialFactory {
+trait MaterialFactoryClient {
 
   def assetManager: AssetManager
 
-  def plainColor(color: ColorRGBA): Material = {
+  def plainColor(color: ColorRGBA) = MaterialFactory().plainColor(assetManager, color)
+
+  def texture(file: String) = MaterialFactory().texture(assetManager, file)
+}
+
+object MaterialFactory {
+  private var instance = new MaterialFactory
+
+  def setInstance(mf: MaterialFactory) { instance = mf }
+
+  def apply() = instance
+}
+
+class MaterialFactory {
+
+  def plainColor(assetManager: AssetManager, color: ColorRGBA): Material = {
     var mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
     mat.setColor("Color", color)
     mat
   }
 
-  def texture(file: String): Material = {
+  def texture(assetManager: AssetManager, file: String): Material = {
     val tex = assetManager.loadTexture(file)
     tex.setWrap(WrapMode.Repeat)
 

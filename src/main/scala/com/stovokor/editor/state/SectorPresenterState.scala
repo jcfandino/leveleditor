@@ -12,7 +12,7 @@ import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.StateFunctionListener
 import com.stovokor.editor.control.SelectableControl
-import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.editor.factory.MaterialFactoryClient
 import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.editor.input.InputFunction
 import com.stovokor.editor.model.Point
@@ -40,7 +40,7 @@ import com.stovokor.util.SectorDeleted
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
-    with MaterialFactory
+    with MaterialFactoryClient
     with EditorEventListener
     with CanMapInput
     with StateFunctionListener {

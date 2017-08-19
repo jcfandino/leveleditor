@@ -11,7 +11,7 @@ import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.StateFunctionListener
 import com.stovokor.editor.control.ConstantSizeOnScreenControl
-import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.editor.factory.MaterialFactoryClient
 import com.stovokor.editor.gui.K
 import com.stovokor.editor.gui.Palette
 import com.stovokor.editor.input.InputFunction
@@ -31,7 +31,7 @@ import com.stovokor.util.SectorDeleted
 
 class DrawingState extends BaseState
     with EditorEventListener
-    with MaterialFactory
+    with MaterialFactoryClient
     with CanMapInput
     with AnalogFunctionListener
     with StateFunctionListener {
@@ -82,7 +82,8 @@ class DrawingState extends BaseState
   }
 
   def addPoint(x: Float, y: Float) {
-    val isDoubleClick = System.currentTimeMillis - lastClick < 200
+    val isDoubleClick = System.currentTimeMillis - lastClick < 200 &&
+      currentBuilder.map(b => b.last.distance(Point(x, y)) < 0.1f).orElse(Some(false)).get
     lastClick = System.currentTimeMillis
     currentBuilder = currentBuilder match {
       case None => Some(SectorBuilder.start(Point(x, y)))

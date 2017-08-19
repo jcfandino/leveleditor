@@ -19,7 +19,7 @@ import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.StateFunctionListener
 import com.stovokor.editor.control.ConstantSizeOnScreenControl
-import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.editor.factory.MaterialFactoryClient
 import com.stovokor.editor.gui.K
 import com.stovokor.editor.gui.Palette
 import com.stovokor.editor.input.InputFunction
@@ -29,7 +29,7 @@ import com.stovokor.util.PointClicked
 import com.stovokor.util.LemurExtensions._
 
 class GridState extends BaseState
-    with MaterialFactory
+    with MaterialFactoryClient
     with CanMapInput
     with StateFunctionListener {
 
@@ -72,7 +72,7 @@ class GridState extends BaseState
 
   def setupInput(spatial: Spatial) {
     spatial.onCursorClick((event, target, capture) => {
-      if (isEnabled && event.getButtonIndex == 0) {
+      if (isEnabled && event.getButtonIndex == 0 && event.isPressed) {
         event.setConsumed()
         clicked = event.isPressed()
         EventBus.trigger(PointClicked(Point(snapX(mousePos.x), snapY(mousePos.y))))

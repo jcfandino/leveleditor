@@ -15,7 +15,7 @@ class SectorRepository {
 
   var sectors: Map[Long, Sector] = Map()
 
-  val index = SectorIndex()
+  var index = SectorIndex()
 
   def add(sector: Sector) = {
     val id = idGenerator.getAndIncrement
@@ -43,5 +43,10 @@ class SectorRepository {
 
   def find(point: Point) = {
     index.find(point).map(id => (id, () => get(id)))
+  }
+
+  def removeAll {
+    sectors = Map()
+    index = SectorIndex()
   }
 }

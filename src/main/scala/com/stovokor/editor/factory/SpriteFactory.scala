@@ -11,7 +11,7 @@ import com.jme3.scene.VertexBuffer.Type
 import com.jme3.util.BufferUtils
 import com.stovokor.editor.tiles.SpriteSheet
 
-class SpriteFactory(val assetManager: AssetManager) extends MaterialFactory {
+class SpriteFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
   def create(assetManager: AssetManager, name: String, sheet: SpriteSheet, width: Float, height: Float, pos: Vector3f, transparent: Boolean = true) = {
     val mesh = createMesh(sheet, width, height)
