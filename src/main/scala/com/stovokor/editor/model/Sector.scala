@@ -71,8 +71,9 @@ case class Sector(
       List(this) // wasn't divided, don't do the rest
     } else {
       def other(poly: Polygon) = polys.filterNot(poly.equals).head
-      val closedByLine = closedWalls.groupBy(_.line).withDefault(_ => List())
-      val openByLine = openWalls.groupBy(_.line).withDefault(_ => List())
+      def andReversedWall(w: Wall) = List(w) // TODO add reverse?: , w.updateLine(w.line.reverse))
+      val closedByLine = closedWalls.flatMap(andReversedWall).groupBy(_.line).withDefault(_ => List())
+      val openByLine = openWalls.flatMap(andReversedWall).groupBy(_.line).withDefault(_ => List())
       polys.map(poly => {
         val shared = poly.sharedLines(other(poly))
         val newClosedWalls = poly.lines.flatMap(l => {
