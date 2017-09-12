@@ -211,6 +211,9 @@ class DrawingState extends BaseState
             newBorders.map(borderRepository.add)
           }
         })
+        //TODO I'm forgetting to find borders with pre-existing sectors!!
+
+        // ...
         // clean builder
         cancelPolygon
         // Trigger events to redraw sectors

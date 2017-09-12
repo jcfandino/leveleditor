@@ -35,6 +35,10 @@ class BorderRepository {
     old
   }
 
+  def removeAll {
+    borders = Map()
+  }
+
   def get(id: Long) = {
     borders(id)
   }
@@ -51,7 +55,7 @@ class BorderRepository {
   }
 
   def find(line: Line): List[(Long, Border)] = {
-    find((id, border) => border.line == line)
+    find((id, border) => border.line == line) //or should be border.line.alike(line))
   }
 
   def find(filterFunc: (Long, Border) => Boolean) = {

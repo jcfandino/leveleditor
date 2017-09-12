@@ -24,7 +24,7 @@ class SectorBuilder(
   def add(id: Long) = new SectorBuilder(polygonBuilder, neighbours ++ List(id))
 
   def isCuttingSector(sectorId: Long, sectorRepository: SectorRepository) = {
-    neighbours.filter(sectorId.equals).size > 1
+    neighbours.filter(sectorId.equals).size > 1 && neighbours.filter(neighbours(0).equals).size > 1
     //TODO need to check it's not a border of the polygon something like
     // points.sliding(2).map(s => Line(s(0), s(1))).forall(polygon.lines.contains))
     // need to get the sector for that.
@@ -61,7 +61,7 @@ class SectorBuilder(
 
     def create(sectorRepo: SectorRepository, borderRepo: BorderRepository) = {
       println(s"drawing with neighbours $neighbours")
-      val neighbourSectors = neighbours.toList.sorted.map(id => (id, sectorRepo.get(id)))
+      val neighbourSectors = neighbours.sorted.map(id => (id, sectorRepo.get(id)))
       val (floor, ceiling) = floorAndCeiling(neighbourSectors.find(_ => true).map(_._2))
 
       val polygon = polygonBuilder.build

@@ -20,6 +20,7 @@ import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.editor.model.Line
 import com.stovokor.editor.factory.MaterialFactory
+import com.stovokor.editor.model.repository.BorderRepository
 
 class DrawSectorSpec extends FlatSpec
     with Matchers
@@ -41,19 +42,22 @@ class DrawSectorSpec extends FlatSpec
     MaterialFactory.setInstance(mock[MaterialFactory])
     drawindState.initialize(stateManager, app)
     SectorRepository().removeAll
+    BorderRepository().removeAll
   }
 
   behavior of "Drawing state"
 
   /*
-   *   D--------C-------F      
-   *   | \      |       |      
-   *   |  ` o   |       |      
-   *   |      \ |       |      
-   *   X--------B-------E      
+   *   D-------C-------F------I
+   *   |     / |       |      |
+   *   |   ø   |       |      |
+   *   | /     |       |      |
+   *   X-------B-------E------H
    *                           
    */
-  val (x, b, c, d, e, f) = (Point(-1, -1), Point(1, -1), Point(1, 1), Point(-1, 1), Point(2, -1), Point(2, 1))
+  val (d, c, f, i, x, b, e, h) = (
+    Point(-1, 1), Point(1, 1), Point(2, 1), Point(3, 1),
+    Point(-1, -1), Point(1, -1), Point(2, -1), Point(3, -1))
 
   it should "be able to draw a square room" in {
     Given("An empty space")
@@ -75,6 +79,8 @@ class DrawSectorSpec extends FlatSpec
     Then("A two new sectors should be saved")
     assert(sectorDefinedByPoints(x, b, c))
     assert(sectorDefinedByPoints(c, d, x))
+    And("One border should connect them")
+    assert(borderDefinedByPoints(c, x))
   }
 
   it should "be able to extend a square room to a side (up-bottom)" in {
@@ -87,6 +93,8 @@ class DrawSectorSpec extends FlatSpec
     Then("Two new sectors should be saved")
     assert(sectorDefinedByPoints(x, b, c, d))
     assert(sectorDefinedByPoints(c, f, e, b))
+    And("One border should connect them")
+    assert(borderDefinedByPoints(c, b))
   }
 
   it should "be able to extend a square room to a side (bottom-up)" in {
@@ -99,6 +107,26 @@ class DrawSectorSpec extends FlatSpec
     Then("Two new sectors should be saved")
     assert(sectorDefinedByPoints(x, b, c, d))
     assert(sectorDefinedByPoints(c, f, e, b))
+    And("One border should connect them")
+    assert(borderDefinedByPoints(c, b))
+  }
+
+  it should "be able connect two isolated sectors" in {
+    Given("Two separated squared sectors are drawn")
+    makeClicks(x, b, c, d, x)
+    makeClicks(e, h, i, f, e)
+
+    When("New lines are drawn connecting both sectors")
+    makeClicks(b, e, f, c)
+
+    Then("Three new sectors should be saved")
+    assert(sectorDefinedByPoints(x, b, c, d))
+    assert(sectorDefinedByPoints(e, h, i, f))
+    assert(sectorDefinedByPoints(b, e, f, c))
+    And("Two borders should connect them")
+    assert(borderDefinedByPoints(c, b))
+    // TODO the border with pre-existing sector isn't make
+    // assert(borderDefinedByPoints(f, e))
   }
 
   class MockEventListener extends EditorEventListener {
