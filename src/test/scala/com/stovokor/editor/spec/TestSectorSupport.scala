@@ -16,7 +16,7 @@ trait TestSectorSupport {
     val lists = stream take ps.length
     SectorRepository()
       .find(ps.head)
-      .find(s => lists.contains(s._2().polygon.pointsSorted))
+      .find(s => lists.contains(s._2.polygon.pointsSorted))
       .isDefined
   }
 

@@ -56,8 +56,8 @@ class ModifyingState extends BaseState
     val pointsToMove = (selectedPoints ++ Set(from))
     pointsToMove.foreach(point => {
       val sectors = sectorRepository.find(point)
-      for ((sectorId, getter) <- sectors) {
-        val updated = getter().moveSinglePoint(point, dx, dy)
+      for ((sectorId, sector) <- sectors) {
+        val updated = sector.moveSinglePoint(point, dx, dy)
         sectorRepository.update(sectorId, updated)
         toUpdate = toUpdate ++ Set((sectorId, updated))
       }
@@ -85,7 +85,7 @@ class ModifyingState extends BaseState
     selectedPoints
       .flatMap(sectorRepository.find)
       .foreach(result => {
-        val (id, sector) = (result._1, result._2())
+        val (id, sector) = result
         val sectorPoints = sector.polygon.pointsUnsorted
         val sectorLines = sector.polygon.lines
         val newSector = sectorLines

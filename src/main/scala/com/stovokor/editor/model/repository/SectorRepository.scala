@@ -3,6 +3,7 @@ package com.stovokor.editor.model.repository
 import com.stovokor.editor.model.Sector
 import java.util.concurrent.atomic.AtomicLong
 import com.stovokor.editor.model.Point
+import com.stovokor.editor.model.Line
 
 object SectorRepository {
   var instance = new SectorRepository()
@@ -42,7 +43,12 @@ class SectorRepository {
   }
 
   def find(point: Point) = {
-    index.find(point).map(id => (id, () => get(id)))
+    index.find(point).map(id => (id, get(id)))
+  }
+
+  def find(line: Line) = {
+    val withPoints = index.find(line.a) ++ index.find(line.b)
+    withPoints.map(id => (id, get(id)))
   }
 
   def removeAll {

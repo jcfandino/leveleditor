@@ -125,8 +125,7 @@ class DrawSectorSpec extends FlatSpec
     assert(sectorDefinedByPoints(b, e, f, c))
     And("Two borders should connect them")
     assert(borderDefinedByPoints(c, b))
-    // TODO the border with pre-existing sector isn't make
-    // assert(borderDefinedByPoints(f, e))
+    assert(borderDefinedByPoints(f, e))
   }
 
   class MockEventListener extends EditorEventListener {

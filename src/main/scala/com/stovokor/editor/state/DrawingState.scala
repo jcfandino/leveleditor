@@ -73,7 +73,7 @@ class DrawingState extends BaseState
         addPoint(point.x, point.y)
         for ((sectorId, sector) <- sectorRepository.find(point)) {
           currentBuilder = currentBuilder.map(_.add(sectorId))
-          checkCuttingSector(sectorId, sector())
+          checkCuttingSector(sectorId, sector)
         }
       }
       case ViewModeSwitch() => cancelPolygon
@@ -165,6 +165,33 @@ class DrawingState extends BaseState
   }
 
   def checkCuttingSector(sectorId: Long, sector: Sector) = {
+    // This is the simplified version reusing the SectorFactory.
+    // I redoes the sectors without keeping the properties, need to implement that.
+    // Required a lot of cleanup and bug fixing.
+    // TODO recover sector and border properties from previous sector.
+    currentBuilder.foreach(builder => {
+      if (builder.isCuttingSector(sectorId, sectorRepository)) {
+        // Remove old sector
+        sectorRepository.remove(sectorId)
+        for ((borderId, border) <- borderRepository.findFrom(sectorId)) {
+          borderRepository.remove(borderId)
+        }
+        for ((borderId, border) <- borderRepository.findTo(sectorId)) {
+          borderRepository.remove(borderId)
+        }
+        EventBus.trigger(SectorDeleted(sectorId))
+        // Create new sectors
+        val polygons = sector.polygon.divideBy(builder.points)
+        polygons.foreach(polygon => {
+          builder.SectorFactory.create(SectorRepository(), BorderRepository(), polygon)
+        })
+        cancelPolygon
+      }
+    })
+  }
+
+  // TODO Remove this method, it's keept for future reference.
+  def checkCuttingSectorOld(sectorId: Long, sector: Sector) = {
     currentBuilder.foreach(builder => {
       if (builder.isCuttingSector(sectorId, sectorRepository)) {
         val newSectors = sector.divideBy(builder.points)

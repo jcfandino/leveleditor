@@ -65,6 +65,7 @@ case class Sector(
       .updatedClosedWalls(updateWalls(closedWalls))
   }
 
+  // TODO not used any more, but I need to use some parts from here maybe.
   def divideBy(cut: List[Point]): List[Sector] = {
     val polys = polygon.divideBy(cut)
     if (polys.size == 1) {

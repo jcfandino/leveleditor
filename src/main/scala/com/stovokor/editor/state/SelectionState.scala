@@ -50,7 +50,7 @@ class SelectionState extends BaseState
   }
 
   def selectPoint(point: Point) {
-    val sectors = sectorRepository.find(point).map(_._2())
+    val sectors = sectorRepository.find(point).map(_._2)
     mode.selectPoint(point, sectors)
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
     //println(s"Selected points $selectedPoints")
