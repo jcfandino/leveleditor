@@ -55,7 +55,7 @@ class ModifyingState extends BaseState
     var toUpdate: Set[(Long, Sector)] = Set()
     val pointsToMove = (selectedPoints ++ Set(from))
     pointsToMove.foreach(point => {
-      val sectors = sectorRepository.find(point)
+      val sectors = sectorRepository.findByPoint(point)
       for ((sectorId, sector) <- sectors) {
         val updated = sector.moveSinglePoint(point, dx, dy)
         sectorRepository.update(sectorId, updated)
@@ -83,7 +83,7 @@ class ModifyingState extends BaseState
 
   def splitSelection() {
     selectedPoints
-      .flatMap(sectorRepository.find)
+      .flatMap(sectorRepository.findByPoint)
       .foreach(result => {
         val (id, sector) = result
         val sectorPoints = sector.polygon.pointsUnsorted

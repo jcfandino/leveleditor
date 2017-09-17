@@ -42,8 +42,12 @@ class SectorRepository {
     sectors(id)
   }
 
-  def find(point: Point) = {
-    index.find(point).map(id => (id, get(id)))
+  def findByPoint(point: Point) = {
+    index.findByPoint(point).map(id => (id, get(id)))
+  }
+
+  def findInside(point: Point) = {
+    index.findInside(point).map(id => (id, get(id)))
   }
 
   def find(line: Line) = {

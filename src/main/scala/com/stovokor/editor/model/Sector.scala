@@ -17,21 +17,30 @@ case class Sector(
     val floor: Surface,
     val ceiling: Surface,
     val openWalls: List[Wall],
-    val closedWalls: List[Wall]) {
+    val closedWalls: List[Wall],
+    val holes: Set[Polygon] = Set()) {
 
-  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls, closedWalls)
-  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls, closedWalls)
-  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls, closedWalls)
+  def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls, closedWalls, holes)
+  def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls, closedWalls, holes)
+  def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls, closedWalls, holes)
+
+  def cutHole(hole: Polygon) = Sector(polygon, floor, ceiling, openWalls,
+    closedWalls ++ (hole.pointsSorted ++ List(hole.pointsSorted.head))
+      .reverse
+      .sliding(2)
+      .map(l => Line(l(0), l(1)))
+      .map(l => Wall(l, SurfaceTexture())),
+    holes ++ Set(hole))
 
   def updatedOpenWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling, updated,
-    closedWalls.filterNot(updated.contains))
+    closedWalls.filterNot(updated.contains), holes)
 
   def updatedClosedWalls(updated: List[Wall]) = Sector(polygon, floor, ceiling,
-    openWalls.filterNot(updated.contains), updated)
+    openWalls.filterNot(updated.contains), updated, holes)
 
   def updatedClosedWall(idx: Int, updated: Wall) = Sector(polygon, floor, ceiling,
     openWalls.filterNot(updated.equals),
-    closedWalls.updated(idx, updated))
+    closedWalls.updated(idx, updated), holes)
 
   def moveSinglePoint(point: Point, dx: Float, dy: Float) = {
     def updateWalls(walls: List[Wall]) = {
@@ -65,6 +74,13 @@ case class Sector(
       .updatedClosedWalls(updateWalls(closedWalls))
   }
 
+  def contains(point: Point) = {
+    // this takes holes into consideration.
+    polygon.contains(point) && holes.find(_.contains(point)).isEmpty
+  }
+
+  def triangulate = Triangulator.triangulate(polygon, holes)
+
   // TODO not used any more, but I need to use some parts from here maybe.
   def divideBy(cut: List[Point]): List[Sector] = {
     val polys = polygon.divideBy(cut)
@@ -88,7 +104,7 @@ case class Sector(
         val newOpenWalls = poly.lines
           .flatMap(openByLine) ++
           shared.map(l => Wall(l, SurfaceTexture()))
-        Sector(poly, floor, ceiling, newOpenWalls, newClosedWalls)
+        Sector(poly, floor, ceiling, newOpenWalls, newClosedWalls, holes)
       })
     }
   }

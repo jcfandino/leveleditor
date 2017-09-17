@@ -71,7 +71,7 @@ class DrawingState extends BaseState
     event match {
       case PointClicked(point) => if (isEnabled) {
         addPoint(point.x, point.y)
-        for ((sectorId, sector) <- sectorRepository.find(point)) {
+        for ((sectorId, sector) <- sectorRepository.findByPoint(point)) {
           currentBuilder = currentBuilder.map(_.add(sectorId))
           checkCuttingSector(sectorId, sector)
         }
@@ -92,7 +92,7 @@ class DrawingState extends BaseState
         if (point.distance(builder.first) < minDistance || isDoubleClick) {
           if (builder.size > 2) {
             println(s"polygon completed ${builder.size}")
-            val (sectorId, sector) = builder.build(sectorRepository, borderRepository)
+            builder.build(sectorRepository, borderRepository)
             None
           } else {
             println(s"ignored, cannot finish yet")
@@ -166,8 +166,8 @@ class DrawingState extends BaseState
 
   def checkCuttingSector(sectorId: Long, sector: Sector) = {
     // This is the simplified version reusing the SectorFactory.
-    // I redoes the sectors without keeping the properties, need to implement that.
-    // Required a lot of cleanup and bug fixing.
+    // It redoes the sectors without keeping the properties, need to implement that.
+    // Requires a lot of cleanup and bug fixing.
     // TODO recover sector and border properties from previous sector.
     currentBuilder.foreach(builder => {
       if (builder.isCuttingSector(sectorId, sectorRepository)) {
@@ -183,7 +183,8 @@ class DrawingState extends BaseState
         // Create new sectors
         val polygons = sector.polygon.divideBy(builder.points)
         polygons.foreach(polygon => {
-          builder.SectorFactory.create(SectorRepository(), BorderRepository(), polygon)
+          val holes = sector.holes.filter(polygon.contains)
+          builder.SectorFactory.create(SectorRepository(), BorderRepository(), polygon, holes)
         })
         cancelPolygon
       }

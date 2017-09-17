@@ -25,7 +25,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
 
   def createMesh(sec: Sector, borders: List[Border] = List()) = {
 
-    val triangles = sec.polygon.triangulate
+    val triangles = sec.triangulate
 
     val uniquePoints = triangles
       .flatMap(_.pointsSorted)

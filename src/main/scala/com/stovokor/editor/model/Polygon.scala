@@ -19,26 +19,6 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     ((pointsSorted zip pointsSorted.tail) map ((p) => Line(p._1, p._2))) ++ List(Line(pointsSorted.last, pointsSorted.head))
   }
 
-  def triangulate: List[Triangle] = {
-    val vertices = pointsSorted
-      .flatMap(p => List(p.x, p.y))
-      .map(_.toDouble)
-      .toArray
-    def px(i: Int) = vertices(2 * i)
-    def py(i: Int) = vertices(2 * i + 1)
-    // the result is a list of indexes pointing to the original array
-    val result = Earcut.earcut(vertices, null, 2)
-    val indexes = result.sliding(3, 3)
-    val triangles = indexes.map(l => (
-      Point(px(l(0)), py(l(0))),
-      Point(px(l(1)), py(l(1))),
-      Point(px(l(2)), py(l(2)))))
-      .map(ps => ps match { case (a, b, c) => Triangle(a, b, c) })
-      .map(_.asClockwise)
-      .toList
-    triangles
-  }
-
   private val limY = 10000000f
 
   def isClockwise = {
@@ -108,13 +88,18 @@ case class Polygon(val pointsUnsorted: List[Point]) {
   }
 
   // if the point is right in the border, the result in undetermined!
-  def contains(point: Point) = {
+  def contains(point: Point): Boolean = {
     // https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
     lines
       .map(line => (line.a.y > point.y) != (line.b.y > point.y) &&
         (point.x < (line.b.x - line.a.x) * (point.y - line.a.y) /
           (line.b.y - line.a.y) + line.a.x))
       .count(identity) % 2 == 1
+  }
+
+  // when all the points of the other polygon are inside this polygon
+  def contains(other: Polygon): Boolean = {
+    other.pointsSorted.forall(contains)
   }
 
   def innerPoints(ps: List[Point]) = if (ps.length < 3) List() else ps.slice(1, ps.length - 1)
@@ -160,6 +145,16 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     }
     polys
   }
+
+  lazy val boundBox: BoundBox = {
+    val firstPoint = pointsSorted.head
+    pointsSorted.foldLeft(BoundBox(firstPoint, firstPoint))((box, point) => {
+      BoundBox(
+        Point(box.from.x.min(point.x), box.from.y.min(point.y)),
+        Point(box.to.x.max(point.x), box.to.y.max(point.y)))
+    })
+  }
+
 }
 
 object Triangle {
@@ -167,8 +162,6 @@ object Triangle {
 }
 
 class Triangle(val p1: Point, val p2: Point, val p3: Point) extends Polygon(List(p1, p2, p3)) {
-  override def triangulate = List(this)
-
   def asClockwise = if (isClockwise) this else reverse
   def asCounterClockwise = if (!isClockwise) this else reverse
   def reverse = Triangle(p3, p2, p1)

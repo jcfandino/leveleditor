@@ -15,7 +15,7 @@ trait TestSectorSupport {
     val stream = Stream continually (ps ++ ps.init sliding ps.length) flatten
     val lists = stream take ps.length
     SectorRepository()
-      .find(ps.head)
+      .findByPoint(ps.head)
       .find(s => lists.contains(s._2.polygon.pointsSorted))
       .isDefined
   }

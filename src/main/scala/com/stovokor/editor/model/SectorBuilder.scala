@@ -25,7 +25,7 @@ class SectorBuilder(
 
   def isCuttingSector(sectorId: Long, sectorRepository: SectorRepository) = {
     neighbours.filter(sectorId.equals).size > 1 && neighbours.filter(neighbours(0).equals).size > 1
-//    false
+    //    false
     //TODO need to check it's not a border of the polygon something like
     // points.sliding(2).map(s => Line(s(0), s(1))).forall(polygon.lines.contains))
     // need to get the sector for that.
@@ -39,7 +39,16 @@ class SectorBuilder(
 
   def build(sectorRepo: SectorRepository, borderRepo: BorderRepository) = {
     val polygon = polygonBuilder.build
-    SectorFactory.create(sectorRepo, borderRepo, polygon)
+    // check if this new polygon is inscribed inside another, in which case cut a hole
+    val cuttingHole = points.map(sectorRepo.findInside)
+    if (cuttingHole.isEmpty || !cuttingHole.forall(s => !s.isEmpty)) {
+      // not a hole
+      SectorFactory.create(sectorRepo, borderRepo, polygon)
+    } else {
+      val (id, sector) = cuttingHole.flatMap(s => s).head
+      val updated = sectorRepo.update(id, sector.cutHole(polygon))
+      EventBus.trigger(SectorUpdated(id, updated))
+    }
   }
 
   object SectorFactory {
@@ -61,7 +70,7 @@ class SectorBuilder(
       sector.updatedOpenWalls(updatedWalls)
     }
 
-    def create(sectorRepo: SectorRepository, borderRepo: BorderRepository, polygon: Polygon) = {
+    def create(sectorRepo: SectorRepository, borderRepo: BorderRepository, polygon: Polygon, holes: Set[Polygon] = Set()) = {
       println(s"drawing with neighbours $neighbours")
 
       val neighbourSectors = polygon.lines.flatMap(sectorRepo.find)
@@ -74,7 +83,8 @@ class SectorBuilder(
       val openWalls = neighbourSectors
         .flatMap(other => polygon.borderWith(other._2.polygon))
         .map(l => Wall(l, SurfaceTexture()))
-      val newSector = Sector(polygon, floor, ceiling, openWalls)
+      val newSectorNoHoles = Sector(polygon, floor, ceiling, openWalls)
+      val newSector = holes.foldLeft(newSectorNoHoles)((sec, hole) => sec.cutHole(hole))
       val newSectorId = sectorRepo.add(newSector)
       // update borders
       BorderFactory
