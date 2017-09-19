@@ -13,7 +13,9 @@ class GuiState extends BaseState with EditorEventListener {
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     val toolbar = GuiFactory.toolbar(app.getCamera.getWidth, app.getCamera.getHeight)
+    val statusbar = GuiFactory.statusbar(app.getCamera.getWidth, app.getCamera.getHeight)
     guiNode.attachChild(toolbar)
+    guiNode.attachChild(statusbar)
     EventBus.subscribe(this, ExitApplication())
   }
 

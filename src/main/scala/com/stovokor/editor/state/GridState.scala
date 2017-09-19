@@ -119,7 +119,7 @@ class GridState extends BaseState
     val node = new Node("axis")
     node.attachChild(arrowX)
     node.attachChild(arrowY)
-    node.setLocalTranslation(0f, 0f, -10f)
+    node.setLocalTranslation(0f, 0f, 1f)
     node
   }
 
@@ -146,7 +146,9 @@ class GridState extends BaseState
     val plane = new Geometry("pickPlane", new Quad(2 * spanX, 2 * spanY))
     plane.setMaterial(plainColor(ColorRGBA.Black))
     plane.setCullHint(CullHint.Always)
-    plane.move(-spanX, -spanY, -1f)
+    plane.move(-spanX, -spanY, 99f)
+    // I set this lower could get unresponsive
+    // I think it can be conflicting with geometries in 3d space
     plane
   }
 
