@@ -16,10 +16,12 @@ import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.creation.BorderFactory
+import com.simsilica.lemur.input.AnalogFunctionListener
 
 class Edit3DState extends BaseState
     with EditorEventListener
     with CanMapInput
+    with AnalogFunctionListener
     with StateFunctionListener {
 
   val sectorRepository = SectorRepository()
@@ -39,7 +41,9 @@ class Edit3DState extends BaseState
     inputMapper.addStateListener(this, InputFunction.editTextureOffsetY)
     inputMapper.addStateListener(this, InputFunction.editTextureScaleX)
     inputMapper.addStateListener(this, InputFunction.editTextureScaleY)
+    inputMapper.addAnalogListener(this, InputFunction.mouseWheel)
     inputMapper.activateGroup(InputFunction.edit3d)
+    inputMapper.activateGroup(InputFunction.mouse)
   }
 
   def onEvent(event: EditorEvent) = event match {
@@ -73,6 +77,13 @@ class Edit3DState extends BaseState
         else if (state == InputState.Negative) changeTextureScale(0f, -.1f)
       }
       case _ => println(s"got: $functionId")
+    }
+  }
+
+  def valueActive(functionId: FunctionId, value: Double, tpf: Double) = functionId match {
+    case InputFunction.mouseWheel => {
+      if (value > 0.0) changeHeight(.1f)
+      else if (value < 0.0) changeHeight(-.1f)
     }
   }
 
