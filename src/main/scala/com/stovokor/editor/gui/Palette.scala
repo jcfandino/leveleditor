@@ -11,5 +11,7 @@ object Palette {
 
   val selectedElement = ColorRGBA.Red
   val drawing = ColorRGBA.Green
+  val hoveredSurfaceMin = new ColorRGBA(.8f, .8f, .8f, 1)
+  val hoveredSurfaceMax = new ColorRGBA(1.4f, 1.4f, 1f, 1)
 
 }

@@ -109,7 +109,7 @@ class SectorPresenterState extends BaseState
     def draw3d() {
       val node = getOrCreateNode(get3DNode, "sector-" + id)
       var borders = borderRepository.findFrom(id).map(_._2)
-      val meshNode = MeshFactory(assetManager).createMesh(sector, borders)
+      val meshNode = MeshFactory(assetManager).createMesh(id, sector, borders)
       setup3dInput(id, meshNode)
       node.attachChild(meshNode)
     }

@@ -17,13 +17,14 @@ import com.stovokor.editor.model.Surface
 import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.Line
 import com.stovokor.editor.model.Border
+import com.stovokor.editor.control.HighlightControl
 
 object MeshFactory {
   def apply(assetManager: AssetManager) = new MeshFactory(assetManager)
 }
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
-  def createMesh(sec: Sector, borders: List[Border] = List()) = {
+  def createMesh(id: Long, sec: Sector, borders: List[Border] = List()) = {
 
     val triangles = sec.triangulate
 
@@ -33,19 +34,19 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
       .sortBy(p => p.distance(Point(0f, 0f)))
 
     val node = new Node("sector")
-    val floor = createSurface(triangles, uniquePoints, sec.floor, true)
-    val ceiling = createSurface(triangles, uniquePoints, sec.ceiling, false)
+    val floor = createSurface(id, triangles, uniquePoints, sec.floor, true)
+    val ceiling = createSurface(id, triangles, uniquePoints, sec.ceiling, false)
     node.attachChild(floor)
     node.attachChild(ceiling)
     sec.closedWalls
       .zipWithIndex
-      .map(w => createWall(w._1, "wall-" + w._2, sec.floor.height, sec.ceiling.height))
+      .map(w => createWall(id, w._1, "wall-" + w._2, sec.floor.height, sec.ceiling.height))
       .foreach(node.attachChild)
-    createBordersMesh(node, sec, borders)
+    createBordersMesh(node, id, sec, borders)
     node
   }
 
-  def createBordersMesh(node: Node, sector: Sector, borders: List[Border]) = {
+  def createBordersMesh(node: Node, id: Long, sector: Sector, borders: List[Border]) = {
     borders.foreach(b => println(s"Border found $b"))
     def idx(border: Border) = {
       sector.openWalls
@@ -55,6 +56,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     def bottomMaybe(border: Border) = {
       if (border.surfaceFloor.height > 0f) {
         Some(createWall(
+          id,
           Wall(border.line, border.surfaceFloor.texture),
           "borderLow-" + idx(border),
           sector.floor.height,
@@ -64,6 +66,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     def topMaybe(border: Border) = {
       if (border.surfaceCeiling.height > 0f) {
         Some(createWall(
+          id,
           Wall(border.line, border.surfaceCeiling.texture),
           "borderHi-" + idx(border),
           sector.ceiling.height - border.surfaceCeiling.height,
@@ -80,7 +83,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
       .foreach(node.attachChild)
   }
 
-  def createSurface(triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
+  def createSurface(id: Long, triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
     def sortTriangle(t: Triangle) = if (faceUp) t.asClockwise else t.asCounterClockwise
     def normal = if (faceUp) Vector3f.UNIT_Y else Vector3f.UNIT_Y.negate
     val m = new Mesh
@@ -110,10 +113,11 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     val name = if (faceUp) "floor" else "ceiling"
     val geom = new Geometry(name, m)
     geom.setMaterial(texture("Textures/Debug1.png"))
+    geom.addControl(new HighlightControl(id, name))
     geom
   }
 
-  def createWall(wall: Wall, name: String, bottom: Float, top: Float): Geometry = {
+  def createWall(id: Long, wall: Wall, name: String, bottom: Float, top: Float): Geometry = {
     val line = wall.line
     val tex = wall.texture
     val m = new Mesh
@@ -143,6 +147,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     m.updateBound()
     val geom = new Geometry(name, m)
     geom.setMaterial(texture("Textures/Debug1.png"))
+    geom.addControl(new HighlightControl(id, name))
     geom
   }
 
