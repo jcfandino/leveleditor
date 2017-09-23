@@ -34,8 +34,8 @@ class Camera3DState extends BaseState
     app.getFlyByCamera.setRotationSpeed(2f)
     cam.setParallelProjection(false)
     cam.setLocation(new Vector3f(0f, 2f, 0f))
-    cam.lookAt(new Vector3f(0f, 1f, 10f), Vector3f.UNIT_Y)
-    cam.setFrustumPerspective(45f, (cam.getWidth / cam.getHeight).toFloat, 1f, 1000f)
+    cam.lookAt(new Vector3f(0f, 2f, 10f), Vector3f.UNIT_Y)
+    cam.setFrustumPerspective(45f, cam.getWidth.toFloat / cam.getHeight, 1f, 1000f)
     cam.update
     setupInput
   }

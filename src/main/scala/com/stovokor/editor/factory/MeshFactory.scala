@@ -24,6 +24,11 @@ object MeshFactory {
 }
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
+  // Coordinate mapping:
+  // 3D | 2D
+  //  X = -X
+  //  Z =  Y
+
   def createMesh(id: Long, sec: Sector, borders: List[Border] = List()) = {
 
     val triangles = sec.triangulate
@@ -84,12 +89,13 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
   }
 
   def createSurface(id: Long, triangles: List[Triangle], uniquePoints: List[Point], surface: Surface, faceUp: Boolean) = {
-    def sortTriangle(t: Triangle) = if (faceUp) t.asClockwise else t.asCounterClockwise
+    // we invert the triangle because we are inverting the X coordinate.
+    def sortTriangle(t: Triangle) = if (!faceUp) t.asClockwise else t.asCounterClockwise
     def normal = if (faceUp) Vector3f.UNIT_Y else Vector3f.UNIT_Y.negate
     val m = new Mesh
     m.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(
       uniquePoints
-        .map(p => new Vector3f(p.x, surface.height, p.y)) // we flip coords
+        .map(p => new Vector3f(-p.x, surface.height, p.y)) // we flip coords
         .toArray: _*))
 
     m.setBuffer(Type.TexCoord, 2, BufferUtils.createFloatBuffer(
@@ -122,21 +128,21 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     val tex = wall.texture
     val m = new Mesh
     m.setBuffer(Type.Position, 3, BufferUtils.createFloatBuffer(
-      new Vector3f(line.a.x, top, line.a.y),
-      new Vector3f(line.b.x, top, line.b.y),
-      new Vector3f(line.a.x, bottom, line.a.y),
-      new Vector3f(line.b.x, bottom, line.b.y)))
+      // the X coord is inverted
+      new Vector3f(-line.b.x, top, line.b.y),
+      new Vector3f(-line.a.x, top, line.a.y),
+      new Vector3f(-line.b.x, bottom, line.b.y),
+      new Vector3f(-line.a.x, bottom, line.a.y)))
 
-    //    val (xo, xe, yo, ye) = (0f, 1f, 0f, 1f) 
     val (xo, xe, yo, ye) =
       (tex.uvx(0f), tex.uvx(line.length),
         tex.uvy(bottom), tex.uvy(top))
 
     m.setBuffer(Type.TexCoord, 2, BufferUtils.createFloatBuffer(
-      new Vector2f(xo, yo),
-      new Vector2f(xe, yo),
+      new Vector2f(xe, ye),
       new Vector2f(xo, ye),
-      new Vector2f(xe, ye))) // Set up from sprite sheet
+      new Vector2f(xe, yo),
+      new Vector2f(xo, yo)))
 
     //new Vector2(-vector2.Y, vector2.X);
     // TODO check this
