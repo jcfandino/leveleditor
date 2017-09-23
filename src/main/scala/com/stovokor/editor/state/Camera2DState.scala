@@ -45,7 +45,7 @@ class Camera2DState extends BaseState
     if (animZoom != zoom) {
       animZoom += (if (animZoom > zoom) -animSpeed else animSpeed)
       if ((animZoom - zoom).abs < animSpeed) animZoom = zoom
-      val aspect = cam.getWidth() / cam.getHeight()
+      val aspect = cam.getWidth().toFloat / cam.getHeight()
       cam.setFrustum(0f, 10000f,
         -animZoom * aspect, animZoom * aspect,
         animZoom, -animZoom)
