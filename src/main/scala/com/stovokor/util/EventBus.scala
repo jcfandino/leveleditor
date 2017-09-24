@@ -72,6 +72,9 @@ case class EditModeSwitch(m: Int) extends EditorEvent
 case class SelectionModeSwitch(m: Int) extends EditorEvent
 case class ExitApplication() extends EditorEvent
 
+case class SaveMap(overwrite: Boolean) extends EditorEvent
+case class OpenMap() extends EditorEvent
+
 case class PointDragged(from: Point, to: Point) extends EditorEvent
 
 case class PointClicked(point: Point) extends EditorEvent

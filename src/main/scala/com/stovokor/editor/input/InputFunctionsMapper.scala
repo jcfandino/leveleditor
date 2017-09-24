@@ -33,6 +33,11 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.test3, KeyInput.KEY_F3)
     inputMapper.map(InputFunction.test4, KeyInput.KEY_F4)
 
+    // map them to ctrl-s ctrl-o, etc.
+    inputMapper.map(InputFunction.open, KeyInput.KEY_F9) 
+    inputMapper.map(InputFunction.save, KeyInput.KEY_F5)
+    inputMapper.map(InputFunction.saveAs, KeyInput.KEY_F6)
+
     // TODO try to reuse pgup and pgdn
     inputMapper.map(InputFunction.editHeight, KeyInput.KEY_P)
     inputMapper.map(InputFunction.editHeight, InputState.Negative, KeyInput.KEY_O)
@@ -60,6 +65,11 @@ object InputFunction {
   val mouseX = new FunctionId(mouse, "mouseX")
   val mouseY = new FunctionId(mouse, "mouseY")
   val mouseWheel = new FunctionId(mouse, "mouseWheel")
+
+  val files = "files"
+  val open = new FunctionId(files, "open")
+  val save = new FunctionId(files, "save")
+  val saveAs = new FunctionId(files, "saveAs")
 
   val general = "general"
   val cancel = new FunctionId(general, "cancel")

@@ -17,6 +17,7 @@ import com.stovokor.editor.state.SectorPresenterState
 import com.stovokor.editor.state.ModifyingState
 import com.stovokor.editor.state.SelectionState
 import com.stovokor.editor.state.Edit2DModeState
+import com.stovokor.editor.state.SaveOpenFileState
 
 // Level Editor
 object Main extends SimpleApplication {
@@ -51,6 +52,7 @@ object Main extends SimpleApplication {
     stateManager.attach(new MouseAppState(this))
     stateManager.attach(new ViewModeState)
     stateManager.attach(new SectorPresenterState)
+    stateManager.attach(new SaveOpenFileState)
   }
 
   def getInputListener = {
