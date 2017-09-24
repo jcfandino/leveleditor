@@ -25,6 +25,7 @@ import com.simsilica.lemur.Panel
 import com.stovokor.util.SaveMap
 import com.stovokor.util.OpenMap
 import com.stovokor.editor.model.repository.BorderRepository
+import com.stovokor.util.ExportMap
 
 object GuiFactory {
 
@@ -72,11 +73,13 @@ object GuiFactory {
     val open = generalPanel.addChild(button("document-open-2.png", "Open", infoText))
     val save = generalPanel.addChild(button("document-save-5.png", "Save", infoText))
     val saveAs = generalPanel.addChild(button("document-save-as-5.png", "Save as...", infoText))
+    val export = generalPanel.addChild(button("lorry-go.png", "Export...", infoText))
     val exit = generalPanel.addChild(button("application-exit-2.png", "Exit editor", infoText))
     exit.addClickCommands(_ => EventBus.trigger(ExitApplication()))
     open.addClickCommands(_ => EventBus.trigger(OpenMap()))
     save.addClickCommands(_ => EventBus.trigger(SaveMap(true)))
     saveAs.addClickCommands(_ => EventBus.trigger(SaveMap(false)))
+    export.addClickCommands(_ => EventBus.trigger(ExportMap()))
     val restart = generalPanel.addChild(button("edit-clear-3.png", "Reset map", infoText))
     restart.addClickCommands(_ => {
       // TODO Extract this to a state and call with an event

@@ -35,6 +35,7 @@ import com.stovokor.util.SectorUpdated
 class SaveOpenFileState extends BaseState
     with EditorEventListener
     with CanMapInput
+    with CanOpenDialog
     with StateFunctionListener {
 
   val sectorRepository = SectorRepository()
@@ -144,15 +145,6 @@ class SaveOpenFileState extends BaseState
       val map = MapFile(1, SectorRepository().sectors, BorderRepository().borders)
       JsonFiles.save(currentFile.get, map)
     }
-  }
-
-  def createFrame = {
-    val frame = new JFrame()
-    frame.setLocationRelativeTo(null)
-    frame.setUndecorated(true)
-    frame.setVisible(false)
-    frame.toFront()
-    frame
   }
 
   object JsonFiles {

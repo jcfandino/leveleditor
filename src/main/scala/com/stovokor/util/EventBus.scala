@@ -74,6 +74,7 @@ case class ExitApplication() extends EditorEvent
 
 case class SaveMap(overwrite: Boolean) extends EditorEvent
 case class OpenMap() extends EditorEvent
+case class ExportMap() extends EditorEvent
 
 case class PointDragged(from: Point, to: Point) extends EditorEvent
 

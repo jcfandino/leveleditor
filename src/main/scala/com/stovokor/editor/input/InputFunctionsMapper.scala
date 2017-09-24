@@ -70,6 +70,7 @@ object InputFunction {
   val open = new FunctionId(files, "open")
   val save = new FunctionId(files, "save")
   val saveAs = new FunctionId(files, "saveAs")
+  val export = new FunctionId(files, "export")
 
   val general = "general"
   val cancel = new FunctionId(general, "cancel")
