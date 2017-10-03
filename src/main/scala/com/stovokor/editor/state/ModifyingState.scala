@@ -16,7 +16,7 @@ import com.stovokor.util.SectorUpdated
 import com.stovokor.util.SplitSelection
 import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.repository.BorderRepository
-import com.stovokor.editor.model.creation.BorderFactory
+import com.stovokor.editor.factory.BorderFactory
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState

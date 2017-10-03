@@ -76,11 +76,12 @@ case class SaveMap(overwrite: Boolean) extends EditorEvent
 case class OpenMap() extends EditorEvent
 case class ExportMap() extends EditorEvent
 
-case class PointDragged(from: Point, to: Point) extends EditorEvent
 
 case class PointClicked(point: Point) extends EditorEvent
+case class PointDragged(from: Point, to: Point) extends EditorEvent
 case class PointSelectionChange(points: Set[Point]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent
+case class ChangeMaterial(sectorId:Long, target:String) extends EditorEvent
 
 case class SplitSelection() extends EditorEvent
 case class DeleteSelection() extends EditorEvent

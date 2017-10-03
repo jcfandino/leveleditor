@@ -26,7 +26,7 @@ import com.stovokor.util.SectorUpdated
 import com.stovokor.util.ViewModeSwitch
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.Sector
-import com.stovokor.editor.model.creation.BorderFactory
+import com.stovokor.editor.factory.BorderFactory
 import com.stovokor.util.SectorDeleted
 
 class DrawingState extends BaseState

@@ -35,6 +35,9 @@ class MaterialFactory {
   def texture(assetManager: AssetManager, file: String): Material = {
     val tex = assetManager.loadTexture(file)
     tex.setWrap(WrapMode.Repeat)
+    tex.setMagFilter(Texture.MagFilter.Nearest)
+    tex.setMinFilter(Texture.MinFilter.NearestNoMipMaps)
+    tex.setAnisotropicFilter(0)
 
     val mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
     mat.setTexture("ColorMap", tex)

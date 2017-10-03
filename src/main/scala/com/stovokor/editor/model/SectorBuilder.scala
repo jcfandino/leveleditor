@@ -4,7 +4,7 @@ import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.EventBus
 import com.stovokor.editor.model.repository.BorderRepository
-import com.stovokor.editor.model.creation.BorderFactory
+import com.stovokor.editor.factory.BorderFactory
 
 object SectorBuilder {
   def start(p: Point) = new SectorBuilder(PolygonBuilder.start(p), List())

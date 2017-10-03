@@ -24,6 +24,8 @@ object MeshFactory {
 }
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
+  def defaultTexture = texture("Textures/Debug3.png")
+
   // Coordinate mapping:
   // 3D | 2D
   //  X = -X
@@ -118,7 +120,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     m.updateBound()
     val name = if (faceUp) "floor" else "ceiling"
     val geom = new Geometry(name, m)
-    geom.setMaterial(texture("Textures/Debug1.png"))
+    geom.setMaterial(defaultTexture)
     geom.addControl(new HighlightControl(id, name))
     geom
   }
@@ -152,7 +154,7 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
     m.setBuffer(Type.Normal, 3, BufferUtils.createFloatBuffer(normal, normal, normal, normal))
     m.updateBound()
     val geom = new Geometry(name, m)
-    geom.setMaterial(texture("Textures/Debug1.png"))
+    geom.setMaterial(defaultTexture)
     geom.addControl(new HighlightControl(id, name))
     geom
   }

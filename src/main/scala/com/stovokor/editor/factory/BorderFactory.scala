@@ -1,4 +1,4 @@
-package com.stovokor.editor.model.creation
+package com.stovokor.editor.factory
 
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Sector
