@@ -8,7 +8,7 @@ object Sector {
     new Sector(polygon, floor, ceiling, openWalls, closedWalls)
 
   def defaultClosedWalls(polygon: Polygon, openWalls: List[Wall]) = polygon.lines
-    .map(l => Wall(l, SurfaceTexture(1f)))
+    .map(l => Wall(l, SurfaceTexture(0, 1f)))
     .filterNot(openWalls.contains)
 }
 

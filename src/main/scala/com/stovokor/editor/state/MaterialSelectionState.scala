@@ -9,9 +9,15 @@ import com.stovokor.util.ExportMap
 import com.stovokor.util.EventBus
 import com.jme3.app.Application
 import com.stovokor.util.ChangeMaterial
+import com.stovokor.editor.model.repository.BorderRepository
+import com.stovokor.editor.model.repository.SectorRepository
+import com.stovokor.util.SectorSurfaceMutator
 
 class MaterialSelectionState extends BaseState
     with EditorEventListener {
+
+  val sectorRepository = SectorRepository()
+  val borderRepository = BorderRepository()
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -24,7 +30,15 @@ class MaterialSelectionState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case ChangeMaterial(sectorId: Long, target: String) =>
+    case ChangeMaterial(sectorId: Long, target: String) => changeMaterial(sectorId, target)
     case _ =>
   }
+
+  def changeMaterial(sectorId: Long, target: String) {
+    println(s"Changing material $sectorId, $target")
+    SectorSurfaceMutator.mutate(sectorId, target, surface =>
+      surface.updateIndex(altmat(surface.index)))
+  }
+
+  def altmat(idx: Int) = (idx + 1) % 3
 }

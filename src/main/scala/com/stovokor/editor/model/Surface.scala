@@ -2,7 +2,7 @@ package com.stovokor.editor.model
 
 object Surface {
   def apply(height: Float, texture: SurfaceTexture) = new Surface(height, texture)
-  def apply(height: Float) = new Surface(height, SurfaceTexture(1f))
+  def apply(height: Float) = new Surface(height, SurfaceTexture(0, 1f))
   def empty = Surface(0f)
 }
 
@@ -17,16 +17,18 @@ case class Surface(
 
 object SurfaceTexture {
   def apply(
+    index: Int = 0,
     texScaleX: Float = 1f,
     texScaleY: Float = 1f,
     texOffsetX: Float = 0f,
-    texOffsetY: Float = 0f) = new SurfaceTexture(texScaleX, texScaleY, texOffsetX, texOffsetY)
+    texOffsetY: Float = 0f) = new SurfaceTexture(index, texScaleX, texScaleY, texOffsetX, texOffsetY)
 
-  def apply(texScale: Float) = new SurfaceTexture(texScale, texScale, 0f, 0f)
+  def apply(index: Int, texScale: Float) = new SurfaceTexture(index, texScale, texScale, 0f, 0f)
 
 }
 
 case class SurfaceTexture(
+    val index: Int,
     val texScaleX: Float,
     val texScaleY: Float,
     val texOffsetX: Float,
@@ -36,11 +38,15 @@ case class SurfaceTexture(
   def uvy(y: Float) = y / texScaleY + (texOffsetY / texScaleY)
 
   def move(dx: Float, dy: Float) = //TODO wrap values (1.1 => 0.1)
-    SurfaceTexture(texScaleX, texScaleY, texOffsetX + dx, texOffsetY + dy)
+    SurfaceTexture(index, texScaleX, texScaleY, texOffsetX + dx, texOffsetY + dy)
 
   def scale(dx: Float, dy: Float) = SurfaceTexture(
+    index,
     Math.max(0.01f, texScaleX + dx),
     Math.max(0.01f, texScaleY + dy),
     texOffsetX,
     texOffsetY)
+
+  def updateIndex(idx: Int) =
+    SurfaceTexture(idx, texScaleX, texScaleY, texOffsetX, texOffsetY)
 }

@@ -51,7 +51,8 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.editTextureScaleX, InputState.Negative, KeyInput.KEY_N)
     inputMapper.map(InputFunction.editTextureScaleY, KeyInput.KEY_COMMA)
     inputMapper.map(InputFunction.editTextureScaleY, InputState.Negative, KeyInput.KEY_M)
-    inputMapper.map(InputFunction.changeMaterial, KeyInput.KEY_BACKSLASH)
+
+    inputMapper.map(InputFunction.changeMaterial, KeyInput.KEY_1)
   }
 }
 

@@ -19,6 +19,7 @@ import com.stovokor.editor.factory.BorderFactory
 import com.simsilica.lemur.input.AnalogFunctionListener
 import com.stovokor.util.ChangeMaterial
 import com.stovokor.editor.model.SurfaceTexture
+import com.stovokor.util.SectorSurfaceMutator
 
 class Edit3DState extends BaseState
     with EditorEventListener
@@ -130,46 +131,6 @@ class Edit3DState extends BaseState
         SectorSurfaceMutator.mutate(sectorId, target, _.scale(factorX, factorY))
       }
     })
-  }
-
-
-  object SectorSurfaceMutator {
-
-    def mutate(sectorId: Long, target: String, mutation: SurfaceTexture => SurfaceTexture) {
-      val sector = sectorRepository.get(sectorId)
-      val updated =
-        if (target == "floor") {
-          sector.updatedFloor(sector.floor.updateTexture(mutation(sector.floor.texture)))
-        } else if (target == "ceiling") {
-          sector.updatedCeiling(sector.ceiling.updateTexture(mutation(sector.ceiling.texture)))
-        } else if (target.startsWith("wall-")) {
-          val idx = target.replace("wall-", "").toInt
-          val wall = sector.closedWalls(idx)
-          sector.updatedClosedWall(idx, wall.updateTexture(mutation(wall.texture)))
-        } else if (target.startsWith("borderLow-")) {
-          val idx = target.replace("borderLow-", "").toInt
-          val wall = sector.openWalls(idx)
-          borderRepository.find(wall.line).foreach(pair => pair match {
-            case (id, border) => {
-              borderRepository.update(id, border.updateSurfaceFloor(
-                border.surfaceFloor.updateTexture(mutation(border.surfaceFloor.texture))))
-            }
-          })
-          sector
-        } else if (target.startsWith("borderHi-")) {
-          val idx = target.replace("borderHi-", "").toInt
-          val wall = sector.openWalls(idx)
-          borderRepository.find(wall.line).foreach(pair => pair match {
-            case (id, border) => {
-              borderRepository.update(id, border.updateSurfaceCeiling(
-                border.surfaceCeiling.updateTexture(mutation(border.surfaceCeiling.texture))))
-            }
-          })
-          sector
-        } else sector
-      sectorRepository.update(sectorId, updated)
-      EventBus.trigger(SectorUpdated(sectorId, updated))
-    }
   }
 
   def recalculateBorders(sectorId: Long, sector: Sector) {
