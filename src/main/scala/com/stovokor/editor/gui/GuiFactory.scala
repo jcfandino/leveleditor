@@ -27,14 +27,15 @@ import com.stovokor.util.OpenMap
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.util.ExportMap
 import com.jme3.material.Material
-import com.stovokor.editor.model.Material
+import com.stovokor.editor.model.SurfaceMaterial
 import com.jme3.math.Vector2f
 import com.sun.java.swing.plaf.gtk.GTKConstants.IconSize
 import com.simsilica.lemur.GridPanel
+import com.stovokor.editor.model.SimpleMaterial
+import com.stovokor.editor.model.MatDefMaterial
 
 object GuiFactory {
 
-  type EdMat = com.stovokor.editor.model.Material
   val matIconSize = new Vector2f(75, 75)
 
   def toolbar(width: Int, height: Int) = {
@@ -189,7 +190,7 @@ object GuiFactory {
     button
   }
 
-  def createMaterialPanel(width: Int, height: Int, desc: String, options: List[EdMat], callback: Option[EdMat] => Unit) = {
+  def createMaterialPanel(width: Int, height: Int, desc: String, options: List[SurfaceMaterial], callback: Option[SurfaceMaterial] => Unit) = {
     val materialPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
 
     materialPanel.setLocalTranslation(50, height - 50, 0)
@@ -200,7 +201,11 @@ object GuiFactory {
     optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 
     options.foreach(mat => {
-      val matButton = optionsPanel.addChild(button(mat.path, mat.path, infoText, iconSize = matIconSize))
+      val preview = mat match {
+        case SimpleMaterial(path) => path
+        case _                    => "no-preview.png"
+      }
+      val matButton = optionsPanel.addChild(button(preview, mat.path, infoText, iconSize = matIconSize))
       matButton.setSize(new Vector3f(50, 50, 0))
       matButton.setPreferredSize(new Vector3f(matIconSize.x, matIconSize.y, 0))
       matButton.setMaxWidth(matIconSize.x)
@@ -210,7 +215,7 @@ object GuiFactory {
       })
     })
 
-    val cancel = materialPanel.addChild(button("format-remove-node.png", "cancel", infoText, label = "cancel"))
+    val cancel = materialPanel.addChild(button("dialog-cancel-3.png", "cancel", infoText, label = "cancel"))
     cancel.addClickCommands(_ => {
       materialPanel.removeFromParent()
       callback(None)

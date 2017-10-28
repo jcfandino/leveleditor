@@ -1,6 +1,6 @@
 package com.stovokor.editor.model.repository
 
-import com.stovokor.editor.model.Material
+import com.stovokor.editor.model.SurfaceMaterial
 import com.stovokor.editor.model.NullMaterial
 
 object MaterialRepository {
@@ -10,14 +10,14 @@ object MaterialRepository {
 
 class MaterialRepository {
 
-  var materials: List[Material] = List()
+  var materials: List[SurfaceMaterial] = List()
 
-  def add(material: Material) = {
+  def add(material: SurfaceMaterial) = {
     materials = materials ++ List(material)
     materials.size - 1
   }
 
-  def update(index: Int, material: Material) = {
+  def update(index: Int, material: SurfaceMaterial) = {
     materials = materials.updated(index, material)
     material
   }

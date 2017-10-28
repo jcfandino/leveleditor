@@ -26,7 +26,7 @@ object MeshFactory {
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
   val materialRepository = Repositories.materialRepository
-  def defaultTexture(index: Int) = texture(materialRepository.get(index).path)
+  def defaultTexture(index: Int) = texture(materialRepository.get(index))
 
   // Coordinate mapping:
   // 3D | 2D

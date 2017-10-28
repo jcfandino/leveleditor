@@ -13,6 +13,7 @@ import com.stovokor.util.EventBus
 import com.stovokor.util.PointSelectionChange
 import com.stovokor.util.PointerTargetChange
 import com.jme3.math.FastMath
+import com.jme3.material.Material
 
 class HighlightControl(sectorId: Long, target: String)
     extends AbstractControl
@@ -27,7 +28,16 @@ class HighlightControl(sectorId: Long, target: String)
       EventBus.subscribeByType(this, classOf[PointerTargetChange])
     }
     doIfGeometry(geo => {
-      geo.getMaterial.setColor("Color", getColor(selected))
+      val material = geo.getMaterial
+      def hasParam(param: String) = material.getMaterialDef.getMaterialParam(param) != null
+      if (hasParam("Color")) {
+        material.setColor("Color", getColor(selected))
+      } else if (hasParam("UseMaterialColors") && hasParam("Diffuse") && hasParam("Ambient")) {
+        material.setBoolean("UseMaterialColors", true)
+        material.setColor("Diffuse", getColor(selected))
+        material.setColor("Ambient", getColor(selected))
+      }
+      // It will not highlight other material types.
     })
     t += tpf
   }

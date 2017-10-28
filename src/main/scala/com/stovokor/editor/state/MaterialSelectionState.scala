@@ -16,7 +16,8 @@ import com.stovokor.editor.gui.GuiFactory
 import com.simsilica.lemur.Container
 import com.stovokor.editor.model.repository.Repositories
 import com.stovokor.editor.model.SimpleMaterial
-import com.stovokor.editor.model.Material
+import com.stovokor.editor.model.SurfaceMaterial
+import com.stovokor.editor.model.MatDefMaterial
 
 class MaterialSelectionState extends BaseState with EditorEventListener {
 
@@ -29,6 +30,7 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
     materialRepository.add(SimpleMaterial("Textures/Debug1.png"))
     materialRepository.add(SimpleMaterial("Textures/Debug2.png"))
     materialRepository.add(SimpleMaterial("Textures/Debug3.png"))
+    materialRepository.add(MatDefMaterial("Materials/DebugDef1.j3m"))
   }
 
   override def cleanup() {
@@ -59,7 +61,7 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
     materialDialog = Some(dialog)
   }
 
-  def materialChosen(sectorId: Long, target: String)(matOption: Option[Material]) {
+  def materialChosen(sectorId: Long, target: String)(matOption: Option[SurfaceMaterial]) {
     matOption.foreach(mat => {
       println(s"Changing material $sectorId, $target -> $mat")
       SectorSurfaceMutator.mutate(sectorId, target, surface =>

@@ -17,6 +17,8 @@ import com.jme3.input.CameraInput
 import com.jme3.input.controls.MouseAxisTrigger
 import com.jme3.input.controls.MouseButtonTrigger
 import com.jme3.input.MouseInput
+import com.jme3.light.AmbientLight
+import com.jme3.math.ColorRGBA
 
 class Camera3DState extends BaseState
     with CanMapInput
@@ -37,6 +39,9 @@ class Camera3DState extends BaseState
     cam.lookAt(new Vector3f(0f, 2f, 10f), Vector3f.UNIT_Y)
     cam.setFrustumPerspective(45f, cam.getWidth.toFloat / cam.getHeight, 1f, 1000f)
     cam.update
+
+    // Add a light for lighted materials
+    rootNode.addLight(new AmbientLight(ColorRGBA.White))
     setupInput
   }
 
