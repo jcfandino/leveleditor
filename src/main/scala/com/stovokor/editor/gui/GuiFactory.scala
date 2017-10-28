@@ -156,19 +156,46 @@ object GuiFactory {
     bn.foreach(b => b.setText(clean(b.getText)))
   }
 
-  def button(icon: String = null, description: String, infoText: Label, label: String = "") = {
+  def button(icon: String = null, description: String, infoText: Label = null, label: String = ""): Button = {
     val button = new Button(label)
     if (icon != null) {
       button.setIcon(new IconComponent("Interface/Icons/" + icon))
     }
-    button.addMouseListener(new DefaultMouseListener() {
-      override def mouseEntered(e: MouseMotionEvent, t: Spatial, s: Spatial) {
-        infoText.setText(description)
-      }
-      override def mouseExited(e: MouseMotionEvent, t: Spatial, s: Spatial) {
-        infoText.setText("")
-      }
-    })
+    if (infoText != null) {
+      button.addMouseListener(new DefaultMouseListener() {
+        override def mouseEntered(e: MouseMotionEvent, t: Spatial, s: Spatial) {
+          infoText.setText(description)
+        }
+        override def mouseExited(e: MouseMotionEvent, t: Spatial, s: Spatial) {
+          infoText.setText("")
+        }
+      })
+    }
     button
+  }
+
+  def createMaterialPanel(width: Int, height: Int, desc: String, options: List[String], callback: Option[String] => Unit) = {
+    val materialPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X))
+
+    materialPanel.setLocalTranslation(100, height - 50, 0)
+    materialPanel.addChild(new Label("Material selection for " + desc))
+    val infoText = materialPanel.addChild(new Label(""))
+    val optionsPanel = materialPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
+
+    options.foreach(key => {
+      val matButton = optionsPanel.addChild(button("view-grid.png", key, infoText, label = key))
+      matButton.setSize(new Vector3f(50, 50, 50))
+      matButton.addClickCommands(_ => {
+        materialPanel.removeFromParent()
+        callback(Some(key))
+      })
+    })
+
+    val cancel = materialPanel.addChild(button("format-remove-node.png", "cancel", infoText, label = "cancel"))
+    cancel.addClickCommands(_ => {
+      materialPanel.removeFromParent()
+      callback(None)
+    })
+    materialPanel
   }
 }

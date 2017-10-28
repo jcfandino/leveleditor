@@ -12,9 +12,10 @@ import com.stovokor.util.ChangeMaterial
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.SectorSurfaceMutator
+import com.stovokor.editor.gui.GuiFactory
+import com.simsilica.lemur.Container
 
-class MaterialSelectionState extends BaseState
-    with EditorEventListener {
+class MaterialSelectionState extends BaseState with EditorEventListener {
 
   val sectorRepository = SectorRepository()
   val borderRepository = BorderRepository()
@@ -35,10 +36,29 @@ class MaterialSelectionState extends BaseState
   }
 
   def changeMaterial(sectorId: Long, target: String) {
-    println(s"Changing material $sectorId, $target")
-    SectorSurfaceMutator.mutate(sectorId, target, surface =>
-      surface.updateIndex(altmat(surface.index)))
+    openMaterialDialog(sectorId, target)
   }
 
-  def altmat(idx: Int) = (idx + 1) % 3
+  var materialDialog: Option[Container] = None
+
+  def openMaterialDialog(sectorId: Long, target: String) {
+    materialDialog.foreach(_.removeFromParent())
+    println("opening material dialog")
+    val options = List("0", "1", "2")
+    val description = s"Sector $sectorId - $target"
+    val dialog = GuiFactory.createMaterialPanel(
+      cam.getWidth, cam.getHeight, description, options, materialChosen(sectorId, target))
+    dialog.setName("material-dialog")
+    guiNode.attachChild(dialog)
+    materialDialog = Some(dialog)
+  }
+
+  def materialChosen(sectorId: Long, target: String)(keyOption: Option[String]) {
+    keyOption.foreach(key => {
+      println(s"Changing material $sectorId, $target -> $key")
+      SectorSurfaceMutator.mutate(sectorId, target, surface =>
+        surface.updateIndex(key.toInt))
+    })
+    materialDialog = None
+  }
 }
