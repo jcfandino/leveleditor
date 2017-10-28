@@ -48,6 +48,12 @@ class SaveOpenFileState extends BaseState
     EventBus.subscribeByType(this, classOf[SaveMap])
     EventBus.subscribeByType(this, classOf[OpenMap])
     setupInput
+
+    // Auto Load test map
+    val file = new File(System.getProperty("user.home") + "/test.m8")
+    if (file.exists()) {
+      openFile(file)
+    }
   }
 
   override def cleanup() {
@@ -93,33 +99,37 @@ class SaveOpenFileState extends BaseState
     val result = fileChooser.showOpenDialog(frame)
     if (result == JFileChooser.APPROVE_OPTION) {
       val file = fileChooser.getSelectedFile
-      println(s"open ${fileChooser.getSelectedFile}")
-      val map = JsonFiles.load(file.getAbsolutePath)
-      currentFile = Some(file.getAbsolutePath)
-      // clean and load
-      for ((id, sec) <- SectorRepository().sectors) {
-        EventBus.trigger(SectorDeleted(id))
-      }
-      SectorRepository().removeAll
-      BorderRepository().removeAll
-      val newIds = map.sectors.map(e => e match {
-        case (id, sector) => {
-          val newId = SectorRepository().add(sector)
-          (id, newId)
-        }
-      })
-      map.borders.map(e => e match {
-        case (id, border) => {
-          val updated = border.updateSectors(
-            newIds(border.sectorA),
-            newIds(border.sectorB))
-          BorderRepository().add(updated)
-        }
-      })
-      SectorRepository().sectors
-        .foreach(entry => EventBus.trigger(SectorUpdated(entry._1, entry._2)))
+      openFile(file)
     }
     frame.dispose()
+  }
+
+  def openFile(file: File) {
+    println(s"opening file: $file")
+    val map = JsonFiles.load(file.getAbsolutePath)
+    currentFile = Some(file.getAbsolutePath)
+    // clean and load
+    for ((id, sec) <- SectorRepository().sectors) {
+      EventBus.trigger(SectorDeleted(id))
+    }
+    SectorRepository().removeAll
+    BorderRepository().removeAll
+    val newIds = map.sectors.map(e => e match {
+      case (id, sector) => {
+        val newId = SectorRepository().add(sector)
+        (id, newId)
+      }
+    })
+    map.borders.map(e => e match {
+      case (id, border) => {
+        val updated = border.updateSectors(
+          newIds(border.sectorA),
+          newIds(border.sectorB))
+        BorderRepository().add(updated)
+      }
+    })
+    SectorRepository().sectors
+      .foreach(entry => EventBus.trigger(SectorUpdated(entry._1, entry._2)))
   }
 
   def saveAsNewFile() {

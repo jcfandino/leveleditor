@@ -20,6 +20,7 @@ import com.stovokor.editor.state.Edit2DModeState
 import com.stovokor.editor.state.SaveOpenFileState
 import com.stovokor.editor.state.ExportMapState
 import com.stovokor.editor.state.MaterialSelectionState
+import java.io.File
 
 // Level Editor
 object Main extends SimpleApplication {
@@ -54,9 +55,10 @@ object Main extends SimpleApplication {
     stateManager.attach(new MouseAppState(this))
     stateManager.attach(new ViewModeState)
     stateManager.attach(new SectorPresenterState)
-    stateManager.attach(new SaveOpenFileState)
     stateManager.attach(new ExportMapState)
     stateManager.attach(new MaterialSelectionState)
+    stateManager.attach(new SaveOpenFileState)
+
   }
 
   def getInputListener = {

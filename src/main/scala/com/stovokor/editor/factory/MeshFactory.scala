@@ -18,13 +18,15 @@ import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.Line
 import com.stovokor.editor.model.Border
 import com.stovokor.editor.control.HighlightControl
+import com.stovokor.editor.model.repository.Repositories
 
 object MeshFactory {
   def apply(assetManager: AssetManager) = new MeshFactory(assetManager)
 }
 class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
-  def defaultTexture(index: Int) = texture(s"Textures/Debug${(index + 1)}.png")
+  val materialRepository = Repositories.materialRepository
+  def defaultTexture(index: Int) = texture(materialRepository.get(index).path)
 
   // Coordinate mapping:
   // 3D | 2D

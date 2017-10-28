@@ -26,8 +26,16 @@ import com.stovokor.util.SaveMap
 import com.stovokor.util.OpenMap
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.util.ExportMap
+import com.jme3.material.Material
+import com.stovokor.editor.model.Material
+import com.jme3.math.Vector2f
+import com.sun.java.swing.plaf.gtk.GTKConstants.IconSize
+import com.simsilica.lemur.GridPanel
 
 object GuiFactory {
+
+  type EdMat = com.stovokor.editor.model.Material
+  val matIconSize = new Vector2f(75, 75)
 
   def toolbar(width: Int, height: Int) = {
     val bar = createMainPanel(width, height)
@@ -156,10 +164,17 @@ object GuiFactory {
     bn.foreach(b => b.setText(clean(b.getText)))
   }
 
-  def button(icon: String = null, description: String, infoText: Label = null, label: String = ""): Button = {
+  def button(icon: String = null, description: String, infoText: Label = null, label: String = "", iconSize: Vector2f = null): Button = {
     val button = new Button(label)
     if (icon != null) {
-      button.setIcon(new IconComponent("Interface/Icons/" + icon))
+      val base = if (icon.contains("/")) "" else "Interface/Icons/"
+      val iconComponent = new IconComponent(base + icon)
+      if (iconSize != null) {
+        val width = iconComponent.getImageTexture.getImage.getWidth
+        val height = iconComponent.getImageTexture.getImage.getWidth
+        iconComponent.setIconScale(new Vector2f(iconSize.x / width, iconSize.y / height))
+      }
+      button.setIcon(iconComponent)
     }
     if (infoText != null) {
       button.addMouseListener(new DefaultMouseListener() {
@@ -174,20 +189,24 @@ object GuiFactory {
     button
   }
 
-  def createMaterialPanel(width: Int, height: Int, desc: String, options: List[String], callback: Option[String] => Unit) = {
-    val materialPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X))
+  def createMaterialPanel(width: Int, height: Int, desc: String, options: List[EdMat], callback: Option[EdMat] => Unit) = {
+    val materialPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
 
-    materialPanel.setLocalTranslation(100, height - 50, 0)
+    materialPanel.setLocalTranslation(50, height - 50, 0)
+    materialPanel.setPreferredSize(new Vector3f(width - 100, height - 100, 0))
     materialPanel.addChild(new Label("Material selection for " + desc))
     val infoText = materialPanel.addChild(new Label(""))
     val optionsPanel = materialPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
+    optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 
-    options.foreach(key => {
-      val matButton = optionsPanel.addChild(button("view-grid.png", key, infoText, label = key))
-      matButton.setSize(new Vector3f(50, 50, 50))
+    options.foreach(mat => {
+      val matButton = optionsPanel.addChild(button(mat.path, mat.path, infoText, iconSize = matIconSize))
+      matButton.setSize(new Vector3f(50, 50, 0))
+      matButton.setPreferredSize(new Vector3f(matIconSize.x, matIconSize.y, 0))
+      matButton.setMaxWidth(matIconSize.x)
       matButton.addClickCommands(_ => {
         materialPanel.removeFromParent()
-        callback(Some(key))
+        callback(Some(mat))
       })
     })
 

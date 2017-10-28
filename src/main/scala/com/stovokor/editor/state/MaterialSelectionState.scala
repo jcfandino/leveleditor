@@ -14,15 +14,21 @@ import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.SectorSurfaceMutator
 import com.stovokor.editor.gui.GuiFactory
 import com.simsilica.lemur.Container
+import com.stovokor.editor.model.repository.Repositories
+import com.stovokor.editor.model.SimpleMaterial
+import com.stovokor.editor.model.Material
 
 class MaterialSelectionState extends BaseState with EditorEventListener {
 
-  val sectorRepository = SectorRepository()
-  val borderRepository = BorderRepository()
+  val materialRepository = Repositories.materialRepository
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[ChangeMaterial])
+    // Create debug materials
+    materialRepository.add(SimpleMaterial("Textures/Debug1.png"))
+    materialRepository.add(SimpleMaterial("Textures/Debug2.png"))
+    materialRepository.add(SimpleMaterial("Textures/Debug3.png"))
   }
 
   override def cleanup() {
@@ -44,7 +50,7 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
   def openMaterialDialog(sectorId: Long, target: String) {
     materialDialog.foreach(_.removeFromParent())
     println("opening material dialog")
-    val options = List("0", "1", "2")
+    val options = materialRepository.materials
     val description = s"Sector $sectorId - $target"
     val dialog = GuiFactory.createMaterialPanel(
       cam.getWidth, cam.getHeight, description, options, materialChosen(sectorId, target))
@@ -53,11 +59,11 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
     materialDialog = Some(dialog)
   }
 
-  def materialChosen(sectorId: Long, target: String)(keyOption: Option[String]) {
-    keyOption.foreach(key => {
-      println(s"Changing material $sectorId, $target -> $key")
+  def materialChosen(sectorId: Long, target: String)(matOption: Option[Material]) {
+    matOption.foreach(mat => {
+      println(s"Changing material $sectorId, $target -> $mat")
       SectorSurfaceMutator.mutate(sectorId, target, surface =>
-        surface.updateIndex(key.toInt))
+        surface.updateIndex(materialRepository.materials.indexOf(mat)))
     })
     materialDialog = None
   }
