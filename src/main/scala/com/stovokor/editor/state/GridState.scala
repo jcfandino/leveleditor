@@ -27,17 +27,25 @@ import com.stovokor.editor.model.Point
 import com.stovokor.util.EventBus
 import com.stovokor.util.PointClicked
 import com.stovokor.util.LemurExtensions._
+import com.jme3.scene.shape.Box
+import com.jme3.material.Material
+import jme3tools.optimize.GeometryBatchFactory
+import com.stovokor.util.JmeExtensions._
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EditorEvent
+import com.stovokor.util.ChangeGridSize
 
 class GridState extends BaseState
     with MaterialFactoryClient
     with CanMapInput
-    with StateFunctionListener {
+    with StateFunctionListener
+    with EditorEventListener {
+
+  val gridSteps = List(0.125f, 0.25f, 0.5f, 1f, 2f, 4f, 8f)
+  var gridStep = 0.25f
 
   val spanX = 1000f
   val spanY = 1000f
-
-  val stepX = 1f
-  val stepY = 1f
 
   val zPos = -1000f
 
@@ -55,6 +63,7 @@ class GridState extends BaseState
     node.setCullHint(CullHint.Never)
     get2DNode.attachChild(node)
     setupInput(node.getChild("pickPlane"))
+    EventBus.subscribe(this, ChangeGridSize())
   }
 
   var clicked = false
@@ -87,6 +96,7 @@ class GridState extends BaseState
       }
     })
     inputMapper.addStateListener(this, InputFunction.snapToGrid)
+    inputMapper.addStateListener(this, InputFunction.resizeGrid)
     inputMapper.activateGroup(InputFunction.general)
   }
 
@@ -96,9 +106,18 @@ class GridState extends BaseState
         snapToGrid = !snapToGrid
         println(s"snap to grid is $snapToGrid")
       }
+      case InputFunction.resizeGrid => {
+        changeGridSize()
+      }
       case _ =>
     }
   }
+
+  def onEvent(event: EditorEvent) = event match {
+    case ChangeGridSize() => changeGridSize()
+    case _                =>
+  }
+
   def createOrigin(): Spatial = {
     val origin = new Geometry("origin", K.vertexBox)
     origin.setMaterial(plainColor(Palette.origin))
@@ -123,23 +142,27 @@ class GridState extends BaseState
     node
   }
 
+  // TODO Cache the different grids to avoid recalculating
   def createGrid(): Spatial = {
     val grid = new Node("grid")
-    val mat = plainColor(Palette.grid)
-    for (x <- (-spanX to spanX by stepX)) {
+    val mat1 = plainColor(Palette.grid1)
+    val mat2 = plainColor(Palette.grid2)
+    for (x <- (-spanX to spanX by gridStep)) {
       val line = new Geometry("line",
         new Line(new Vector3f(x, -spanY, 0f), new Vector3f(x, spanY, 0f)))
+      val mat = if (x % 1f == 0f) mat1 else mat2
       line.setMaterial(mat)
       grid.attachChild(line)
     }
-    for (y <- (-spanY to spanY by stepY)) {
+    for (y <- (-spanY to spanY by gridStep)) {
       val line = new Geometry("line",
         new Line(new Vector3f(-spanX, y, 0f), new Vector3f(spanX, y, 0f)))
+      val mat = if (y % 1f == 0f) mat1 else mat2
       line.setMaterial(mat)
       grid.attachChild(line)
     }
     grid.setLocalTranslation(0f, 0f, -20f)
-    grid
+    GeometryBatchFactory.optimize(grid)
   }
 
   def createPickPlane(): Spatial = {
@@ -152,13 +175,24 @@ class GridState extends BaseState
     plane
   }
 
+  def changeGridSize() {
+    val idx = gridSteps.indexOf(gridStep) + 1
+    gridStep = if (idx < gridSteps.size) gridSteps(idx) else gridSteps(0)
+    println(s"New grid size $gridStep")
+    // redraw
+    val node = get2DNode.getChild("gridParent").asNode
+    node.detachChildNamed("grid")
+    node.attachChild(createGrid())
+  }
+
   override def update(tpf: Float) {
   }
 
-  def snapX(c: Float) = snapped(c, stepX)
-  def snapY(c: Float) = snapped(c, stepY)
+  def snapX(c: Float) = snapped(c, gridStep)
+  def snapY(c: Float) = snapped(c, gridStep)
   def snapped(coor: Float, step: Float) = {
     if (snapToGrid) step * (coor / step).round
     else coor
   }
+
 }

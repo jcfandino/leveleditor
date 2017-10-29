@@ -21,8 +21,8 @@ object TestApp extends SimpleApplication
     sets.setGammaCorrection(false)
     sets.setTitle("M8 Test app")
     setSettings(sets)
-    setDisplayFps(true)
-    setDisplayStatView(true)
+    setDisplayFps(false)
+    setDisplayStatView(false)
 
     TestApp.start
   }
@@ -41,6 +41,8 @@ object TestApp extends SimpleApplication
       assetManager.registerLocator(file.getParent, classOf[FileLocator])
       val loadedNode = assetManager.loadModel(file.getName)
       rootNode.attachChild(loadedNode)
+      getFlyByCamera.setMoveSpeed(10f)
+      getFlyByCamera.setRotationSpeed(2f)
     } else {
       stop()
     }

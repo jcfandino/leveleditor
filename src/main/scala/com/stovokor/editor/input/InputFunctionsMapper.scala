@@ -28,6 +28,7 @@ object InputFunctionsMapper {
 
     inputMapper.map(InputFunction.cancel, KeyInput.KEY_ESCAPE)
     inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G)
+    inputMapper.map(InputFunction.resizeGrid, KeyInput.KEY_R)
     inputMapper.map(InputFunction.test1, KeyInput.KEY_F1)
     inputMapper.map(InputFunction.test2, KeyInput.KEY_F2)
     inputMapper.map(InputFunction.test3, KeyInput.KEY_F3)
@@ -77,6 +78,7 @@ object InputFunction {
   val general = "general"
   val cancel = new FunctionId(general, "cancel")
   val snapToGrid = new FunctionId(general, "snapToGrid")
+  val resizeGrid = new FunctionId(general, "resizeGrid")
   val test1 = new FunctionId(general, "test1")
   val test2 = new FunctionId(general, "test2")
   val test3 = new FunctionId(general, "test3")

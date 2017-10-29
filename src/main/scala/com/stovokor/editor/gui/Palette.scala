@@ -7,7 +7,8 @@ object Palette {
   val origin = ColorRGBA.Orange
   val axisX = ColorRGBA.Red
   val axisY = ColorRGBA.Green
-  val grid = ColorRGBA.DarkGray
+  val grid1 = ColorRGBA.DarkGray
+  val grid2 = ColorRGBA.DarkGray.mult(0.6f)
 
   val selectedElement = ColorRGBA.Red
   val drawing = ColorRGBA.Green
