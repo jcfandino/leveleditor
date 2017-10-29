@@ -31,6 +31,8 @@ import java.io.BufferedReader
 import scala.io.Source
 import com.stovokor.util.SectorDeleted
 import com.stovokor.util.SectorUpdated
+import com.stovokor.util.JsonFiles
+import com.stovokor.editor.model.MapFile
 
 class SaveOpenFileState extends BaseState
     with EditorEventListener
@@ -106,7 +108,7 @@ class SaveOpenFileState extends BaseState
 
   def openFile(file: File) {
     println(s"opening file: $file")
-    val map = JsonFiles.load(file.getAbsolutePath)
+    val map: MapFile = JsonFiles.load[MapFile](file.getAbsolutePath)
     currentFile = Some(file.getAbsolutePath)
     // clean and load
     for ((id, sec) <- SectorRepository().sectors) {
@@ -155,34 +157,6 @@ class SaveOpenFileState extends BaseState
       val map = MapFile(1, SectorRepository().sectors, BorderRepository().borders)
       JsonFiles.save(currentFile.get, map)
     }
-  }
-
-  object JsonFiles {
-    import org.json4s._
-    import org.json4s.jackson.Serialization
-    import org.json4s.jackson.Serialization.{ read, write }
-
-    implicit val formats = Serialization.formats(NoTypeHints)
-
-    def save(path: String, map: MapFile) {
-      val json = write(map)
-      val file = new File(path)
-      println(s"Saving ${file.getAbsolutePath}")
-      val bw = new BufferedWriter(new FileWriter(file))
-      bw.write(json)
-      bw.close()
-    }
-
-    def load(path: String) = {
-      val file = new File(path)
-      val json = Source.fromFile(file).mkString
-      read[MapFile](json)
-    }
-  }
-
-  case class MapFile(version: Int,
-                     sectors: Map[Long, Sector],
-                     borders: Map[Long, Border]) {
   }
 
 }

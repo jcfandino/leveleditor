@@ -4,4 +4,5 @@ object Repositories {
   def sectorRepository = SectorRepository()
   def borderRepository = BorderRepository()
   def materialRepository = MaterialRepository()
+  def settingsRepository = SettingsRepository()
 }

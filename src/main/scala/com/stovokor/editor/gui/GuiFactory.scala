@@ -33,6 +33,12 @@ import com.sun.java.swing.plaf.gtk.GTKConstants.IconSize
 import com.simsilica.lemur.GridPanel
 import com.stovokor.editor.model.SimpleMaterial
 import com.stovokor.editor.model.MatDefMaterial
+import com.stovokor.util.EditSettings
+import com.stovokor.editor.model.Settings
+import com.stovokor.editor.state.CanOpenDialog
+import javax.swing.JFileChooser
+import java.io.File
+import javax.swing.filechooser.FileFilter
 
 object GuiFactory {
 
@@ -83,12 +89,14 @@ object GuiFactory {
     val save = generalPanel.addChild(button("document-save-5.png", "Save", infoText))
     val saveAs = generalPanel.addChild(button("document-save-as-5.png", "Save as...", infoText))
     val export = generalPanel.addChild(button("lorry-go.png", "Export...", infoText))
+    val settings = generalPanel.addChild(button("configure-5.png", "Settings...", infoText))
     val exit = generalPanel.addChild(button("application-exit-2.png", "Exit editor", infoText))
     exit.addClickCommands(_ => EventBus.trigger(ExitApplication()))
     open.addClickCommands(_ => EventBus.trigger(OpenMap()))
     save.addClickCommands(_ => EventBus.trigger(SaveMap(true)))
     saveAs.addClickCommands(_ => EventBus.trigger(SaveMap(false)))
     export.addClickCommands(_ => EventBus.trigger(ExportMap()))
+    settings.addClickCommands(_ => EventBus.trigger(EditSettings()))
     val restart = generalPanel.addChild(button("edit-clear-3.png", "Reset map", infoText))
     restart.addClickCommands(_ => {
       // TODO Extract this to a state and call with an event
@@ -221,5 +229,64 @@ object GuiFactory {
       callback(None)
     })
     materialPanel
+  }
+
+  def createSettingsPanel(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
+    val dialogOpener = new CanOpenDialog {
+      def openDirectoryFinder() = {
+        val frame = createFrame
+        val fileChooser = new JFileChooser
+        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
+        val result = fileChooser.showOpenDialog(frame)
+        var selected: Option[String] = None
+        if (result == JFileChooser.APPROVE_OPTION) {
+          val file = fileChooser.getSelectedFile
+          selected = Some(file.getAbsolutePath)
+        }
+        frame.dispose()
+        selected
+      }
+    }
+    val settingsPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
+
+    settingsPanel.setLocalTranslation(50, height - 50, 0)
+    settingsPanel.setPreferredSize(new Vector3f(width - 100, height - 100, 0))
+    val title = settingsPanel.addChild(new Container)
+    title.addChild(new Label("Settings"))
+
+    val optionsPanel = settingsPanel.addChild(new Container(new SpringGridLayout(Axis.Y, Axis.X)))
+    optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
+
+    val assetPathPanel = optionsPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
+    assetPathPanel.addChild(new Label("Assets path:"))
+    val currentPath = assetPathPanel.addChild(new Label(current.assetsBasePath))
+    val change = assetPathPanel.addChild(button("magnifier.png", "Find"))
+    change.setPreferredSize(new Vector3f())
+    change.addClickCommands(_ => {
+      dialogOpener.openDirectoryFinder().foreach(path => {
+        println(s"Selected path: $path")
+        update(current.updateAssetBasePath(path))
+        currentPath.setText(path)
+      })
+    })
+    val filling = new Container
+    filling.setPreferredSize(new Vector3f(width - 100, height - 200, 0))
+    optionsPanel.addChild(filling)
+
+    val buttons = settingsPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
+    buttons.addChild(new Label(""))
+    val save = buttons.addChild(button("dialog-apply.png", "save", label = "save"))
+    save.addClickCommands(_ => {
+      settingsPanel.removeFromParent()
+      close(true)
+    })
+    val cancel = buttons.addChild(button("dialog-cancel-3.png", "cancel", label = "cancel"))
+    cancel.addClickCommands(_ => {
+      settingsPanel.removeFromParent()
+      close(false)
+    })
+    buttons.addChild(new Label(""))
+
+    settingsPanel
   }
 }

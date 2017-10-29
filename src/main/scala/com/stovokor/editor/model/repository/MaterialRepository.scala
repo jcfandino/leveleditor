@@ -2,6 +2,7 @@ package com.stovokor.editor.model.repository
 
 import com.stovokor.editor.model.SurfaceMaterial
 import com.stovokor.editor.model.NullMaterial
+import com.stovokor.editor.model.MissingMaterial
 
 object MaterialRepository {
   val instance = new MaterialRepository()
@@ -30,5 +31,12 @@ class MaterialRepository {
     materials = List()
   }
 
-  def get(index: Int) = materials(index)
+  def get(index: Int) = {
+    if (materials.size > index) {
+      materials(index)
+    } else {
+      //      MissingMaterial()
+      NullMaterial()
+    }
+  }
 }

@@ -12,6 +12,10 @@ case class MatDefMaterial(p: String) extends SurfaceMaterial(p) {
 
 }
 
+case class MissingMaterial() extends SurfaceMaterial("") {
+
+}
+
 case class NullMaterial() extends SurfaceMaterial("") {
 
 }

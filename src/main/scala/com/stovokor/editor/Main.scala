@@ -21,6 +21,8 @@ import com.stovokor.editor.state.SaveOpenFileState
 import com.stovokor.editor.state.ExportMapState
 import com.stovokor.editor.state.MaterialSelectionState
 import java.io.File
+import com.stovokor.editor.state.SettingsEditorState
+import com.stovokor.editor.state.SettingsLoaderState
 
 // Level Editor
 object Main extends SimpleApplication {
@@ -34,7 +36,7 @@ object Main extends SimpleApplication {
     sets.setTitle("M8 Editor")
     setSettings(sets)
     setDisplayFps(true)
-    setDisplayStatView(true)
+    setDisplayStatView(false)
 
     Main.start
   }
@@ -56,8 +58,10 @@ object Main extends SimpleApplication {
     stateManager.attach(new ViewModeState)
     stateManager.attach(new SectorPresenterState)
     stateManager.attach(new ExportMapState)
+    stateManager.attach(new SettingsLoaderState)
     stateManager.attach(new MaterialSelectionState)
     stateManager.attach(new SaveOpenFileState)
+    stateManager.attach(new SettingsEditorState)
 
   }
 

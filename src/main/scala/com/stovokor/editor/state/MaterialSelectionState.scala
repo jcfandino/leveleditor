@@ -27,10 +27,10 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[ChangeMaterial])
     // Create debug materials
-    materialRepository.add(SimpleMaterial("Textures/Debug1.png"))
-    materialRepository.add(SimpleMaterial("Textures/Debug2.png"))
-    materialRepository.add(SimpleMaterial("Textures/Debug3.png"))
-    materialRepository.add(MatDefMaterial("Materials/DebugDef1.j3m"))
+    //    materialRepository.add(SimpleMaterial("Textures/Debug1.png"))
+    //    materialRepository.add(SimpleMaterial("Textures/Debug2.png"))
+    //    materialRepository.add(SimpleMaterial("Textures/Debug3.png"))
+    //    materialRepository.add(MatDefMaterial("Materials/DebugDef1.j3m"))
   }
 
   override def cleanup() {
