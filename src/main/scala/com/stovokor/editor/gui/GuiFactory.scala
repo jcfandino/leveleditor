@@ -40,6 +40,7 @@ import javax.swing.JFileChooser
 import java.io.File
 import javax.swing.filechooser.FileFilter
 import com.stovokor.util.ChangeGridSize
+import com.stovokor.util.ChangeZoom
 
 object GuiFactory {
 
@@ -147,13 +148,9 @@ object GuiFactory {
     val grid = selectionPanel.addChild(button("view-grid.png", "Grid size", infoText))
     val zoomout = selectionPanel.addChild(button("zoom-out-3.png", "Zoom out", infoText))
     val zoomin = selectionPanel.addChild(button("zoom-in-3.png", "Zoom in", infoText))
-    grid.addClickCommands(_ => {
-      EventBus.trigger(ChangeGridSize())
-    })
-    zoomout.addClickCommands(_ => {
-    })
-    zoomin.addClickCommands(_ => {
-    })
+    grid.addClickCommands(_ => EventBus.trigger(ChangeGridSize()))
+    zoomout.addClickCommands(_ => EventBus.trigger(ChangeZoom(1)))
+    zoomin.addClickCommands(_ => EventBus.trigger(ChangeZoom(-1)))
     selectionPanel
   }
 

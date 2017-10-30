@@ -11,11 +11,16 @@ import com.simsilica.lemur.input.StateFunctionListener
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.stovokor.editor.input.InputFunction
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EditorEvent
+import com.stovokor.util.ChangeZoom
+import com.stovokor.util.EventBus
 
 class Camera2DState extends BaseState
     with CanMapInput
     with AnalogFunctionListener
-    with StateFunctionListener {
+    with StateFunctionListener
+    with EditorEventListener {
 
   var zoom = 10f
   val speed = 10f
@@ -29,6 +34,7 @@ class Camera2DState extends BaseState
     moveZoom(0f)
     cam.update
     setupInput
+    EventBus.subscribeByType(this, classOf[ChangeZoom])
   }
 
   override def cleanup() {
@@ -91,6 +97,11 @@ class Camera2DState extends BaseState
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
 
+  }
+
+  def onEvent(event: EditorEvent) = event match {
+    case ChangeZoom(f) => moveZoom(f)
+    case _             =>
   }
 
 }
