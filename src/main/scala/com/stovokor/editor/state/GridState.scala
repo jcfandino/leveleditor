@@ -34,6 +34,7 @@ import com.stovokor.util.JmeExtensions._
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.ChangeGridSize
+import com.stovokor.editor.gui.Mode2DLayers
 
 class GridState extends BaseState
     with MaterialFactoryClient
@@ -46,8 +47,6 @@ class GridState extends BaseState
 
   val spanX = 1000f
   val spanY = 1000f
-
-  val zPos = -1000f
 
   var batched = true
   var snapToGrid = true
@@ -121,7 +120,7 @@ class GridState extends BaseState
   def createOrigin(): Spatial = {
     val origin = new Geometry("origin", K.vertexBox)
     origin.setMaterial(plainColor(Palette.origin))
-    origin.setLocalTranslation(0f, 0f, -10f)
+    origin.setLocalTranslation(0f, 0f, Mode2DLayers.origin)
     origin.addControl(new ConstantSizeOnScreenControl())
     origin
   }
@@ -138,7 +137,7 @@ class GridState extends BaseState
     val node = new Node("axis")
     node.attachChild(arrowX)
     node.attachChild(arrowY)
-    node.setLocalTranslation(0f, 0f, 1f)
+    node.setLocalTranslation(0f, 0f, Mode2DLayers.axis)
     node
   }
 
@@ -161,7 +160,7 @@ class GridState extends BaseState
       line.setMaterial(mat)
       grid.attachChild(line)
     }
-    grid.setLocalTranslation(0f, 0f, -20f)
+    grid.setLocalTranslation(0f, 0f, Mode2DLayers.grid)
     GeometryBatchFactory.optimize(grid)
   }
 
@@ -169,7 +168,7 @@ class GridState extends BaseState
     val plane = new Geometry("pickPlane", new Quad(2 * spanX, 2 * spanY))
     plane.setMaterial(plainColor(ColorRGBA.Black))
     plane.setCullHint(CullHint.Always)
-    plane.move(-spanX, -spanY, 99f)
+    plane.move(-spanX, -spanY, Mode2DLayers.pickPlane)
     // I set this lower could get unresponsive
     // I think it can be conflicting with geometries in 3d space
     plane

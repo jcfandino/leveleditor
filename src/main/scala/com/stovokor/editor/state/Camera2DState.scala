@@ -15,6 +15,7 @@ import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.ChangeZoom
 import com.stovokor.util.EventBus
+import com.stovokor.editor.gui.Mode2DLayers
 
 class Camera2DState extends BaseState
     with CanMapInput
@@ -29,7 +30,7 @@ class Camera2DState extends BaseState
     super.initialize(stateManager, simpleApp)
     app.getFlyByCamera.setEnabled(false)
     cam.setParallelProjection(true)
-    cam.setLocation(new Vector3f(0f, 0f, 100f))
+    cam.setLocation(new Vector3f(0f, 0f, Mode2DLayers.camera))
     cam.lookAt(new Vector3f(0f, 0f, 0f), Vector3f.UNIT_Z.negate)
     moveZoom(0f)
     cam.update
@@ -59,11 +60,11 @@ class Camera2DState extends BaseState
     }
   }
 
-  def move(x: Double, y: Double, z: Double) {
-    cam.setLocation(cam.getLocation.add(x.toFloat, y.toFloat, z.toFloat))
+  def move(x: Double, y: Double) {
+    cam.setLocation(cam.getLocation.add(x.toFloat, y.toFloat, 0))
   }
-  def move(x: Float, y: Float, z: Float) {
-    cam.setLocation(cam.getLocation.add(x, y, z))
+  def move(x: Float, y: Float) {
+    cam.setLocation(cam.getLocation.add(x, y, 0))
   }
 
   def moveZoom(delta: Double) {
@@ -87,8 +88,8 @@ class Camera2DState extends BaseState
   def valueActive(func: FunctionId, value: Double, tpf: Double) {
     def boundSpeed = Math.max(.1f, Math.min(50f, zoom * speed))
     func match {
-      case InputFunction.moveX      => move(value * speed * tpf, 0, 0)
-      case InputFunction.moveY      => move(0, value * speed * tpf, 0)
+      case InputFunction.moveX      => move(value * speed * tpf, 0)
+      case InputFunction.moveY      => move(0, value * speed * tpf)
       case InputFunction.moveZ      => moveZoom(value * speed * tpf)
       case InputFunction.mouseWheel => moveZoom(-1 * value * boundSpeed * tpf)
       case _                        =>
