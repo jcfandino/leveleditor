@@ -7,6 +7,7 @@ import com.stovokor.util.PointClicked
 import com.stovokor.util.EventBus
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.Line
+import com.stovokor.util.PointDragged
 
 trait TestSectorSupport {
 
@@ -35,5 +36,9 @@ trait TestSectorSupport {
 
   def makeClicks(points: Point*) {
     points.foreach(p => EventBus.trigger(PointClicked(p)))
+  }
+
+  def drag(from: Point, to: Point) {
+    EventBus.trigger(PointDragged(from, to))
   }
 }

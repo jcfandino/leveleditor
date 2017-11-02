@@ -60,8 +60,13 @@ case class Polygon(val pointsUnsorted: List[Point]) {
 
   def changePoint(from: Point, to: Point): Polygon = {
     val idx = pointsSorted.indexOf(from)
-    if (idx >= 0) Polygon(pointsSorted.updated(idx, to))
-    else this
+    if (from == to || idx == -1) {
+      this
+    } else if(pointsSorted.contains(to)) {
+      Polygon(pointsSorted.filterNot(_ == from))
+    } else {
+      Polygon(pointsSorted.updated(idx, to))
+    }
   }
 
   def addPoint(between: Line, factor: Float): Polygon = {
@@ -145,6 +150,8 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     }
     polys
   }
+
+  def isDegenerate = pointsSorted.size < 3
 
   lazy val boundBox: BoundBox = {
     val firstPoint = pointsSorted.head

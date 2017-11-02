@@ -49,7 +49,7 @@ case class Sector(
         if (line.a == point) wall.updateLine(Line(point.move(dx, dy), line.b))
         else if (line.b == point) wall.updateLine(Line(line.a, point.move(dx, dy)))
         else wall
-      })
+      }).filterNot(_.line.length == 0f)
     }
     updatedPolygon(polygon.changePoint(point, point.move(dx, dy)))
       .updatedOpenWalls(updateWalls(openWalls))
