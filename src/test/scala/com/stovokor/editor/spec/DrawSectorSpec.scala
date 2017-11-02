@@ -128,11 +128,4 @@ class DrawSectorSpec extends FlatSpec
     assert(borderDefinedByPoints(f, e))
   }
 
-  class MockEventListener extends EditorEventListener {
-    var events: List[EditorEvent] = List()
-
-    def onEvent(event: EditorEvent) {
-      events = events ++ List(event)
-    }
-  }
 }

@@ -78,13 +78,14 @@ case class ExportMap() extends EditorEvent
 case class EditSettings() extends EditorEvent
 case class SettingsUpdated() extends EditorEvent
 case class ChangeGridSize() extends EditorEvent
+case class GridSizeChanged(step: Float) extends EditorEvent
 
 case class PointClicked(point: Point) extends EditorEvent
 case class PointDragged(from: Point, to: Point) extends EditorEvent
 case class PointSelectionChange(points: Set[Point]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent
-case class ChangeMaterial(sectorId:Long, target:String) extends EditorEvent
-case class ChangeZoom(factor:Float) extends EditorEvent
+case class ChangeMaterial(sectorId: Long, target: String) extends EditorEvent
+case class ChangeZoom(factor: Float) extends EditorEvent
 
 case class SplitSelection() extends EditorEvent
 case class DeleteSelection() extends EditorEvent

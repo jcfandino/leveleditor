@@ -39,6 +39,7 @@ import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.util.SectorDeleted
 import com.stovokor.editor.gui.Mode2DLayers
 import com.jme3.math.Vector2f
+import com.stovokor.util.GridSnapper
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -130,15 +131,15 @@ class SectorPresenterState extends BaseState
         println(s"CursorClick -> isDragging:$isDragging event: $event")
         if (!isDragging) {
           oldPos.set(spatial.getLocalTranslation.to2f)
-          newPos.set(snapX(spatial.getLocalTranslation.x),
-            snapY(spatial.getLocalTranslation.y))
+          newPos.set(GridSnapper.snapX(spatial.getLocalTranslation.x),
+            GridSnapper.snapY(spatial.getLocalTranslation.y))
         } else if (!event.isPressed()) {
           // released
           println(s"oldpos $oldPos vs newpos $newPos = ${oldPos.distance(newPos)}")
           if (oldPos.distance(newPos) > .1f) { // button released
             println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
             EventBus.trigger(
-              PointDragged(point, Point(snapX(newPos.x), snapY(newPos.y))))
+              PointDragged(point, GridSnapper.snap(Point(newPos.x, newPos.y))))
             spatial.setLocalTranslation(oldPos.to3f(Mode2DLayers.vertices)) //move back.
             //TODO improve, disable dragging if not in selection
           } else {
@@ -153,7 +154,7 @@ class SectorPresenterState extends BaseState
       if (isDragging && spatial.isVisible) {
         val cam = event.getViewPort.getCamera
         val coord = cam.getWorldCoordinates(event.getLocation, 0f)
-        newPos.set(snapX(coord.x), snapY(coord.y))
+        newPos.set(GridSnapper.snapX(coord.x), GridSnapper.snapY(coord.y))
         spatial.setLocalTranslation(newPos.to3f(Mode2DLayers.vertices))
       }
     })
@@ -191,13 +192,6 @@ class SectorPresenterState extends BaseState
       lastTarget = Some((sectorId, target))
       EventBus.trigger(PointerTargetChange(sectorId, target))
     }
-  }
-
-  //TODO duplicated
-  def snapX(c: Float) = snapped(c, 1f)
-  def snapY(c: Float) = snapped(c, 1f)
-  def snapped(coor: Float, step: Float) = {
-    step * (coor / step).round
   }
 
   def valueChanged(f: FunctionId, i: InputState, d: Double) {

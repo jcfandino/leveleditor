@@ -17,6 +17,7 @@ import com.stovokor.util.SplitSelection
 import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.factory.BorderFactory
+import com.stovokor.util.SectorDeleted
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -52,33 +53,62 @@ class ModifyingState extends BaseState
   // TODO clean this up
   def movePoints(from: Point, to: Point) {
     val (dx, dy) = (to.x - from.x, to.y - from.y)
-    var toUpdate: Set[(Long, Sector)] = Set()
+    var toUpdate: Map[Long, Sector] = Map()
+    var toDelete: Set[Long] = Set()
     val pointsToMove = (selectedPoints ++ Set(from))
     pointsToMove.foreach(point => {
       val sectors = sectorRepository.findByPoint(point)
       for ((sectorId, sector) <- sectors) {
         val updated = sector.moveSinglePoint(point, dx, dy)
-        sectorRepository.update(sectorId, updated)
-        toUpdate = toUpdate ++ Set((sectorId, updated))
+        if (updated.polygon.isDegenerate) {
+          sectorRepository.remove(sectorId)
+          toDelete = toDelete ++ Set(sectorId)
+        } else {
+          sectorRepository.update(sectorId, updated)
+          toUpdate = toUpdate.updated(sectorId, updated)
+        }
       }
     })
-    toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2)))
     //update borders
     pointsToMove.foreach(point => {
       borderRepository
         .find(point)
+        .filterNot(p => toDelete.contains(p._1))
         .map(pair => pair match {
           case (id, border) => {
             val updated = border.updateLine(border.line.moveEnd(point, point.move(dx, dy)))
-            borderRepository.update(id, updated)
+            if (updated.line.length > 0) {
+              borderRepository.update(id, updated)
+            } else {
+              borderRepository.remove(id)
+            }
             updated.sectorA
           }
         })
-        .distinct
-        .foreach(sectorId => {
-          EventBus.trigger(SectorUpdated(sectorId, sectorRepository.get(sectorId)))
-        })
     })
+    // when sector collapses over border, find border with to=sector and delete
+    toDelete
+      .flatMap(borderRepository.findFrom)
+      .map(_._1).foreach(borderRepository.remove)
+    toDelete
+      .flatMap(id => borderRepository.findTo(id))
+      .foreach(p => p match {
+        case (borderId, border) => {
+          borderRepository.remove(borderId)
+          sectorRepository.get(border.sectorA)
+            .openWalls.find(w => w.line == border.line)
+            .map(wall => {
+              (sectorRepository.get(border.sectorA))
+                .updatedOpenWalls((sectorRepository.get(border.sectorA)).openWalls.filterNot(_ == wall))
+                .updatedClosedWalls((sectorRepository.get(border.sectorA)).closedWalls ++ List(wall))
+            }).foreach(sector => {
+              sectorRepository.update(border.sectorA, sector)
+              toUpdate = toUpdate.updated(border.sectorA, sector)
+            })
+        }
+      })
+    toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2)))
+    toDelete.foreach(id => EventBus.trigger(SectorDeleted(id)))
   }
 
   def splitSelection() {

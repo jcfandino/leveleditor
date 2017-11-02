@@ -35,6 +35,8 @@ import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.ChangeGridSize
 import com.stovokor.editor.gui.Mode2DLayers
+import com.stovokor.util.GridSizeChanged
+import com.stovokor.util.GridSnapper
 
 class GridState extends BaseState
     with MaterialFactoryClient
@@ -43,13 +45,12 @@ class GridState extends BaseState
     with EditorEventListener {
 
   val gridSteps = List(0.125f, 0.25f, 0.5f, 1f, 2f, 4f, 8f)
-  var gridStep = 0.25f
+  var gridStep = GridSnapper.gridStep
 
   val spanX = 1000f
   val spanY = 1000f
 
   var batched = true
-  var snapToGrid = true
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -83,7 +84,7 @@ class GridState extends BaseState
       if (isEnabled && event.getButtonIndex == 0 && event.isPressed) {
         event.setConsumed()
         clicked = event.isPressed()
-        EventBus.trigger(PointClicked(Point(snapX(mousePos.x), snapY(mousePos.y))))
+        EventBus.trigger(PointClicked(GridSnapper.snap(Point(mousePos.x, mousePos.y))))
         println(s"grid click -> $mousePos")
       }
     })
@@ -102,8 +103,8 @@ class GridState extends BaseState
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     if (isEnabled && value == InputState.Positive) func match {
       case InputFunction.snapToGrid => {
-        snapToGrid = !snapToGrid
-        println(s"snap to grid is $snapToGrid")
+        val enabled = GridSnapper.toggle
+        println(s"snap to grid is $enabled")
       }
       case InputFunction.resizeGrid => {
         changeGridSize()
@@ -177,6 +178,7 @@ class GridState extends BaseState
   def changeGridSize() {
     val idx = gridSteps.indexOf(gridStep) + 1
     gridStep = if (idx < gridSteps.size) gridSteps(idx) else gridSteps(0)
+    GridSnapper.setStep(gridStep)
     println(s"New grid size $gridStep")
     // redraw
     val node = get2DNode.getChild("gridParent").asNode
@@ -185,13 +187,6 @@ class GridState extends BaseState
   }
 
   override def update(tpf: Float) {
-  }
-
-  def snapX(c: Float) = snapped(c, gridStep)
-  def snapY(c: Float) = snapped(c, gridStep)
-  def snapped(coor: Float, step: Float) = {
-    if (snapToGrid) step * (coor / step).round
-    else coor
   }
 
 }
