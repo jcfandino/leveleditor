@@ -2,19 +2,10 @@ package com.stovokor.util
 
 import com.stovokor.editor.model.Point
 
-object GridSnapper extends EditorEventListener {
+object GridSnapper {
 
   var snapToGrid = true
   var gridStep = 1f
-
-  def initialize() {
-    EventBus.subscribeByType(this, classOf[GridSizeChanged])
-  }
-
-  def onEvent(event: EditorEvent) = event match {
-    case GridSizeChanged(step) => gridStep = step
-    case _                     =>
-  }
 
   def toggle = snapToGrid = !snapToGrid
   def setStep(step: Float) { gridStep = step }

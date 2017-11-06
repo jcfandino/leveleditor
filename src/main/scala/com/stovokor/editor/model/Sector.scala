@@ -56,6 +56,22 @@ case class Sector(
       .updatedClosedWalls(updateWalls(closedWalls))
   }
 
+  def openWall(line: Line) = {
+    val wall = closedWalls.find(_.line.alike(line))
+    if (wall.isDefined) {
+      updatedClosedWalls(closedWalls.filterNot(_ == wall.get))
+        .updatedOpenWalls(openWalls ++ List(wall.get))
+    } else this
+  }
+
+  def closeWall(line: Line) = {
+    val wall = openWalls.find(_.line.alike(line))
+    if (wall.isDefined) {
+      updatedOpenWalls(openWalls.filterNot(_ == wall.get))
+        .updatedClosedWalls(closedWalls ++ List(wall.get))
+    } else this
+  }
+
   def addPoint(line: Line, factor: Float) = {
     def updateWalls(walls: List[Wall]) = {
       walls.flatMap(wall => {

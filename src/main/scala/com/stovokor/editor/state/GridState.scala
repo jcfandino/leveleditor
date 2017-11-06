@@ -35,7 +35,6 @@ import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.ChangeGridSize
 import com.stovokor.editor.gui.Mode2DLayers
-import com.stovokor.util.GridSizeChanged
 import com.stovokor.util.GridSnapper
 
 class GridState extends BaseState

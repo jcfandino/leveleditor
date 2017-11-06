@@ -78,7 +78,6 @@ case class ExportMap() extends EditorEvent
 case class EditSettings() extends EditorEvent
 case class SettingsUpdated() extends EditorEvent
 case class ChangeGridSize() extends EditorEvent
-case class GridSizeChanged(step: Float) extends EditorEvent
 
 case class PointClicked(point: Point) extends EditorEvent
 case class PointDragged(from: Point, to: Point) extends EditorEvent
@@ -92,6 +91,4 @@ case class DeleteSelection() extends EditorEvent
 
 case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
 case class SectorDeleted(id: Long) extends EditorEvent
-
-
 

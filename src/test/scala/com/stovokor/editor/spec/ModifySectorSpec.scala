@@ -59,6 +59,11 @@ class ModifySectorSpec extends FlatSpec
   behavior of "Modifying state"
 
   /*
+   * 
+   *           G
+   *         / | \
+   *       /   |   \
+   *     /     |     \
    *   D-------C-------F------I
    *   |     / |       |      |
    *   |   ø   |       |      |
@@ -66,9 +71,10 @@ class ModifySectorSpec extends FlatSpec
    *   X-------B-------E------H
    *                           
    */
-  val (d, c, f, i, x, b, e, h) = (
+  val (d, c, f, i, x, b, e, h, g) = (
     Point(-1, 1), Point(1, 1), Point(2, 1), Point(3, 1),
-    Point(-1, -1), Point(1, -1), Point(2, -1), Point(3, -1))
+    Point(-1, -1), Point(1, -1), Point(2, -1), Point(3, -1),
+    Point(1, 2))
 
   it should "be able to move points to resize sectors" in {
     Given("A simple triangular sector")
@@ -134,5 +140,27 @@ class ModifySectorSpec extends FlatSpec
     assert(Repositories.sectorRepository.sectors.size == 1)
     assert(Repositories.sectorRepository.findByPoint(x).head._2.openWalls.isEmpty)
     assert(!borderDefinedByPoints(x, c))
+  }
+
+  it should "be able to add borders when merging walls" in {
+    Given("A square sector A")
+    defineSector(x, b, c, d)
+    And("A another square sector B that shares one side")
+    defineSector(b, e, f, c)
+
+    When("Sector A top-left corner is moved on top of top-right corner")
+    drag(d, g)
+    And("Sector B top-right corner is moved on top of top-left corner")
+    drag(f, g)
+
+    Then("Both sectors exists")
+    assert(sectorDefinedByPoints(x, b, c, g))
+    assert(sectorDefinedByPoints(e, b, c, g))
+    assert(Repositories.sectorRepository.sectors.size == 2)
+
+    And("They share two borders")
+    assert(borderDefinedByPoints(b, c))
+    // TODO this should be true
+    assert(borderDefinedByPoints(c, g))
   }
 }

@@ -51,8 +51,9 @@ class SectorRepository {
   }
 
   def find(line: Line) = {
-    val withPoints = index.find(line.a) ++ index.find(line.b)
-    withPoints.map(id => (id, get(id)))
+    index.findByPoint(line.a)
+      .map(id => (id, get(id)))
+      .filter(p => p._2.polygon.lines.find(line.alike).isDefined)
   }
 
   def removeAll {

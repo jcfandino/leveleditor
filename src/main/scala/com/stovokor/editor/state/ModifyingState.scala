@@ -18,6 +18,8 @@ import com.stovokor.editor.model.Wall
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.factory.BorderFactory
 import com.stovokor.util.SectorDeleted
+import com.stovokor.editor.model.Border
+import com.stovokor.editor.model.Surface
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -86,6 +88,29 @@ class ModifyingState extends BaseState
           }
         })
     })
+    // find new borders that may be created
+    toUpdate.foreach(p1 => p1 match {
+      case (sectorId1, sector1) => {
+        sector1.closedWalls.foreach(w => {
+          sectorRepository.find(w.line)
+            .filterNot(_._1 == sectorId1)
+            .foreach(p2 => p2 match {
+              case (sectorId2, sector2) => {
+                println(s"~~~ Found new border with ${sector2}")
+                val updated1 = sector1.openWall(w.line)
+                val updated2 = sector2.openWall(w.line)
+                sectorRepository.update(sectorId1, updated1)
+                sectorRepository.update(sectorId2, updated2)
+                borderRepository.add(Border(sectorId1, sectorId2, w.line, Surface(0f, w.texture), Surface(0f, w.texture), Surface(0f, w.texture)))
+                borderRepository.add(Border(sectorId2, sectorId1, w.line.reverse, Surface(0f, w.texture), Surface(0f, w.texture), Surface(0f, w.texture)))
+                toUpdate = toUpdate
+                  .updated(sectorId1, updated1)
+                  .updated(sectorId2, updated2)
+              }
+            })
+        })
+      }
+    })
     // when sector collapses over border, find border with to=sector and delete
     toDelete
       .flatMap(borderRepository.findFrom)
@@ -96,12 +121,9 @@ class ModifyingState extends BaseState
         case (borderId, border) => {
           borderRepository.remove(borderId)
           sectorRepository.get(border.sectorA)
-            .openWalls.find(w => w.line == border.line)
-            .map(wall => {
-              (sectorRepository.get(border.sectorA))
-                .updatedOpenWalls((sectorRepository.get(border.sectorA)).openWalls.filterNot(_ == wall))
-                .updatedClosedWalls((sectorRepository.get(border.sectorA)).closedWalls ++ List(wall))
-            }).foreach(sector => {
+            .openWalls.find(_.line == border.line)
+            .map(wall => sectorRepository.get(border.sectorA).closeWall(wall.line))
+            .foreach(sector => {
               sectorRepository.update(border.sectorA, sector)
               toUpdate = toUpdate.updated(border.sectorA, sector)
             })
