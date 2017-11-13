@@ -87,7 +87,7 @@ class ModifyingState extends BaseState
             updated.sectorA
           }
         })
-    })
+   })
     // find new borders that may be created
     toUpdate.foreach(p1 => p1 match {
       case (sectorId1, sector1) => {

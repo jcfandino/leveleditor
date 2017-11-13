@@ -40,6 +40,9 @@ import com.stovokor.util.SectorDeleted
 import com.stovokor.editor.gui.Mode2DLayers
 import com.jme3.math.Vector2f
 import com.stovokor.util.GridSnapper
+import com.jme3.math.Quaternion
+import com.jme3.math.FastMath
+import com.stovokor.editor.factory.Mesh2dFactory
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -57,6 +60,8 @@ class SectorPresenterState extends BaseState
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[SectorUpdated])
     EventBus.subscribeByType(this, classOf[SectorDeleted])
+    inputMapper.addStateListener(this, InputFunction.snapToGrid)
+    inputMapper.activateGroup(InputFunction.general)
   }
 
   override def update(tpf: Float) {
@@ -80,35 +85,9 @@ class SectorPresenterState extends BaseState
   def drawSector(id: Long, sector: Sector) {
     def draw2d() {
       val node = getOrCreateNode(get2DNode, "sector-" + id)
-      for (point <- sector.polygon.pointsSorted) {
-        val vertex = new Node("point")
-        // visual point
-        val pointView = new Geometry("point", K.vertexBox)
-        pointView.setMaterial(plainColor(ColorRGBA.LightGray))
-        pointView.addControl(new SelectableControl(ColorRGBA.LightGray, Set(point)))
-        // clickable point
-        val clickableRadius = 0.2f
-        val clickableVertex = new Geometry("clickablePoint", new Box(clickableRadius, clickableRadius, clickableRadius))
-        clickableVertex.setMaterial(plainColor(ColorRGBA.DarkGray))
-        clickableVertex.setCullHint(CullHint.Always)
-
-        vertex.attachChild(pointView)
-        vertex.attachChild(clickableVertex)
-        vertex.setLocalTranslation(point.x, point.y, Mode2DLayers.vertices)
-        vertex.addControl(new ConstantSizeOnScreenControl())
-        setupDraggableInput(vertex, point)
-        node.attachChild(vertex)
-      }
-      def draw2dLine(node: Node, color: ColorRGBA, line: com.stovokor.editor.model.Line) {
-        val geo = new Geometry("line", new Line(
-          new Vector3f(line.a.x, line.a.y, Mode2DLayers.lines),
-          new Vector3f(line.b.x, line.b.y, Mode2DLayers.lines)))
-        geo.setMaterial(plainColor(color))
-        geo.addControl(new SelectableControl(color, Set(line.a, line.b)))
-        node.attachChild(geo)
-      }
-      sector.openWalls.foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
-      sector.closedWalls.foreach(w => draw2dLine(node, ColorRGBA.LightGray, w.line))
+      val meshNode = Mesh2dFactory(assetManager).createMesh(sector)
+      //TODO setup input
+      node.attachChild(meshNode)
     }
     def draw3d() {
       val node = getOrCreateNode(get3DNode, "sector-" + id)
@@ -119,47 +98,6 @@ class SectorPresenterState extends BaseState
     }
     draw2d()
     draw3d()
-  }
-
-  var isDragging = false
-  var oldPos = new Vector2f()
-  var newPos = new Vector2f()
-
-  def setupDraggableInput(spatial: Spatial, point: Point) {
-    spatial.onCursorClick((event, target, capture) => {
-      if (event.getButtonIndex == 0 && spatial.isVisible) {
-        println(s"CursorClick -> isDragging:$isDragging event: $event")
-        if (!isDragging) {
-          oldPos.set(spatial.getLocalTranslation.to2f)
-          newPos.set(GridSnapper.snapX(spatial.getLocalTranslation.x),
-            GridSnapper.snapY(spatial.getLocalTranslation.y))
-        } else if (!event.isPressed()) {
-          // released
-          println(s"oldpos $oldPos vs newpos $newPos = ${oldPos.distance(newPos)}")
-          if (oldPos.distance(newPos) > .1f) { // button released
-            println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
-            EventBus.trigger(
-              PointDragged(point, GridSnapper.snap(Point(newPos.x, newPos.y))))
-            spatial.setLocalTranslation(oldPos.to3f(Mode2DLayers.vertices)) //move back.
-            //TODO improve, disable dragging if not in selection
-          } else {
-            println(s"point clicked over point $point")
-            EventBus.trigger(PointClicked(point))
-          }
-        }
-        isDragging = event.isPressed()
-      }
-    })
-    spatial.onCursorMove((event, target, capture) => {
-      if (isDragging && spatial.isVisible) {
-        val cam = event.getViewPort.getCamera
-        val coord = cam.getWorldCoordinates(event.getLocation, 0f)
-        newPos.set(GridSnapper.snapX(coord.x), GridSnapper.snapY(coord.y))
-        spatial.setLocalTranslation(newPos.to3f(Mode2DLayers.vertices))
-      }
-    })
-    inputMapper.addStateListener(this, InputFunction.snapToGrid)
-    inputMapper.activateGroup(InputFunction.general)
   }
 
   var lastTarget: Option[(Long, String)] = None
