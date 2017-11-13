@@ -3,6 +3,7 @@ package com.stovokor.util
 import com.stovokor.editor.model.Polygon
 import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.Sector
+import com.stovokor.editor.model.Line
 
 object EventBus {
 
@@ -81,6 +82,9 @@ case class ChangeGridSize() extends EditorEvent
 
 case class PointClicked(point: Point) extends EditorEvent
 case class PointDragged(from: Point, to: Point) extends EditorEvent
+case class LineClicked(line: Line) extends EditorEvent
+case class LineDragged(line:Line,dx: Float, dy: Float) extends EditorEvent
+
 case class PointSelectionChange(points: Set[Point]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent
 case class ChangeMaterial(sectorId: Long, target: String) extends EditorEvent

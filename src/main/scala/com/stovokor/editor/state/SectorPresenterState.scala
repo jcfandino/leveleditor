@@ -1,48 +1,28 @@
 package com.stovokor.editor.state
 
+import scala.collection.JavaConverters.asScalaBufferConverter
+
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
-import com.jme3.math.ColorRGBA
-import com.jme3.math.Vector3f
-import com.jme3.scene.Geometry
-import com.jme3.scene.Spatial
-import com.jme3.scene.shape.Box
-import com.jme3.scene.shape.Line
+import com.jme3.scene.Node
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.StateFunctionListener
-import com.stovokor.editor.control.SelectableControl
 import com.stovokor.editor.factory.MaterialFactoryClient
+import com.stovokor.editor.factory.Mesh2dFactory
 import com.stovokor.editor.factory.MeshFactory
 import com.stovokor.editor.input.InputFunction
-import com.stovokor.editor.model.Point
-import com.stovokor.editor.model.Polygon
 import com.stovokor.editor.model.Sector
+import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
-import com.stovokor.util.LemurExtensions._
-import com.stovokor.util.JmeExtensions._
-import scala.collection.JavaConverters._
-import com.stovokor.util.PointClicked
-import com.stovokor.util.PointDragged
-import com.stovokor.util.SectorUpdated
-import com.stovokor.editor.factory.MeshFactory
-import com.jme3.scene.Node
-import com.stovokor.editor.factory.MeshFactory
+import com.stovokor.util.JmeExtensions.SpatialExtensions
+import com.stovokor.util.LemurExtensions.SpatialExtension
 import com.stovokor.util.PointerTargetChange
-import com.stovokor.editor.control.ConstantSizeOnScreenControl
-import com.jme3.scene.Spatial.CullHint
-import com.stovokor.editor.gui.K
-import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.util.SectorDeleted
-import com.stovokor.editor.gui.Mode2DLayers
-import com.jme3.math.Vector2f
-import com.stovokor.util.GridSnapper
-import com.jme3.math.Quaternion
-import com.jme3.math.FastMath
-import com.stovokor.editor.factory.Mesh2dFactory
+import com.stovokor.util.SectorUpdated
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -77,6 +57,7 @@ class SectorPresenterState extends BaseState
     getOrCreateNode(get2DNode, "sector-" + id).removeFromParent
     getOrCreateNode(get3DNode, "sector-" + id).removeFromParent
   }
+
   def redrawSector(id: Long, sector: Sector) {
     eraseSector(id)
     drawSector(id, sector)

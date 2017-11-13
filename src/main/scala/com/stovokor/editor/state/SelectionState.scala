@@ -14,6 +14,7 @@ import com.stovokor.editor.model.Line
 import com.stovokor.util.PointSelectionChange
 import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.model.Sector
+import com.stovokor.util.LineClicked
 
 // only for 2d
 class SelectionState extends BaseState
@@ -30,6 +31,7 @@ class SelectionState extends BaseState
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[SelectionModeSwitch])
     EventBus.subscribeByType(this, classOf[PointClicked])
+    EventBus.subscribeByType(this, classOf[LineClicked])
   }
 
   override def cleanup() {
@@ -40,6 +42,7 @@ class SelectionState extends BaseState
   def onEvent(event: EditorEvent) = event match {
     case SelectionModeSwitch(m) => if (modeIndex != m) setMode(m)
     case PointClicked(point)    => selectPoint(point)
+    case LineClicked(line)    => selectLine(line)
     case _                      =>
   }
 
@@ -52,6 +55,12 @@ class SelectionState extends BaseState
   def selectPoint(point: Point) {
     val sectors = sectorRepository.findByPoint(point).map(_._2)
     mode.selectPoint(point, sectors)
+    EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
+  }
+  def selectLine(line: Line) {
+    val sectors = sectorRepository.find(line).map(_._2)
+    mode.selectPoint(line.a, sectors) // TODO rethink this, works for now..
+    mode.selectPoint(line.b, sectors)
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
   }
 

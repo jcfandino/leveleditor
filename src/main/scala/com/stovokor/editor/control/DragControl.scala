@@ -14,55 +14,89 @@ import com.stovokor.util.JmeExtensions.Vector3fExtensions
 import com.stovokor.util.LemurExtensions.SpatialExtension
 import com.stovokor.util.PointClicked
 import com.stovokor.util.PointDragged
+import com.stovokor.editor.model.Line
+import com.stovokor.util.LineDragged
+import com.stovokor.util.LineClicked
 
-class DragControl(point: Point) extends AbstractControl {
+abstract class DragControl extends AbstractControl {
 
   var isDragging = false
   var oldPos = new Vector2f()
   var newPos = new Vector2f()
   var initialized = false
 
-  def controlUpdate(tpf: Float) {
+  override def controlUpdate(tpf: Float) = {
     if (!initialized) {
       setup()
       initialized = true
     }
   }
+  def currentPos = spatial.getLocalTranslation.to2f
 
   def setup() {
-    getSpatial.onCursorClick((event, target, capture) => {
-      if (event.getButtonIndex == 0 && getSpatial.isVisible) {
+    val z = spatial.getLocalTranslation.z
+    spatial.onCursorClick((event, target, capture) => {
+      if (event.getButtonIndex == 0 && spatial.isVisible) {
         println(s"CursorClick -> isDragging:$isDragging event: $event")
         if (!isDragging) {
           //TODO improve, disable dragging if not in selection
-          oldPos.set(spatial.getLocalTranslation.to2f)
-          newPos.set(GridSnapper.snapX(getSpatial.getLocalTranslation.x),
-            GridSnapper.snapY(spatial.getLocalTranslation.y))
+          oldPos.set(currentPos)
+          newPos.set(GridSnapper.snapX(currentPos.x), GridSnapper.snapY(currentPos.y))
         } else if (!event.isPressed()) {
           // released
-          println(s"oldpos $oldPos vs newpos $newPos = ${oldPos.distance(newPos)}")
-          if (oldPos.distance(newPos) > .1f) { // button released
-            println(s"moved point ${spatial.getLocalTranslation} -> ${newPos}")
-            EventBus.trigger(
-              PointDragged(point, GridSnapper.snap(Point(newPos.x, newPos.y))))
-            getSpatial.setLocalTranslation(oldPos.to3f(Mode2DLayers.vertices)) //move back.
+          println(s"oldpos $oldPos vs newpos $newPos = ${oldPos.distance(currentPos)}")
+          if (oldPos.distance(currentPos) > .1f) { // button released
+            dragged(newPos.subtract(oldPos))
+            spatial.setLocalTranslation(oldPos.to3f(z)) //move back.
           } else {
-            println(s"point clicked over point $point")
-            EventBus.trigger(PointClicked(point))
+            clicked
           }
         }
         isDragging = event.isPressed()
       }
     })
-    getSpatial.onCursorMove((event, target, capture) => {
-      if (isDragging && getSpatial.isVisible) {
+    spatial.onCursorMove((event, target, capture) => {
+      if (isDragging && spatial.isVisible) {
         val cam = event.getViewPort.getCamera
         val coord = cam.getWorldCoordinates(event.getLocation, 0f)
-        newPos.set(GridSnapper.snapX(coord.x), GridSnapper.snapY(coord.y))
-        spatial.setLocalTranslation(newPos.to3f(Mode2DLayers.vertices))
+        if (oldPos.distance(coord.to2f) > .1f) { // button released
+          //          newPos.set(coord.x, coord.y)
+          newPos.set(GridSnapper.snapX(coord.x), GridSnapper.snapY(coord.y))
+          spatial.setLocalTranslation(newPos.to3f(z))
+        }
       }
     })
   }
 
-  def controlRender(rm: RenderManager, vp: ViewPort) {}
+  def dragged(movement: Vector2f)
+  def clicked
+
+  override def controlRender(rm: RenderManager, vp: ViewPort) = {}
+}
+
+class PointDragControl(point: Point) extends DragControl {
+
+  override def dragged(movement: Vector2f) {
+    println(s"moved point ${spatial.getLocalTranslation} -> ${movement}")
+    EventBus.trigger(PointDragged(point, GridSnapper.snap(point.move(movement.x, movement.y))))
+    //        EventBus.trigger(PointDragged(point, GridSnapper.snap(Point(droppedPos.x, droppedPos.y))))
+  }
+
+  override def clicked {
+    println(s"point clicked over point $point")
+    EventBus.trigger(PointClicked(point))
+  }
+}
+
+class LineDragControl(line: Line) extends DragControl {
+
+  override def dragged(movement: Vector2f) {
+    println(s"moved line ${spatial.getLocalTranslation} -> ${movement}")
+    EventBus.trigger(LineDragged(line, movement.x, movement.y))
+  }
+
+  override def clicked {
+    println(s"line clicked $line")
+    EventBus.trigger(LineClicked(line))
+  }
 }

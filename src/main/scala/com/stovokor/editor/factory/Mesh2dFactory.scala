@@ -17,6 +17,8 @@ import com.stovokor.editor.gui.K
 import com.stovokor.editor.gui.Mode2DLayers
 import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.Sector
+import com.stovokor.editor.control.LineDragControl
+import com.stovokor.editor.control.PointDragControl
 
 object Mesh2dFactory {
   def apply(assetManager: AssetManager) = new Mesh2dFactory(assetManager)
@@ -48,7 +50,7 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     vertex.attachChild(clickableVertex)
     vertex.setLocalTranslation(point.x, point.y, Mode2DLayers.vertices)
     vertex.addControl(new ConstantSizeOnScreenControl())
-    vertex.addControl(new DragControl(point))
+    vertex.addControl(new PointDragControl(point))
     node.attachChild(vertex)
   }
 
@@ -56,8 +58,8 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     val lineNode = new Node("line")
     // a line
     val lineGeo = new Geometry("line", new Line(
-      new Vector3f(line.a.x, line.a.y, Mode2DLayers.lines),
-      new Vector3f(line.b.x, line.b.y, Mode2DLayers.lines)))
+      new Vector3f(line.a.x, line.a.y, 0),
+      new Vector3f(line.b.x, line.b.y, 0)))
     lineGeo.setMaterial(plainColor(color))
     lineGeo.addControl(new SelectableControl(color, Set(line.a, line.b)))
     lineNode.attachChild(lineGeo)
@@ -65,11 +67,21 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     val lineBox = new Geometry("lineBox", K.lineBox)
     lineBox.setMaterial(plainColor(color))
     lineBox.addControl(new SelectableControl(color, Set(line.a, line.b)))
-    lineBox.setLocalTranslation((line.b.x + line.a.x) / 2f, (line.b.y + line.a.y) / 2f, 0)
     lineBox.setLocalRotation(new Quaternion().fromAngleNormalAxis(FastMath.QUARTER_PI, Vector3f.UNIT_Z))
     lineBox.addControl(new ConstantSizeOnScreenControl())
-    lineNode.attachChild(lineBox)
+    // clickable control
+    val clickableLine = new Geometry("clickableLine", new Box(0.2f, 0.2f, 0.2f))
+    clickableLine.setMaterial(plainColor(ColorRGBA.Pink))
+    clickableLine.setCullHint(CullHint.Always)
 
+    val lineSelector = new Node("lineSelector")
+    lineSelector.addControl(new LineDragControl(line))
+    lineSelector.attachChild(lineBox)
+    lineSelector.attachChild(clickableLine)
+    lineSelector.setLocalTranslation((line.b.x + line.a.x) / 2f, (line.b.y + line.a.y) / 2f, 0)
+
+    lineNode.attachChild(lineSelector)
+    lineNode.setLocalTranslation(0, 0, Mode2DLayers.lines)
     node.attachChild(lineNode)
   }
 

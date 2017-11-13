@@ -20,6 +20,7 @@ import com.stovokor.editor.factory.BorderFactory
 import com.stovokor.util.SectorDeleted
 import com.stovokor.editor.model.Border
 import com.stovokor.editor.model.Surface
+import com.stovokor.util.LineDragged
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -34,6 +35,7 @@ class ModifyingState extends BaseState
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[PointDragged])
+    EventBus.subscribeByType(this, classOf[LineDragged])
     EventBus.subscribeByType(this, classOf[PointSelectionChange])
     EventBus.subscribeByType(this, classOf[SplitSelection])
     EventBus.subscribeByType(this, classOf[DeleteSelection])
@@ -45,19 +47,19 @@ class ModifyingState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case PointDragged(from, to)   => movePoints(from, to)
-    case PointSelectionChange(ps) => selectedPoints = ps
-    case SplitSelection()         => splitSelection()
-    case DeleteSelection()        => deleteSelection()
-    case _                        =>
+    case PointDragged(from, to)    => movePoints(to.x - from.x, to.y - from.y, from)
+    case LineDragged(line, dx, dy) => movePoints(dx, dy, line.a, line.b)
+    case PointSelectionChange(ps)  => selectedPoints = ps
+    case SplitSelection()          => splitSelection()
+    case DeleteSelection()         => deleteSelection()
+    case _                         =>
   }
 
   // TODO clean this up
-  def movePoints(from: Point, to: Point) {
-    val (dx, dy) = (to.x - from.x, to.y - from.y)
+  def movePoints(dx: Float, dy: Float, extraPoints: Point*) {
     var toUpdate: Map[Long, Sector] = Map()
     var toDelete: Set[Long] = Set()
-    val pointsToMove = (selectedPoints ++ Set(from))
+    val pointsToMove = (selectedPoints) ++ extraPoints // ++ Set(from))
     pointsToMove.foreach(point => {
       val sectors = sectorRepository.findByPoint(point)
       for ((sectorId, sector) <- sectors) {
@@ -87,7 +89,7 @@ class ModifyingState extends BaseState
             updated.sectorA
           }
         })
-   })
+    })
     // find new borders that may be created
     toUpdate.foreach(p1 => p1 match {
       case (sectorId1, sector1) => {
