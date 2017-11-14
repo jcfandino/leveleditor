@@ -9,17 +9,18 @@ import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
 import com.stovokor.util.PointSelectionChange
+import com.stovokor.editor.input.Modes.EditMode
 
 class Edit2DModeState extends BaseState with EditorEventListener {
 
-  var modeIndex = 0
-  val modes: List[EditMode] = List(SelectionMode, DrawingMode)
-  def mode = modes(modeIndex)
+  var modeKey = EditMode.Select
+  val modes: Map[EditMode, EditModeStrategy] = Map((EditMode.Select, SelectionMode), (EditMode.Draw, DrawingMode))
+  def mode = modes(modeKey)
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[EditModeSwitch])
-    modes(1).exit
+    modes(EditMode.Draw).exit
     mode.enter
   }
 
@@ -33,27 +34,27 @@ class Edit2DModeState extends BaseState with EditorEventListener {
     case _                 =>
   }
 
-  def setMode(newMode: Int) {
+  def setMode(newMode: EditMode) {
     println(s"new edit mode $newMode")
-    if (newMode != modeIndex) {
+    if (newMode != modeKey) {
       mode.exit
       EventBus.trigger(PointSelectionChange(Set()))
-      modeIndex = newMode
+      modeKey = newMode
       mode.enter
     }
   }
 
-  abstract class EditMode(val id: String) {
+  abstract class EditModeStrategy(val id: String) {
     def enter
     def exit
   }
 
-  object SelectionMode extends EditMode("selection") {
+  object SelectionMode extends EditModeStrategy("selection") {
 
     def exit {
       println("exiting selection")
-      disableStates(classOf[SelectionState],classOf[ModifyingState])
-      removeStates(classOf[SelectionState],classOf[ModifyingState])
+      disableStates(classOf[SelectionState], classOf[ModifyingState])
+      removeStates(classOf[SelectionState], classOf[ModifyingState])
     }
 
     def enter {
@@ -63,7 +64,7 @@ class Edit2DModeState extends BaseState with EditorEventListener {
     }
   }
 
-  object DrawingMode extends EditMode("drawing") {
+  object DrawingMode extends EditModeStrategy("drawing") {
     def exit {
       println("exiting drawing")
       disableStates(classOf[DrawingState])

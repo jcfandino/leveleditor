@@ -11,6 +11,8 @@ import com.jme3.scene.Spatial.CullHint
 import com.jme3.app.state.AppState
 import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.EditModeSwitch
+import com.stovokor.editor.input.Modes.SelectionMode
+import com.stovokor.editor.input.Modes.EditMode
 
 class ViewModeState extends BaseState with EditorEventListener {
 
@@ -74,8 +76,8 @@ class ViewModeState extends BaseState with EditorEventListener {
       stateManager.attach(new Camera2DState)
       stateManager.attach(new Edit2DModeState)
       //      disableStates(classOf[DrawingState]) // we want this to be disable at start
-      EventBus.trigger(SelectionModeSwitch(1))
-      EventBus.trigger(EditModeSwitch(0))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
+      EventBus.trigger(EditModeSwitch(EditMode.Draw))
     }
   }
 

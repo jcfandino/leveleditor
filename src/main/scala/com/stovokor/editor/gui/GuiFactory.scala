@@ -41,6 +41,8 @@ import java.io.File
 import javax.swing.filechooser.FileFilter
 import com.stovokor.util.ChangeGridSize
 import com.stovokor.util.ChangeZoom
+import com.stovokor.editor.input.Modes.EditMode
+import com.stovokor.editor.input.Modes.SelectionMode
 
 object GuiFactory {
 
@@ -112,8 +114,8 @@ object GuiFactory {
     mode3d.addClickCommands(_ => EventBus.trigger(ViewModeSwitch()))
     val draw = generalPanel.addChild(button("draw-freehand.png", "Draw sector", infoText))
     draw.addClickCommands(_ => {
-      EventBus.trigger(SelectionModeSwitch(0))
-      EventBus.trigger(EditModeSwitch(1))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
+      EventBus.trigger(EditModeSwitch(EditMode.Draw))
     })
     generalPanel
   }
@@ -125,18 +127,18 @@ object GuiFactory {
     val line = selectionPanel.addChild(button("office-chart-polar.png", "Select lines", infoText))
     val sector = selectionPanel.addChild(button("office-chart-polar-stacked.png", "Select sectors", infoText))
     point.addClickCommands(_ => {
-      EventBus.trigger(EditModeSwitch(0))
-      EventBus.trigger(SelectionModeSwitch(1))
+      EventBus.trigger(EditModeSwitch(EditMode.Select))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.Point))
       decorateFirst(point, line, sector)
     })
     line.addClickCommands(_ => {
-      EventBus.trigger(EditModeSwitch(0))
-      EventBus.trigger(SelectionModeSwitch(2))
+      EventBus.trigger(EditModeSwitch(EditMode.Select))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.Line))
       decorateFirst(line, point, sector)
     })
     sector.addClickCommands(_ => {
-      EventBus.trigger(EditModeSwitch(0))
-      EventBus.trigger(SelectionModeSwitch(3))
+      EventBus.trigger(EditModeSwitch(EditMode.Select))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.Sector))
       decorateFirst(sector, point, line)
     })
     selectionPanel

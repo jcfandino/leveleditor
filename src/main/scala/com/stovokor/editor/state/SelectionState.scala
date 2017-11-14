@@ -15,6 +15,7 @@ import com.stovokor.util.PointSelectionChange
 import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.model.Sector
 import com.stovokor.util.LineClicked
+import com.stovokor.editor.input.Modes.SelectionMode
 
 // only for 2d
 class SelectionState extends BaseState
@@ -23,9 +24,14 @@ class SelectionState extends BaseState
   val sectorRepository = SectorRepository()
 
   var selectedPoints: List[Point] = List()
-  var modeIndex = 0
-  val modes = List(ModeOff, ModePoint, ModeLine, ModeSector)
-  def mode = modes(modeIndex)
+  var modeKey = SelectionMode.None
+
+  val modes = Map(
+    (SelectionMode.None, ModeOff),
+    (SelectionMode.Point, ModePoint),
+    (SelectionMode.Line, ModeLine),
+    (SelectionMode.Sector, ModeSector))
+  def mode = modes(modeKey)
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -40,16 +46,16 @@ class SelectionState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SelectionModeSwitch(m) => if (modeIndex != m) setMode(m)
+    case SelectionModeSwitch(m) => if (modeKey != m) setMode(m)
     case PointClicked(point)    => selectPoint(point)
-    case LineClicked(line)    => selectLine(line)
+    case LineClicked(line)      => selectLine(line)
     case _                      =>
   }
 
-  def setMode(newMode: Int) {
+  def setMode(newMode: SelectionMode) {
     println(s"new selection mode $newMode")
     selectedPoints = List()
-    modeIndex = newMode
+    modeKey = newMode
   }
 
   def selectPoint(point: Point) {
@@ -64,23 +70,23 @@ class SelectionState extends BaseState
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
   }
 
-  abstract trait SelectionMode {
+  abstract trait SelectionModeStrategy {
     def selectPoint(point: Point, sectors: Set[Sector])
   }
 
-  object ModeOff extends SelectionMode {
+  object ModeOff extends SelectionModeStrategy {
     def selectPoint(point: Point, sectors: Set[Sector]) {
       selectedPoints = List()
     }
   }
 
-  object ModePoint extends SelectionMode {
+  object ModePoint extends SelectionModeStrategy {
     def selectPoint(point: Point, sectors: Set[Sector]) {
       selectedPoints = List(point)
     }
   }
 
-  object ModeLine extends SelectionMode {
+  object ModeLine extends SelectionModeStrategy {
     def selectPoint(point: Point, sectors: Set[Sector]) {
       if (selectedPoints.isEmpty) {
         selectedPoints = List(point)
@@ -99,7 +105,7 @@ class SelectionState extends BaseState
     }
   }
 
-  object ModeSector extends SelectionMode {
+  object ModeSector extends SelectionModeStrategy {
     def selectPoint(point: Point, sectors: Set[Sector]) {
       val polygons = sectors.toList.map(_.polygon)
       selectedPoints = polygons.flatMap(_.pointsSorted)

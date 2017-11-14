@@ -4,6 +4,8 @@ import com.stovokor.editor.model.Polygon
 import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Line
+import com.stovokor.editor.input.Modes.EditMode
+import com.stovokor.editor.input.Modes.SelectionMode
 
 object EventBus {
 
@@ -69,8 +71,8 @@ trait EditorEventListener {
 abstract class EditorEvent
 
 case class ViewModeSwitch() extends EditorEvent
-case class EditModeSwitch(m: Int) extends EditorEvent
-case class SelectionModeSwitch(m: Int) extends EditorEvent
+case class EditModeSwitch(m: EditMode) extends EditorEvent
+case class SelectionModeSwitch(m: SelectionMode) extends EditorEvent
 case class ExitApplication() extends EditorEvent
 
 case class SaveMap(overwrite: Boolean) extends EditorEvent

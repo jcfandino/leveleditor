@@ -17,8 +17,13 @@ import com.stovokor.util.PointDragged
 import com.stovokor.editor.model.Line
 import com.stovokor.util.LineDragged
 import com.stovokor.util.LineClicked
+import com.stovokor.util.SelectionModeSwitch
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EditorEvent
+import com.stovokor.editor.input.Modes.SelectionMode
 
-abstract class DragControl extends AbstractControl {
+abstract class DragControl
+    extends AbstractControl {
 
   var isDragging = false
   var oldPos = new Vector2f()
@@ -28,15 +33,16 @@ abstract class DragControl extends AbstractControl {
   override def controlUpdate(tpf: Float) = {
     if (!initialized) {
       setup()
+      EventBus.subscribeByType(SelectionModeHolder, classOf[SelectionModeSwitch])
       initialized = true
     }
+    spatial.setVisible(visibleModes.contains(SelectionModeHolder.current))
   }
-  def currentPos = spatial.getLocalTranslation.to2f
 
   def setup() {
     val z = spatial.getLocalTranslation.z
     spatial.onCursorClick((event, target, capture) => {
-      if (event.getButtonIndex == 0 && spatial.isVisible) {
+      if (event.getButtonIndex == 0) {
         println(s"CursorClick -> isDragging:$isDragging event: $event")
         if (!isDragging) {
           //TODO improve, disable dragging if not in selection
@@ -45,7 +51,7 @@ abstract class DragControl extends AbstractControl {
         } else if (!event.isPressed()) {
           // released
           println(s"oldpos $oldPos vs newpos $newPos = ${oldPos.distance(currentPos)}")
-          if (oldPos.distance(currentPos) > .1f) { // button released
+          if (isActive && oldPos.distance(currentPos) > .1f) { // button released
             dragged(newPos.subtract(oldPos))
             spatial.setLocalTranslation(oldPos.to3f(z)) //move back.
           } else {
@@ -56,7 +62,7 @@ abstract class DragControl extends AbstractControl {
       }
     })
     spatial.onCursorMove((event, target, capture) => {
-      if (isDragging && spatial.isVisible) {
+      if (isDragging && isActive) {
         val cam = event.getViewPort.getCamera
         val coord = cam.getWorldCoordinates(event.getLocation, 0f)
         if (oldPos.distance(coord.to2f) > .1f) { // button released
@@ -68,10 +74,26 @@ abstract class DragControl extends AbstractControl {
     })
   }
 
+  def currentPos = spatial.getLocalTranslation.to2f
+  def isActive = dragActiveModes.contains(SelectionModeHolder.current)
+
+  // abstract methods
   def dragged(movement: Vector2f)
   def clicked
+  def visibleModes: Set[SelectionMode]
+  def dragActiveModes: Set[SelectionMode]
 
   override def controlRender(rm: RenderManager, vp: ViewPort) = {}
+
+}
+
+// object to share the selection mode among controls
+object SelectionModeHolder extends EditorEventListener {
+  var current = SelectionMode.None
+  def onEvent(event: EditorEvent) = event match {
+    case SelectionModeSwitch(m) => current = m
+    case _                      =>
+  }
 }
 
 class PointDragControl(point: Point) extends DragControl {
@@ -79,13 +101,15 @@ class PointDragControl(point: Point) extends DragControl {
   override def dragged(movement: Vector2f) {
     println(s"moved point ${spatial.getLocalTranslation} -> ${movement}")
     EventBus.trigger(PointDragged(point, GridSnapper.snap(point.move(movement.x, movement.y))))
-    //        EventBus.trigger(PointDragged(point, GridSnapper.snap(Point(droppedPos.x, droppedPos.y))))
   }
 
   override def clicked {
     println(s"point clicked over point $point")
     EventBus.trigger(PointClicked(point))
   }
+
+  val visibleModes = Set(SelectionMode.Point, SelectionMode.None)
+  val dragActiveModes = Set(SelectionMode.Point)
 }
 
 class LineDragControl(line: Line) extends DragControl {
@@ -99,4 +123,7 @@ class LineDragControl(line: Line) extends DragControl {
     println(s"line clicked $line")
     EventBus.trigger(LineClicked(line))
   }
+
+  val visibleModes = Set(SelectionMode.Line)
+  val dragActiveModes = Set(SelectionMode.Line)
 }

@@ -40,6 +40,10 @@ object JmeExtensions {
       else None
 
     def isVisible = s.getCullHint != CullHint.Always
+
+    def setVisible(v: Boolean) {
+      s.setCullHint(if (v) CullHint.Inherit else CullHint.Always)
+    }
   }
 
   implicit class Vector3fExtensions(v: Vector3f) {
