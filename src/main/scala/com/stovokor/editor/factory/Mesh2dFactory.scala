@@ -19,6 +19,7 @@ import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.control.LineDragControl
 import com.stovokor.editor.control.PointDragControl
+import com.stovokor.editor.control.SectorDragControl
 
 object Mesh2dFactory {
   def apply(assetManager: AssetManager) = new Mesh2dFactory(assetManager)
@@ -26,11 +27,12 @@ object Mesh2dFactory {
 
 class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
-  def createMesh(sector: Sector) = {
+  def createMesh(sectorId: Long, sector: Sector) = {
     val node = new Node("sector2d")
     sector.polygon.pointsSorted.foreach(p => draw2dVertex(node, p))
     sector.openWalls.foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
     sector.closedWalls.foreach(w => draw2dLine(node, ColorRGBA.LightGray, w.line))
+    draw2dSector(node, sectorId: Long, sector)
     node
   }
 
@@ -83,6 +85,27 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     lineNode.attachChild(lineSelector)
     lineNode.setLocalTranslation(0, 0, Mode2DLayers.lines)
     node.attachChild(lineNode)
+  }
+
+  def draw2dSector(node: Node, sectorId: Long, sector: Sector) {
+    val area = new Node("sector-area")
+    // visual point
+    val centerView = new Geometry("sector-center", K.vertexBox)
+    centerView.setMaterial(plainColor(ColorRGBA.LightGray))
+    centerView.addControl(new SelectableControl(ColorRGBA.LightGray, sector.polygon.pointsUnsorted.toSet))
+    // clickable point
+    val clickableRadius = 0.2f
+    val clickableCenter = new Geometry("clickableCenter", new Box(clickableRadius, clickableRadius, clickableRadius))
+    clickableCenter.setMaterial(plainColor(ColorRGBA.DarkGray))
+    clickableCenter.setCullHint(CullHint.Always)
+
+    val pos = sector.polygon.center
+    area.attachChild(centerView)
+    area.attachChild(clickableCenter)
+    area.setLocalTranslation(pos.x, pos.y, Mode2DLayers.vertices)
+    area.addControl(new ConstantSizeOnScreenControl())
+    area.addControl(new SectorDragControl(sectorId))
+    node.attachChild(area)
   }
 
 }

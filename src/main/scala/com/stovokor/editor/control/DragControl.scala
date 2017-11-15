@@ -21,6 +21,9 @@ import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 import com.stovokor.editor.input.Modes.SelectionMode
+import com.stovokor.editor.model.Sector
+import com.stovokor.util.SectorDragged
+import com.stovokor.util.SectorClicked
 
 abstract class DragControl
     extends AbstractControl {
@@ -126,4 +129,20 @@ class LineDragControl(line: Line) extends DragControl {
 
   val visibleModes = Set(SelectionMode.Line)
   val dragActiveModes = Set(SelectionMode.Line)
+}
+
+class SectorDragControl(sectorId: Long) extends DragControl {
+
+  override def dragged(movement: Vector2f) {
+    println(s"moved sector ${spatial.getLocalTranslation} -> ${movement}")
+    EventBus.trigger(SectorDragged(sectorId, movement.x, movement.y))
+  }
+
+  override def clicked {
+    println(s"line clicked $sectorId")
+    EventBus.trigger(SectorClicked(sectorId))
+  }
+
+  val visibleModes = Set(SelectionMode.Sector)
+  val dragActiveModes = Set(SelectionMode.Sector)
 }

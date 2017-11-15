@@ -66,7 +66,7 @@ class SectorPresenterState extends BaseState
   def drawSector(id: Long, sector: Sector) {
     def draw2d() {
       val node = getOrCreateNode(get2DNode, "sector-" + id)
-      val meshNode = Mesh2dFactory(assetManager).createMesh(sector)
+      val meshNode = Mesh2dFactory(assetManager).createMesh(id, sector)
       //TODO setup input
       node.attachChild(meshNode)
     }

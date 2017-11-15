@@ -85,7 +85,9 @@ case class ChangeGridSize() extends EditorEvent
 case class PointClicked(point: Point) extends EditorEvent
 case class PointDragged(from: Point, to: Point) extends EditorEvent
 case class LineClicked(line: Line) extends EditorEvent
-case class LineDragged(line:Line,dx: Float, dy: Float) extends EditorEvent
+case class LineDragged(line: Line, dx: Float, dy: Float) extends EditorEvent
+case class SectorClicked(sectorId: Long) extends EditorEvent
+case class SectorDragged(sectorId: Long, dx: Float, dy: Float) extends EditorEvent
 
 case class PointSelectionChange(points: Set[Point]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent

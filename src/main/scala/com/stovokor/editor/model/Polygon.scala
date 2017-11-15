@@ -62,7 +62,7 @@ case class Polygon(val pointsUnsorted: List[Point]) {
     val idx = pointsSorted.indexOf(from)
     if (from == to || idx == -1) {
       this
-    } else if(pointsSorted.contains(to)) {
+    } else if (pointsSorted.contains(to)) {
       Polygon(pointsSorted.filterNot(_ == from))
     } else {
       Polygon(pointsSorted.updated(idx, to))
@@ -160,6 +160,13 @@ case class Polygon(val pointsUnsorted: List[Point]) {
         Point(box.from.x.min(point.x), box.from.y.min(point.y)),
         Point(box.to.x.max(point.x), box.to.y.max(point.y)))
     })
+  }
+
+  lazy val center: Point = {
+    val count = pointsSorted.size
+    val sum = pointsSorted
+      .foldLeft(Point(0f, 0f))((sum, point) => Point(sum.x + point.x, sum.y + point.y))
+    Point(sum.x / count, sum.y / count)
   }
 
 }

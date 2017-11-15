@@ -16,6 +16,7 @@ import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.model.Sector
 import com.stovokor.util.LineClicked
 import com.stovokor.editor.input.Modes.SelectionMode
+import com.stovokor.util.SectorClicked
 
 // only for 2d
 class SelectionState extends BaseState
@@ -38,6 +39,7 @@ class SelectionState extends BaseState
     EventBus.subscribeByType(this, classOf[SelectionModeSwitch])
     EventBus.subscribeByType(this, classOf[PointClicked])
     EventBus.subscribeByType(this, classOf[LineClicked])
+    EventBus.subscribeByType(this, classOf[SectorClicked])
   }
 
   override def cleanup() {
@@ -49,6 +51,7 @@ class SelectionState extends BaseState
     case SelectionModeSwitch(m) => if (modeKey != m) setMode(m)
     case PointClicked(point)    => selectPoint(point)
     case LineClicked(line)      => selectLine(line)
+    case SectorClicked(id)      => selectSector(id)
     case _                      =>
   }
 
@@ -62,9 +65,16 @@ class SelectionState extends BaseState
     mode.select(point, Line(point, point))
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
   }
+
   def selectLine(line: Line) {
     mode.select(line.a, line)
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
+  }
+
+  def selectSector(sectorId: Long) {
+    // TODO will have to change all this
+//    mode.select(point, Line(point, point))
+//    EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
   }
 
   abstract trait SelectionModeStrategy {

@@ -21,6 +21,7 @@ import com.stovokor.util.SectorDeleted
 import com.stovokor.editor.model.Border
 import com.stovokor.editor.model.Surface
 import com.stovokor.util.LineDragged
+import com.stovokor.util.SectorDragged
 
 // in 2d to modify sector shapes
 class ModifyingState extends BaseState
@@ -36,6 +37,7 @@ class ModifyingState extends BaseState
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[PointDragged])
     EventBus.subscribeByType(this, classOf[LineDragged])
+    EventBus.subscribeByType(this, classOf[SectorDragged])
     EventBus.subscribeByType(this, classOf[PointSelectionChange])
     EventBus.subscribeByType(this, classOf[SplitSelection])
     EventBus.subscribeByType(this, classOf[DeleteSelection])
@@ -49,6 +51,7 @@ class ModifyingState extends BaseState
   def onEvent(event: EditorEvent) = event match {
     case PointDragged(from, to)    => movePoints(to.x - from.x, to.y - from.y, from)
     case LineDragged(line, dx, dy) => movePoints(dx, dy, line.a, line.b)
+    case SectorDragged(id, dx, dy) => movePoints(dx, dy, sectorRepository.get(id).polygon.pointsSorted: _*)
     case PointSelectionChange(ps)  => selectedPoints = ps
     case SplitSelection()          => splitSelection()
     case DeleteSelection()         => deleteSelection()
