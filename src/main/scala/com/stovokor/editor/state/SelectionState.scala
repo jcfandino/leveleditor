@@ -23,7 +23,7 @@ class SelectionState extends BaseState
 
   val sectorRepository = SectorRepository()
 
-  var selectedPoints: List[Point] = List()
+  var selectedPoints: Set[Point] = Set()
   var modeKey = SelectionMode.None
 
   val modes = Map(
@@ -54,61 +54,64 @@ class SelectionState extends BaseState
 
   def setMode(newMode: SelectionMode) {
     println(s"new selection mode $newMode")
-    selectedPoints = List()
+    selectedPoints = Set()
     modeKey = newMode
   }
 
   def selectPoint(point: Point) {
-    val sectors = sectorRepository.findByPoint(point).map(_._2)
-    mode.selectPoint(point, sectors)
+    mode.select(point, Line(point, point))
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
   }
   def selectLine(line: Line) {
-    val sectors = sectorRepository.find(line).map(_._2)
-    mode.selectPoint(line.a, sectors) // TODO rethink this, works for now..
-    mode.selectPoint(line.b, sectors)
+    mode.select(line.a, line)
     EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
   }
 
   abstract trait SelectionModeStrategy {
-    def selectPoint(point: Point, sectors: Set[Sector])
+    def select(point: Point, line: Line)
   }
 
   object ModeOff extends SelectionModeStrategy {
-    def selectPoint(point: Point, sectors: Set[Sector]) {
-      selectedPoints = List()
+    def select(point: Point, line: Line) {
+      selectedPoints = Set()
     }
   }
 
   object ModePoint extends SelectionModeStrategy {
-    def selectPoint(point: Point, sectors: Set[Sector]) {
-      selectedPoints = List(point)
+    def select(point: Point, line: Line) {
+      if (sectorRepository.findByPoint(point).isEmpty) {
+        selectedPoints = Set()
+      } else if (selectedPoints.contains(point)) {
+        selectedPoints = selectedPoints -- List(point)
+      } else {
+        selectedPoints = selectedPoints ++ List(point)
+      }
     }
   }
 
   object ModeLine extends SelectionModeStrategy {
-    def selectPoint(point: Point, sectors: Set[Sector]) {
-      if (selectedPoints.isEmpty) {
-        selectedPoints = List(point)
+    def select(point: Point, line: Line) {
+      if (point == null) {
+        selectedPoints = Set()
+      } else if (selectedPoints.contains(line.a) && selectedPoints.contains(line.b)) {
+        selectedPoints = selectedPoints -- Set(line.a, line.b)
       } else {
-        val previousPoint = selectedPoints.last
-        val line = sectors.map(_.polygon)
-          .flatMap(_.lines)
-          .find(line => line match {
-            case Line(a, b) => a == previousPoint && b == point || a == point && b == previousPoint
-            case _          => false
-          })
-        if (line.isDefined) {
-          selectedPoints = List(line.get.a, line.get.b)
-        } else selectedPoints = List(point)
+        selectedPoints = selectedPoints ++ Set(line.a, line.b)
       }
     }
   }
 
   object ModeSector extends SelectionModeStrategy {
-    def selectPoint(point: Point, sectors: Set[Sector]) {
-      val polygons = sectors.toList.map(_.polygon)
-      selectedPoints = polygons.flatMap(_.pointsSorted)
+    def select(point: Point, line: Line) {
+      val sectors = sectorRepository.findInside(point)
+      val points = sectors.map(_._2).flatMap(_.polygon.pointsUnsorted)
+      if (sectors.isEmpty) {
+        selectedPoints = Set()
+      } else if (points.subsetOf(selectedPoints)) {
+        selectedPoints = selectedPoints -- points
+      } else {
+        selectedPoints = selectedPoints ++ points
+      }
     }
   }
 }
