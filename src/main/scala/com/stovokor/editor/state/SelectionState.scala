@@ -24,7 +24,7 @@ class SelectionState extends BaseState
 
   val sectorRepository = SectorRepository()
 
-  var selectedPoints: Set[Point] = Set()
+  var selection: Set[SelectionUnit] = Set()
   var modeKey = SelectionMode.None
 
   val modes = Map(
@@ -49,79 +49,89 @@ class SelectionState extends BaseState
 
   def onEvent(event: EditorEvent) = event match {
     case SelectionModeSwitch(m) => if (modeKey != m) setMode(m)
-    case PointClicked(point)    => selectPoint(point)
-    case LineClicked(line)      => selectLine(line)
-    case SectorClicked(id)      => selectSector(id)
+    case PointClicked(point)    => select(SelectionPoint(point))
+    case LineClicked(line)      => select(SelectionLine(line))
+    case SectorClicked(id)      => select(SelectionSector(id, sectorRepository.get(id)))
     case _                      =>
   }
 
   def setMode(newMode: SelectionMode) {
     println(s"new selection mode $newMode")
-    selectedPoints = Set()
+    selection = Set()
     modeKey = newMode
   }
 
-  def selectPoint(point: Point) {
-    mode.select(point, Line(point, point))
-    EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
-  }
-
-  def selectLine(line: Line) {
-    mode.select(line.a, line)
-    EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
-  }
-
-  def selectSector(sectorId: Long) {
-    // TODO will have to change all this
-//    mode.select(point, Line(point, point))
-//    EventBus.trigger(PointSelectionChange(selectedPoints.toSet))
+  def select(unit: SelectionUnit) {
+    mode.select(unit)
+    EventBus.trigger(PointSelectionChange(selectedPoints))
   }
 
   abstract trait SelectionModeStrategy {
-    def select(point: Point, line: Line)
+    def select(unit: SelectionUnit) {
+      if (sectorsMatching(unit).isEmpty) {
+        selection = Set()
+      } else if (selection.contains(unit)) {
+        selection = selection -- Set(unit)
+      } else {
+        selection = selection ++ Set(unit)
+      }
+    }
+
+    def sectorsMatching(unit: SelectionUnit) = {
+      // not very efficient
+      unit.getPoints.map(sectorRepository.findByPoint)
+        .foldLeft(sectorRepository.sectors.toSet)(_.intersect(_))
+    }
   }
 
   object ModeOff extends SelectionModeStrategy {
-    def select(point: Point, line: Line) {
-      selectedPoints = Set()
+    override def select(unit: SelectionUnit) {
+      selection = Set()
     }
   }
 
   object ModePoint extends SelectionModeStrategy {
-    def select(point: Point, line: Line) {
-      if (sectorRepository.findByPoint(point).isEmpty) {
-        selectedPoints = Set()
-      } else if (selectedPoints.contains(point)) {
-        selectedPoints = selectedPoints -- List(point)
-      } else {
-        selectedPoints = selectedPoints ++ List(point)
-      }
-    }
   }
 
   object ModeLine extends SelectionModeStrategy {
-    def select(point: Point, line: Line) {
-      if (point == null) {
-        selectedPoints = Set()
-      } else if (selectedPoints.contains(line.a) && selectedPoints.contains(line.b)) {
-        selectedPoints = selectedPoints -- Set(line.a, line.b)
+  }
+
+  // sector mode is special
+  object ModeSector extends SelectionModeStrategy {
+    override def sectorsMatching(unit: SelectionUnit) = unit match {
+      case SelectionPoint(p)           => sectorRepository.findInside(p)
+      case SelectionSector(id, sector) => Set((id, sector))
+      case _                           => Set()
+    }
+
+    override def select(unit: SelectionUnit) {
+      val sectors = sectorsMatching(unit)
+      if (sectors.isEmpty) {
+        selection = Set()
       } else {
-        selectedPoints = selectedPoints ++ Set(line.a, line.b)
+        sectors.map(p => SelectionSector(p._1, p._2)).foreach(su => {
+          if (selection.contains(su)) {
+            selection = selection -- Set(su)
+          } else {
+            selection = selection ++ Set(su)
+          }
+        })
       }
     }
   }
 
-  object ModeSector extends SelectionModeStrategy {
-    def select(point: Point, line: Line) {
-      val sectors = sectorRepository.findInside(point)
-      val points = sectors.map(_._2).flatMap(_.polygon.pointsUnsorted)
-      if (sectors.isEmpty) {
-        selectedPoints = Set()
-      } else if (points.subsetOf(selectedPoints)) {
-        selectedPoints = selectedPoints -- points
-      } else {
-        selectedPoints = selectedPoints ++ points
-      }
-    }
+  def selectedPoints = selection.flatMap(_.getPoints)
+
+  abstract class SelectionUnit() {
+    def getPoints: Set[Point]
+  }
+  case class SelectionPoint(point: Point) extends SelectionUnit() {
+    def getPoints = Set(point)
+  }
+  case class SelectionLine(line: Line) extends SelectionUnit {
+    def getPoints = Set(line.a, line.b)
+  }
+  case class SelectionSector(sectorId: Long, sector: Sector) extends SelectionUnit {
+    def getPoints = sector.polygon.pointsUnsorted.toSet
   }
 }

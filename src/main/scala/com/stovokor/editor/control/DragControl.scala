@@ -139,7 +139,7 @@ class SectorDragControl(sectorId: Long) extends DragControl {
   }
 
   override def clicked {
-    println(s"line clicked $sectorId")
+    println(s"sector clicked $sectorId")
     EventBus.trigger(SectorClicked(sectorId))
   }
 
