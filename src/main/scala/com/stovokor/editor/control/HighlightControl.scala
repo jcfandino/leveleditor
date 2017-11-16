@@ -10,7 +10,7 @@ import com.stovokor.editor.model.Point
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
-import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SelectionChange
 import com.stovokor.util.PointerTargetChange
 import com.jme3.math.FastMath
 import com.jme3.material.Material

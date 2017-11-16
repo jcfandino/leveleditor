@@ -11,12 +11,16 @@ import com.stovokor.util.PointClicked
 import com.stovokor.editor.model.Point
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.editor.model.Line
-import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SelectionChange
 import com.stovokor.util.SectorUpdated
 import com.stovokor.editor.model.Sector
 import com.stovokor.util.LineClicked
 import com.stovokor.editor.input.Modes.SelectionMode
 import com.stovokor.util.SectorClicked
+import com.stovokor.editor.model.SelectionSector
+import com.stovokor.editor.model.SelectionUnit
+import com.stovokor.editor.model.SelectionPoint
+import com.stovokor.editor.model.SelectionLine
 
 // only for 2d
 class SelectionState extends BaseState
@@ -63,7 +67,7 @@ class SelectionState extends BaseState
 
   def select(unit: SelectionUnit) {
     mode.select(unit)
-    EventBus.trigger(PointSelectionChange(selectedPoints))
+    EventBus.trigger(SelectionChange(selection))
   }
 
   abstract trait SelectionModeStrategy {
@@ -120,18 +124,4 @@ class SelectionState extends BaseState
     }
   }
 
-  def selectedPoints = selection.flatMap(_.getPoints)
-
-  abstract class SelectionUnit() {
-    def getPoints: Set[Point]
-  }
-  case class SelectionPoint(point: Point) extends SelectionUnit() {
-    def getPoints = Set(point)
-  }
-  case class SelectionLine(line: Line) extends SelectionUnit {
-    def getPoints = Set(line.a, line.b)
-  }
-  case class SelectionSector(sectorId: Long, sector: Sector) extends SelectionUnit {
-    def getPoints = sector.polygon.pointsUnsorted.toSet
-  }
 }

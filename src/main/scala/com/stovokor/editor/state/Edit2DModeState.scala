@@ -8,7 +8,7 @@ import com.stovokor.util.EditModeSwitch
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
-import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SelectionChange
 import com.stovokor.editor.input.Modes.EditMode
 
 class Edit2DModeState extends BaseState with EditorEventListener {
@@ -38,7 +38,7 @@ class Edit2DModeState extends BaseState with EditorEventListener {
     println(s"new edit mode $newMode")
     if (newMode != modeKey) {
       mode.exit
-      EventBus.trigger(PointSelectionChange(Set()))
+      EventBus.trigger(SelectionChange(Set()))
       modeKey = newMode
       mode.enter
     }

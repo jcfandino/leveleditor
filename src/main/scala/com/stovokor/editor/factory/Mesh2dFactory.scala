@@ -20,6 +20,9 @@ import com.stovokor.editor.model.Sector
 import com.stovokor.editor.control.LineDragControl
 import com.stovokor.editor.control.PointDragControl
 import com.stovokor.editor.control.SectorDragControl
+import com.stovokor.editor.model.SelectionPoint
+import com.stovokor.editor.model.SelectionLine
+import com.stovokor.editor.model.SelectionSector
 
 object Mesh2dFactory {
   def apply(assetManager: AssetManager) = new Mesh2dFactory(assetManager)
@@ -41,7 +44,7 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     // visual point
     val pointView = new Geometry("point", K.vertexBox)
     pointView.setMaterial(plainColor(ColorRGBA.LightGray))
-    pointView.addControl(new SelectableControl(ColorRGBA.LightGray, Set(point)))
+    pointView.addControl(new SelectableControl(ColorRGBA.LightGray, SelectionPoint(point)))
     // clickable point
     val clickableRadius = 0.2f
     val clickableVertex = new Geometry("clickablePoint", new Box(clickableRadius, clickableRadius, clickableRadius))
@@ -63,13 +66,14 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
       new Vector3f(line.a.x, line.a.y, 0),
       new Vector3f(line.b.x, line.b.y, 0)))
     lineGeo.setMaterial(plainColor(color))
-    lineGeo.addControl(new SelectableControl(color, Set(line.a, line.b)))
+    lineGeo.addControl(new SelectableControl(color, SelectionLine(line)))
     lineNode.attachChild(lineGeo)
     // a dot for selecting
     val lineBox = new Geometry("lineBox", K.lineBox)
     lineBox.setMaterial(plainColor(color))
-    lineBox.addControl(new SelectableControl(color, Set(line.a, line.b)))
-    lineBox.setLocalRotation(new Quaternion().fromAngleNormalAxis(FastMath.QUARTER_PI, Vector3f.UNIT_Z))
+    lineBox.addControl(new SelectableControl(color, SelectionLine(line)))
+    val ang = FastMath.atan((line.b.y - line.a.y) / (line.b.x - line.a.x)) + FastMath.QUARTER_PI
+    lineBox.setLocalRotation(new Quaternion().fromAngleNormalAxis(ang, Vector3f.UNIT_Z))
     lineBox.addControl(new ConstantSizeOnScreenControl())
     // clickable control
     val clickableLine = new Geometry("clickableLine", new Box(0.2f, 0.2f, 0.2f))
@@ -90,9 +94,9 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
   def draw2dSector(node: Node, sectorId: Long, sector: Sector) {
     val area = new Node("sector-area")
     // visual point
-    val centerView = new Geometry("sector-center", K.vertexBox)
+    val centerView = new Geometry("sector-center", K.sectorBox)
     centerView.setMaterial(plainColor(ColorRGBA.LightGray))
-    centerView.addControl(new SelectableControl(ColorRGBA.LightGray, sector.polygon.pointsUnsorted.toSet))
+    centerView.addControl(new SelectableControl(ColorRGBA.LightGray, SelectionSector(sectorId, sector)))
     // clickable point
     val clickableRadius = 0.2f
     val clickableCenter = new Geometry("clickableCenter", new Box(clickableRadius, clickableRadius, clickableRadius))

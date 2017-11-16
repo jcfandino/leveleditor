@@ -10,10 +10,11 @@ import com.stovokor.editor.model.Point
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
-import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SelectionChange
+import com.stovokor.editor.model.SelectionUnit
 
 class SelectableControl(
-  val baseColor: ColorRGBA, points: Set[Point])
+  val baseColor: ColorRGBA, selectionUnit: SelectionUnit)
     extends AbstractControl
     with EditorEventListener {
 
@@ -23,7 +24,7 @@ class SelectableControl(
   def controlUpdate(tpf: Float) {
     if (!initialized) {
       initialized = false
-      EventBus.subscribeByType(this, classOf[PointSelectionChange])
+      EventBus.subscribeByType(this, classOf[SelectionChange])
     }
   }
 
@@ -46,10 +47,7 @@ class SelectableControl(
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case PointSelectionChange(ps) => {
-      val intersection = points.intersect(ps)
-      setSelected(intersection.size == points.size)
-    }
-    case _ =>
+    case SelectionChange(ps) => setSelected(ps contains selectionUnit)
+    case _                   =>
   }
 }

@@ -6,6 +6,7 @@ import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.Line
 import com.stovokor.editor.input.Modes.EditMode
 import com.stovokor.editor.input.Modes.SelectionMode
+import com.stovokor.editor.model.SelectionUnit
 
 object EventBus {
 
@@ -89,7 +90,7 @@ case class LineDragged(line: Line, dx: Float, dy: Float) extends EditorEvent
 case class SectorClicked(sectorId: Long) extends EditorEvent
 case class SectorDragged(sectorId: Long, dx: Float, dy: Float) extends EditorEvent
 
-case class PointSelectionChange(points: Set[Point]) extends EditorEvent
+case class SelectionChange(unit: Set[SelectionUnit]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent
 case class ChangeMaterial(sectorId: Long, target: String) extends EditorEvent
 case class ChangeZoom(factor: Float) extends EditorEvent

@@ -11,7 +11,7 @@ import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
 import com.stovokor.util.PointDragged
-import com.stovokor.util.PointSelectionChange
+import com.stovokor.util.SelectionChange
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.SplitSelection
 import com.stovokor.editor.model.Wall
@@ -30,7 +30,6 @@ class ModifyingState extends BaseState
   val sectorRepository = SectorRepository()
   val borderRepository = BorderRepository()
 
-  //  var selectedPoints: List[(Long, Point)] = List()
   var selectedPoints: Set[Point] = Set()
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
@@ -38,7 +37,7 @@ class ModifyingState extends BaseState
     EventBus.subscribeByType(this, classOf[PointDragged])
     EventBus.subscribeByType(this, classOf[LineDragged])
     EventBus.subscribeByType(this, classOf[SectorDragged])
-    EventBus.subscribeByType(this, classOf[PointSelectionChange])
+    EventBus.subscribeByType(this, classOf[SelectionChange])
     EventBus.subscribeByType(this, classOf[SplitSelection])
     EventBus.subscribeByType(this, classOf[DeleteSelection])
   }
@@ -52,7 +51,7 @@ class ModifyingState extends BaseState
     case PointDragged(from, to)    => movePoints(to.x - from.x, to.y - from.y, from)
     case LineDragged(line, dx, dy) => movePoints(dx, dy, line.a, line.b)
     case SectorDragged(id, dx, dy) => movePoints(dx, dy, sectorRepository.get(id).polygon.pointsSorted: _*)
-    case PointSelectionChange(ps)  => selectedPoints = ps
+    case SelectionChange(ps)       => selectedPoints = ps.flatMap(_.getPoints)
     case SplitSelection()          => splitSelection()
     case DeleteSelection()         => deleteSelection()
     case _                         =>
