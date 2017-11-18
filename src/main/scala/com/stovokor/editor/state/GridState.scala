@@ -36,6 +36,10 @@ import com.stovokor.util.EditorEvent
 import com.stovokor.util.ChangeGridSize
 import com.stovokor.editor.gui.Mode2DLayers
 import com.stovokor.util.GridSnapper
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Callable
+import com.jme3.app.SimpleApplication
 
 class GridState extends BaseState
     with MaterialFactoryClient
@@ -44,12 +48,15 @@ class GridState extends BaseState
     with EditorEventListener {
 
   val gridSteps = List(0.125f, 0.25f, 0.5f, 1f, 2f, 4f, 8f)
-  var gridStep = GridSnapper.gridStep
+  var gridStepIndex = 2
 
   val spanX = 1000f
   val spanY = 1000f
 
   var batched = true
+
+  var clicked = false
+  var mousePos: Vector3f = new Vector3f
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -57,16 +64,14 @@ class GridState extends BaseState
     val node = new Node("gridParent")
     node.attachChild(createOrigin())
     node.attachChild(createAxis())
-    node.attachChild(createGrid())
     node.attachChild(createPickPlane())
     node.setCullHint(CullHint.Never)
     get2DNode.attachChild(node)
     setupInput(node.getChild("pickPlane"))
     EventBus.subscribe(this, ChangeGridSize())
+    GridSnapper.setStep(gridSteps(gridStepIndex))
+    new GridLoader(app).load(gridSteps, node)
   }
-
-  var clicked = false
-  var mousePos: Vector3f = new Vector3f
 
   override def setEnabled(enabled: Boolean) {
     super.setEnabled(enabled)
@@ -141,29 +146,6 @@ class GridState extends BaseState
     node
   }
 
-  // TODO Cache the different grids to avoid recalculating
-  def createGrid(): Spatial = {
-    val grid = new Node("grid")
-    val mat1 = plainColor(Palette.grid1)
-    val mat2 = plainColor(Palette.grid2)
-    for (x <- (-spanX to spanX by gridStep)) {
-      val line = new Geometry("line",
-        new Line(new Vector3f(x, -spanY, 0f), new Vector3f(x, spanY, 0f)))
-      val mat = if (x % 1f == 0f) mat1 else mat2
-      line.setMaterial(mat)
-      grid.attachChild(line)
-    }
-    for (y <- (-spanY to spanY by gridStep)) {
-      val line = new Geometry("line",
-        new Line(new Vector3f(-spanX, y, 0f), new Vector3f(spanX, y, 0f)))
-      val mat = if (y % 1f == 0f) mat1 else mat2
-      line.setMaterial(mat)
-      grid.attachChild(line)
-    }
-    grid.setLocalTranslation(0f, 0f, Mode2DLayers.grid)
-    GeometryBatchFactory.optimize(grid)
-  }
-
   def createPickPlane(): Spatial = {
     val plane = new Geometry("pickPlane", new Quad(2 * spanX, 2 * spanY))
     plane.setMaterial(plainColor(ColorRGBA.Black))
@@ -175,17 +157,67 @@ class GridState extends BaseState
   }
 
   def changeGridSize() {
-    val idx = gridSteps.indexOf(gridStep) + 1
-    gridStep = if (idx < gridSteps.size) gridSteps(idx) else gridSteps(0)
-    GridSnapper.setStep(gridStep)
-    println(s"New grid size $gridStep")
-    // redraw
     val node = get2DNode.getChild("gridParent").asNode
-    node.detachChildNamed("grid")
-    node.attachChild(createGrid())
+    setGridVisible(node, gridStepIndex, false)
+    gridStepIndex = if (gridStepIndex + 1 < gridSteps.size) gridStepIndex + 1 else 0
+    println(s"New grid size $gridStep")
+    GridSnapper.setStep(gridStep)
+    setGridVisible(node, gridStepIndex, true)
   }
+
+  def setGridVisible(node: Node, idx: Int, visible: Boolean) {
+    val grid = node.getChild("grid-" + idx)
+    if (grid != null) {
+      grid.setCullHint(if (visible) CullHint.Inherit else CullHint.Always)
+    }
+  }
+
+  def gridStep = gridSteps(gridStepIndex)
 
   override def update(tpf: Float) {
   }
 
+  class GridLoader(app: SimpleApplication) {
+    val executor: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors)
+
+    def load(sizes: List[Float], node: Node) {
+      sizes.zipWithIndex
+        .sortBy(_._1).reverse
+        .map(p => p match {
+          case (size, idx) => executor.submit(new Callable[Spatial]() {
+            def call() = {
+              val grid = createGrid(size, idx)
+              app.enqueue(new Callable[Unit]() {
+                grid.setCullHint(if (idx == gridStepIndex) CullHint.Inherit else CullHint.Always)
+                def call = node.attachChild(grid)
+              })
+              null
+            }
+          })
+        })
+      executor.shutdown()
+    }
+
+    def createGrid(size: Float, idx: Int): Spatial = {
+      val grid = new Node("grid-" + idx)
+      val mat1 = plainColor(Palette.grid1)
+      val mat2 = plainColor(Palette.grid2)
+      for (x <- (-spanX to spanX by size)) {
+        val line = new Geometry("line",
+          new Line(new Vector3f(x, -spanY, 0f), new Vector3f(x, spanY, 0f)))
+        val mat = if (x % 1f == 0f) mat1 else mat2
+        line.setMaterial(mat)
+        grid.attachChild(line)
+      }
+      for (y <- (-spanY to spanY by size)) {
+        val line = new Geometry("line",
+          new Line(new Vector3f(-spanX, y, 0f), new Vector3f(spanX, y, 0f)))
+        val mat = if (y % 1f == 0f) mat1 else mat2
+        line.setMaterial(mat)
+        grid.attachChild(line)
+      }
+      grid.setLocalTranslation(0f, 0f, Mode2DLayers.grid)
+      GeometryBatchFactory.optimize(grid)
+    }
+  }
 }
