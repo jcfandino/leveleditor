@@ -131,7 +131,7 @@ class SaveOpenFileState extends BaseState
       }
     })
     SectorRepository().sectors
-      .foreach(entry => EventBus.trigger(SectorUpdated(entry._1, entry._2)))
+      .foreach(entry => EventBus.trigger(SectorUpdated(entry._1, entry._2, true)))
   }
 
   def saveAsNewFile() {

@@ -48,15 +48,11 @@ class GridState extends BaseState
     with EditorEventListener {
 
   val gridSteps = List(0.125f, 0.25f, 0.5f, 1f, 2f, 4f, 8f)
+  val (spanX, spanY) = (1000f, 1000f)
+
   var gridStepIndex = 2
-
-  val spanX = 1000f
-  val spanY = 1000f
-
-  var batched = true
-
   var clicked = false
-  var mousePos: Vector3f = new Vector3f
+  var mousePos = new Vector3f
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)

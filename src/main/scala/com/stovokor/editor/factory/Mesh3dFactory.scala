@@ -20,10 +20,10 @@ import com.stovokor.editor.model.Border
 import com.stovokor.editor.control.HighlightControl
 import com.stovokor.editor.model.repository.Repositories
 
-object MeshFactory {
-  def apply(assetManager: AssetManager) = new MeshFactory(assetManager)
+object Mesh3dFactory {
+  def apply(assetManager: AssetManager) = new Mesh3dFactory(assetManager)
 }
-class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
+class Mesh3dFactory(val assetManager: AssetManager) extends MaterialFactoryClient {
 
   val materialRepository = Repositories.materialRepository
   def defaultTexture(index: Int) = texture(materialRepository.get(index))
@@ -34,7 +34,6 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
   //  Z =  Y
 
   def createMesh(id: Long, sec: Sector, borders: List[Border] = List()) = {
-
     val triangles = sec.triangulate
 
     val uniquePoints = triangles
@@ -56,12 +55,12 @@ class MeshFactory(val assetManager: AssetManager) extends MaterialFactoryClient 
   }
 
   def createBordersMesh(node: Node, id: Long, sector: Sector, borders: List[Border]) = {
-    borders.foreach(b => println(s"Border found $b"))
-    def idx(border: Border) = {
-      sector.openWalls
-        .zipWithIndex.find(w => w._1.line == border.line)
-        .map(_._2).orElse(Some(-1)).get
-    }
+    val idxLookup = sector.openWalls
+      .zipWithIndex
+      .map(p => (p._1.line, p._2))
+      .toMap
+      .withDefault(_ => -1)
+    def idx(border: Border) = idxLookup(border.line)
     def bottomMaybe(border: Border) = {
       if (border.surfaceFloor.height > 0f) {
         Some(createWall(

@@ -227,7 +227,7 @@ class DrawingState extends BaseState
               .createBorder(border.sectorA, from, toId, to, border.line)
             borderRepository.add(replacement)
             println(s"Changed Border from: $replacement to sector: $to")
-            EventBus.trigger(SectorUpdated(border.sectorA, from))
+            EventBus.trigger(SectorUpdated(border.sectorA, from, true))
           }
         }
         // generate new ones
@@ -246,7 +246,7 @@ class DrawingState extends BaseState
         cancelPolygon
         // Trigger events to redraw sectors
         EventBus.trigger(SectorDeleted(sectorId))
-        for ((id, sec) <- newIdAndSec) EventBus.trigger(SectorUpdated(id, sec))
+        for ((id, sec) <- newIdAndSec) EventBus.trigger(SectorUpdated(id, sec, true))
       }
     })
   }

@@ -33,10 +33,15 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
   def createMesh(sectorId: Long, sector: Sector) = {
     val node = new Node("sector2d")
     sector.polygon.pointsSorted.foreach(p => draw2dVertex(node, p))
-    sector.openWalls.foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
+    sector.holes.flatMap(_.pointsSorted).foreach(p => draw2dVertex(node, p))
+    sector.openWalls.filter(w => ascending(w.line)).foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
     sector.closedWalls.foreach(w => draw2dLine(node, ColorRGBA.LightGray, w.line))
     draw2dSector(node, sectorId: Long, sector)
     node
+  }
+
+  def ascending(line: com.stovokor.editor.model.Line) = {
+    line.b.x > line.a.x || line.b.y > line.a.y
   }
 
   def draw2dVertex(node: Node, point: Point) {

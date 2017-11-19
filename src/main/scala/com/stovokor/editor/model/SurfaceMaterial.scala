@@ -1,6 +1,10 @@
 package com.stovokor.editor.model
 
+import java.util.Objects
+
 abstract class SurfaceMaterial(val path: String) {
+
+  override lazy val hashCode = Objects.hash(path)
 
 }
 

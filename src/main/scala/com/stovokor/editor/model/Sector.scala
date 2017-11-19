@@ -1,5 +1,7 @@
 package com.stovokor.editor.model
 
+import java.util.Objects
+
 object Sector {
   def apply(polygon: Polygon, floor: Surface, ceiling: Surface, openWalls: List[Wall]) =
     new Sector(polygon, floor, ceiling, openWalls, defaultClosedWalls(polygon, openWalls))
@@ -19,6 +21,8 @@ case class Sector(
     val openWalls: List[Wall],
     val closedWalls: List[Wall],
     val holes: Set[Polygon] = Set()) {
+
+  override lazy val hashCode = Objects.hash(polygon, floor, ceiling, openWalls, closedWalls, holes)
 
   def updatedPolygon(updated: Polygon) = Sector(updated, floor, ceiling, openWalls, closedWalls, holes)
   def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls, closedWalls, holes)
@@ -132,4 +136,6 @@ object Wall {
 case class Wall(val line: Line, val texture: SurfaceTexture) {
   def updateTexture(t: SurfaceTexture) = Wall(line, t)
   def updateLine(updated: Line) = Wall(updated, texture)
+
+  override lazy val hashCode = Objects.hash(line, texture)
 }

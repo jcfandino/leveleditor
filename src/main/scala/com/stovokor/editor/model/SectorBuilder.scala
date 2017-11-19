@@ -47,7 +47,7 @@ class SectorBuilder(
     } else {
       val (id, sector) = cuttingHole.flatMap(s => s).head
       val updated = sectorRepo.update(id, sector.cutHole(polygon))
-      EventBus.trigger(SectorUpdated(id, updated))
+      EventBus.trigger(SectorUpdated(id, updated, true))
     }
   }
 
@@ -94,9 +94,9 @@ class SectorBuilder(
         val (id, sector, border) = b
         val updatedSector = updateNeighbour(id, sector, border)
         sectorRepo.update(id, updatedSector)
-        EventBus.trigger(SectorUpdated(id, updatedSector))
+        EventBus.trigger(SectorUpdated(id, updatedSector, true))
       })
-      EventBus.trigger(SectorUpdated(newSectorId, newSector))
+      EventBus.trigger(SectorUpdated(newSectorId, newSector, true))
       (newSectorId, newSector)
     }
   }

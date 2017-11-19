@@ -10,7 +10,7 @@ import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.StateFunctionListener
 import com.stovokor.editor.factory.MaterialFactoryClient
 import com.stovokor.editor.factory.Mesh2dFactory
-import com.stovokor.editor.factory.MeshFactory
+import com.stovokor.editor.factory.Mesh3dFactory
 import com.stovokor.editor.input.InputFunction
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.model.repository.BorderRepository
@@ -23,6 +23,7 @@ import com.stovokor.util.LemurExtensions.SpatialExtension
 import com.stovokor.util.PointerTargetChange
 import com.stovokor.util.SectorDeleted
 import com.stovokor.util.SectorUpdated
+import com.stovokor.util.JmeExtensions._
 
 // this state works in 2d and 3d
 class SectorPresenterState extends BaseState
@@ -48,9 +49,9 @@ class SectorPresenterState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SectorUpdated(id, sector) => redrawSector(id, sector)
-    case SectorDeleted(id)         => eraseSector(id)
-    case _                         =>
+    case SectorUpdated(id, sector, fullRedraw) => redrawSector(id, sector, fullRedraw)
+    case SectorDeleted(id)                     => eraseSector(id)
+    case _                                     =>
   }
 
   def eraseSector(id: Long) {
@@ -58,29 +59,42 @@ class SectorPresenterState extends BaseState
     getOrCreateNode(get3DNode, "sector-" + id).removeFromParent
   }
 
-  def redrawSector(id: Long, sector: Sector) {
-    eraseSector(id)
-    drawSector(id, sector)
+  def redrawSector(id: Long, sector: Sector, fullRedraw: Boolean) {
+    if (fullRedraw) draw2d(id, sector)
+    draw3d(id, sector)
   }
 
-  def drawSector(id: Long, sector: Sector) {
-    def draw2d() {
-      val node = getOrCreateNode(get2DNode, "sector-" + id)
-      val meshNode = Mesh2dFactory(assetManager).createMesh(id, sector)
-      //TODO setup input
-      node.attachChild(meshNode)
-    }
-    def draw3d() {
-      val node = getOrCreateNode(get3DNode, "sector-" + id)
-      val borders = borderRepository.findFrom(id).map(_._2)
-      val meshNode = MeshFactory(assetManager).createMesh(id, sector, borders)
-      setup3dInput(id, meshNode)
-      node.attachChild(meshNode)
-    }
-    draw2d()
-    draw3d()
+  def draw2d(id: Long, sector: Sector) {
+    println(s"draw 2d $id")
+    val node = getOrCreateNode(get2DNode, "sector-" + id)
+    cleanup(node)
+    val meshNode = Mesh2dFactory(assetManager).createMesh(id, sector)
+    node.attachChild(meshNode)
   }
 
+  def draw3d(id: Long, sector: Sector) {
+    println(s"draw 3d $id")
+    val node = getOrCreateNode(get3DNode, "sector-" + id)
+    cleanup(node)
+    val borders = borderRepository.findFrom(id).map(_._2)
+    val meshNode = Mesh3dFactory(assetManager).createMesh(id, sector, borders)
+    setup3dInput(id, meshNode)
+    node.attachChild(meshNode)
+  }
+
+  def cleanup(node: Node) {
+    node.depthFirst(s => { // I don't think this is any good
+      //      s.removeEvents
+      for (i <- 1 to s.getNumControls) {
+        val ctrl = s.getControl(0)
+        s.removeControl(ctrl)
+        if (ctrl.isInstanceOf[EditorEventListener]) {
+          EventBus.removeFromAll(ctrl.asInstanceOf[EditorEventListener])
+        }
+      }
+    })
+    node.detachAllChildren()
+  }
   var lastTarget: Option[(Long, String)] = None
 
   def setup3dInput(sectorId: Long, meshNode: Node) {

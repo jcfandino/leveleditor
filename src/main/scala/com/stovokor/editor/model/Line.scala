@@ -1,5 +1,7 @@
 package com.stovokor.editor.model
 
+import java.util.Objects
+
 object Line {
   def apply(a: Point, b: Point) = new Line(a, b)
   def apply(ab: (Point, Point)) = new Line(ab._1, ab._2)
@@ -25,4 +27,7 @@ case class Line(val a: Point, val b: Point) {
     if (a == from) Line(to, b)
     else if (b == from) Line(a, to)
     else this
+
+  override lazy val hashCode = Objects.hash(a, b)
+
 }

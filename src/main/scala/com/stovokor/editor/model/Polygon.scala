@@ -4,11 +4,14 @@ import earcut4j.Earcut
 import scala.collection.JavaConversions._
 import com.jme3.math.FastMath
 import com.jme3.math.Vector2f
+import java.util.Objects
 
 object Polygon {
   def apply(points: List[Point]) = new Polygon(points)
 }
 case class Polygon(val pointsUnsorted: List[Point]) {
+
+  override lazy val hashCode = Objects.hash(pointsSorted)
 
   lazy val pointsSorted = {
     if (isClockwise) pointsUnsorted

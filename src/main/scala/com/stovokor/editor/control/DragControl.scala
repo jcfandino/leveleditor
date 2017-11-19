@@ -55,8 +55,8 @@ abstract class DragControl
           // released
           println(s"oldpos $oldPos vs newpos $newPos = ${oldPos.distance(currentPos)}")
           if (isActive && oldPos.distance(currentPos) > .1f) { // button released
-            dragged(newPos.subtract(oldPos))
             spatial.setLocalTranslation(oldPos.to3f(z)) //move back.
+            dragged(newPos.subtract(oldPos))
           } else {
             clicked
           }

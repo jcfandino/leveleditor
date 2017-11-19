@@ -41,6 +41,6 @@ object SectorSurfaceMutator {
         sector
       } else sector
     sectorRepository.update(sectorId, updated)
-    EventBus.trigger(SectorUpdated(sectorId, updated))
+    EventBus.trigger(SectorUpdated(sectorId, updated, false))
   }
 }

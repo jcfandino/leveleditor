@@ -1,5 +1,7 @@
 package com.stovokor.editor.model
 
+import java.util.Objects
+
 object Surface {
   def apply(height: Float, texture: SurfaceTexture) = new Surface(height, texture)
   def apply(height: Float) = new Surface(height, SurfaceTexture(0, 1f))
@@ -13,6 +15,9 @@ case class Surface(
   def move(d: Float) = updateHeight(height + d)
   def updateTexture(t: SurfaceTexture) = Surface(height, t)
   def updateHeight(h: Float) = Surface(h, texture)
+
+  override lazy val hashCode = Objects.hash(height.asInstanceOf[Object], texture)
+
 }
 
 object SurfaceTexture {
@@ -33,6 +38,12 @@ case class SurfaceTexture(
     val texScaleY: Float,
     val texOffsetX: Float,
     val texOffsetY: Float) {
+
+  override lazy val hashCode = Objects.hash(index.asInstanceOf[Object],
+    texScaleX.asInstanceOf[Object],
+    texScaleY.asInstanceOf[Object],
+    texOffsetX.asInstanceOf[Object],
+    texOffsetY.asInstanceOf[Object])
 
   def uvx(x: Float) = x / texScaleX + (texOffsetX / texScaleX)
   def uvy(y: Float) = y / texScaleY + (texOffsetY / texScaleY)

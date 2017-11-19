@@ -33,7 +33,7 @@ import com.stovokor.util.SectorDeleted
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.ExportMap
 import com.jme3.export.binary.BinaryExporter
-import com.stovokor.editor.factory.MeshFactory
+import com.stovokor.editor.factory.Mesh3dFactory
 import com.stovokor.util.JmeExtensions._
 import com.stovokor.editor.control.HighlightControl
 
@@ -115,7 +115,7 @@ class ExportMapState extends BaseState
         case (id, sector) => {
           val node = getOrCreateNode(root, "sector-" + id)
           val borders = borderRepository.findFrom(id).map(_._2)
-          val meshNode = MeshFactory(assetManager).createMesh(id, sector, borders)
+          val meshNode = Mesh3dFactory(assetManager).createMesh(id, sector, borders)
           // TODO improve this, the mesh factory should not add controls in this case.
           meshNode.depthFirst(s => s.removeControl(classOf[HighlightControl]))
           node.attachChild(meshNode)

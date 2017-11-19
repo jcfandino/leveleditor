@@ -1,5 +1,7 @@
 package com.stovokor.editor.model
 
+import java.util.Objects
+
 object Border {
   def apply(sectorA: Long, sectorB: Long, line: Line,
             surfaceFloor: Surface, surfaceCeiling: Surface,
@@ -14,6 +16,8 @@ object Border {
 case class Border(val sectorA: Long, val sectorB: Long, val line: Line,
                   val surfaceFloor: Surface, val surfaceCeiling: Surface,
                   val surfaceMiddle: Surface) {
+
+  override lazy val hashCode = Objects.hash(sectorA.asInstanceOf[Object], sectorB.asInstanceOf[Object], line, surfaceFloor, surfaceCeiling, surfaceMiddle)
 
   def updateAny(sectorAUpdated: Long = sectorA, sectorBUpdated: Long = sectorB, lineUpdated: Line = line,
                 surfaceFloorUpdated: Surface = surfaceFloor, surfaceCeilingUpdated: Surface = surfaceCeiling,

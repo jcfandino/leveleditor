@@ -133,7 +133,7 @@ class ModifyingState extends BaseState
             })
         }
       })
-    toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2)))
+    toUpdate.foreach(is => EventBus.trigger(SectorUpdated(is._1, is._2, true)))
     toDelete.foreach(id => EventBus.trigger(SectorDeleted(id)))
   }
 
@@ -159,7 +159,7 @@ class ModifyingState extends BaseState
             updated
           })
         sectorRepository.update(id, newSector)
-        EventBus.trigger(SectorUpdated(id, newSector))
+        EventBus.trigger(SectorUpdated(id, newSector, true))
       })
   }
 

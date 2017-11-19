@@ -16,43 +16,51 @@ object EventBus {
   var typeListeners: Map[Class[_ <: EditorEvent], Set[EditorEventListener]] =
     Map.empty.withDefaultValue(Set())
 
+  // this is to avoid iterating every key in the map
+  var allListeners: Set[EditorEventListener] = Set()
+
   def subscribe(listener: EditorEventListener, event: EditorEvent) = {
     listeners = listeners.updated(event, listeners(event) + listener)
+    allListeners = allListeners + listener
   }
   def subscribeByType(listener: EditorEventListener, eventType: Class[_ <: EditorEvent]) = {
     typeListeners = typeListeners.updated(eventType, typeListeners(eventType) + listener)
+    allListeners = allListeners + listener
   }
 
   def remove(listener: EditorEventListener, event: EditorEvent) = {
     listeners = listeners.updated(event, listeners(event) - listener)
+    allListeners = allListeners - listener
   }
 
   def removeEvent(event: EditorEvent) {
+    allListeners = allListeners -- listeners(event)
     listeners = listeners.updated(event, Set())
   }
 
   def removeEvents(clazz: Class[_ <: EditorEvent]) {
+    allListeners = allListeners -- typeListeners(clazz)
     typeListeners = typeListeners.updated(clazz, Set())
   }
 
   def removeEvents(filter: EditorEvent => Boolean) {
     for (e <- listeners.keys.filter(filter)) {
+      allListeners = allListeners -- listeners(e)
       listeners = listeners.updated(e, Set())
     }
   }
 
   def removeFromAll(listener: EditorEventListener) = {
-    println(s"Unsubscribing event listener: $listeners")
-    for (event <- listeners.keys) {
-      println(s"removing from event $event")
-      remove(listener, event)
+    if (allListeners.contains(listener)) {
+      allListeners = allListeners - listener
+      for (event <- listeners.keys) {
+        remove(listener, event)
+      }
+      for (e <- typeListeners.keys) {
+        val currentSet = typeListeners(e)
+        typeListeners = typeListeners.updated(e, currentSet - listener)
+      }
     }
-    for (e <- typeListeners.keys) {
-      val currentSet = typeListeners(e)
-      typeListeners = typeListeners.updated(e, currentSet - listener)
-    }
-
-    println(s"Finished unsubscribing event listener: $listeners")
   }
 
   def trigger(event: EditorEvent) = {
@@ -98,6 +106,6 @@ case class ChangeZoom(factor: Float) extends EditorEvent
 case class SplitSelection() extends EditorEvent
 case class DeleteSelection() extends EditorEvent
 
-case class SectorUpdated(id: Long, sector: Sector) extends EditorEvent
+case class SectorUpdated(id: Long, sector: Sector, fullRedraw: Boolean) extends EditorEvent
 case class SectorDeleted(id: Long) extends EditorEvent
 

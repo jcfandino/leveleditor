@@ -108,7 +108,7 @@ class Edit3DState extends BaseState
         else sector.updatedCeiling(sector.ceiling.move(factor))
       recalculateBorders(sectorId, updated)
       sectorRepository.update(sectorId, updated)
-      EventBus.trigger(SectorUpdated(sectorId, updated))
+      EventBus.trigger(SectorUpdated(sectorId, updated, false))
     }
   }
 
@@ -152,7 +152,7 @@ class Edit3DState extends BaseState
       }
     })
     sectorsToUpdate.distinct.foreach(pair => pair match {
-      case (id, sec) => EventBus.trigger(SectorUpdated(id, sec))
+      case (id, sec) => EventBus.trigger(SectorUpdated(id, sec, false))
     })
   }
 }
