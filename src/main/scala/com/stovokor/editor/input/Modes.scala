@@ -14,5 +14,6 @@ object Modes {
   object EditMode {
     val Select = EditMode(0)
     val Draw = EditMode(1)
+    val Fill = EditMode(3)
   }
 }

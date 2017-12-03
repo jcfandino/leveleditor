@@ -117,6 +117,12 @@ object GuiFactory {
       EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
       EventBus.trigger(EditModeSwitch(EditMode.Draw))
     })
+    val fillHole = generalPanel.addChild(button("applications-development-4.png", "Hole to sector", infoText))
+    fillHole.addClickCommands(_ => {
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
+      EventBus.trigger(EditModeSwitch(EditMode.Fill))
+    })
+
     generalPanel
   }
 
@@ -141,6 +147,7 @@ object GuiFactory {
       EventBus.trigger(SelectionModeSwitch(SelectionMode.Sector))
       decorateFirst(sector, point, line)
     })
+
     selectionPanel
   }
 
@@ -163,8 +170,8 @@ object GuiFactory {
     editPanel.addChild(new Label("|"))
     val split = editPanel.addChild(button("format-add-node.png", "Split line", infoText))
     split.addClickCommands(_ => EventBus.trigger(SplitSelection()))
-    val mode3d = editPanel.addChild(button("format-remove-node.png", "Delete selected points", infoText))
-    mode3d.addClickCommands(_ => EventBus.trigger(DeleteSelection()))
+    val remove = editPanel.addChild(button("format-remove-node.png", "Delete selected points", infoText))
+    remove.addClickCommands(_ => EventBus.trigger(DeleteSelection()))
     editPanel
   }
 

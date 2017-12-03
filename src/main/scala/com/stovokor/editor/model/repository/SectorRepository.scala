@@ -53,7 +53,7 @@ class SectorRepository {
   def find(line: Line) = {
     index.findByPoint(line.a)
       .map(id => (id, get(id)))
-      .filter(p => p._2.polygon.lines.find(line.alike).isDefined)
+      .filter(p => (p._2.polygon.lines ++ p._2.holes.flatMap(_.lines)).find(line.alike).isDefined)
   }
 
   def removeAll {

@@ -10,11 +10,16 @@ import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
 import com.stovokor.util.SelectionChange
 import com.stovokor.editor.input.Modes.EditMode
+import com.simsilica.lemur.FillMode
 
 class Edit2DModeState extends BaseState with EditorEventListener {
 
   var modeKey = EditMode.Select
-  val modes: Map[EditMode, EditModeStrategy] = Map((EditMode.Select, SelectionMode), (EditMode.Draw, DrawingMode))
+  val modes: Map[EditMode, EditModeStrategy] = Map(
+      (EditMode.Select, SelectionMode), 
+      (EditMode.Draw, DrawingMode),
+      (EditMode.Fill,FillMode))
+
   def mode = modes(modeKey)
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
@@ -74,7 +79,18 @@ class Edit2DModeState extends BaseState with EditorEventListener {
       println("entering drawing")
       stateManager.attach(new DrawingState)
     }
+  }
 
+  object FillMode extends EditModeStrategy("fill") {
+    def exit {
+      println("exiting fill mode")
+      disableStates(classOf[FillHoleState])
+      removeStates(classOf[FillHoleState])
+    }
+    def enter {
+      println("entering fill mode")
+      stateManager.attach(new FillHoleState)
+    }
   }
 
 }

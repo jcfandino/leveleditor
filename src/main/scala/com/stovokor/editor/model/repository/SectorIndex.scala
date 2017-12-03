@@ -51,7 +51,7 @@ class SectorIndexPoints extends SectorIndex {
   var inverted: Map[Long, Set[Point]] = Map().withDefaultValue(Set())
 
   def indexSector(id: Long, sector: Sector) {
-    indexPoints(id, sector.polygon.pointsUnsorted)
+    indexPoints(id, sector.polygon.pointsUnsorted ++ sector.holes.flatMap(_.pointsUnsorted))
   }
 
   def removeSector(id: Long) {
@@ -89,7 +89,6 @@ class SectorIndexSolid extends SectorIndex {
     fromY = ((id, sector) :: fromY).sortBy(order(_.from.y))
     toX = ((id, sector) :: toX).sortBy(order(_.to.x))
     toY = ((id, sector) :: toY).sortBy(order(_.to.y))
-    //    println(s"Index lists\nfromX = $fromX\nfromY = $fromY\ntoX = $toX\ntoY = $toY")
   }
 
   def removeSector(id: Long) {
@@ -107,11 +106,6 @@ class SectorIndexSolid extends SectorIndex {
     val endAfterX = toX.dropWhile(s => box(s).to.x < point.x)
     val endAfterY = toY.dropWhile(s => box(s).to.y < point.y)
     val intersection = startBeforeX.intersect(endAfterX).intersect(startBeforeY.intersect(endAfterY))
-    //  println(s"`````` startBeforeX = $startBeforeX")
-    //  println(s"`````` startBeforeY = $startBeforeY")
-    //  println(s"`````` endAfterX = $endAfterX")
-    //  println(s"`````` endAfterY = $endAfterY")
-    //  println(s"`````` box found? $intersection")
     intersection.filter(_._2.contains(point))
       .map(_._1)
       .toSet

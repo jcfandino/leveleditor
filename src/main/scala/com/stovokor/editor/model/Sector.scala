@@ -28,7 +28,8 @@ case class Sector(
   def updatedFloor(updated: Surface) = Sector(polygon, updated, ceiling, openWalls, closedWalls, holes)
   def updatedCeiling(updated: Surface) = Sector(polygon, floor, updated, openWalls, closedWalls, holes)
 
-  def cutHole(hole: Polygon) = Sector(polygon, floor, ceiling, openWalls,
+  def cutHole(hole: Polygon) = Sector(polygon, floor, ceiling,
+    openWalls,
     closedWalls ++ (hole.pointsSorted ++ List(hole.pointsSorted.head))
       .reverse
       .sliding(2)
@@ -46,6 +47,9 @@ case class Sector(
     openWalls.filterNot(updated.equals),
     closedWalls.updated(idx, updated), holes)
 
+  def updatedHoles(updated: Set[Polygon]) = Sector(polygon, floor, ceiling, openWalls,
+    closedWalls, updated)
+
   def moveSinglePoint(point: Point, dx: Float, dy: Float) = {
     def updateWalls(walls: List[Wall]) = {
       walls.map(wall => {
@@ -56,6 +60,7 @@ case class Sector(
       }).filterNot(_.line.length == 0f)
     }
     updatedPolygon(polygon.changePoint(point, point.move(dx, dy)))
+      .updatedHoles(holes.map(h => h.changePoint(point, point.move(dx, dy))))
       .updatedOpenWalls(updateWalls(openWalls))
       .updatedClosedWalls(updateWalls(closedWalls))
   }

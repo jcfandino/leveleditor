@@ -22,7 +22,7 @@ import com.stovokor.editor.model.Line
 import com.stovokor.editor.factory.MaterialFactory
 import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.state.ModifyingState
-import com.stovokor.editor.model.SectorBuilder
+import com.stovokor.editor.builder.SectorBuilder
 import com.stovokor.editor.model.repository.Repositories
 import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.EditModeSwitch

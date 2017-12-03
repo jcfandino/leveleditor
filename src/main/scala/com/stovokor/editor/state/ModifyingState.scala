@@ -61,7 +61,8 @@ class ModifyingState extends BaseState
   def movePoints(dx: Float, dy: Float, extraPoints: Point*) {
     var toUpdate: Map[Long, Sector] = Map()
     var toDelete: Set[Long] = Set()
-    val pointsToMove = (selectedPoints) ++ extraPoints // ++ Set(from))
+    val pointsToMove = (selectedPoints) ++ extraPoints
+    // move points in sectors
     pointsToMove.foreach(point => {
       val sectors = sectorRepository.findByPoint(point)
       for ((sectorId, sector) <- sectors) {

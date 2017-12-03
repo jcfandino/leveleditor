@@ -16,7 +16,7 @@ import com.stovokor.editor.gui.K
 import com.stovokor.editor.gui.Palette
 import com.stovokor.editor.input.InputFunction
 import com.stovokor.editor.model.Point
-import com.stovokor.editor.model.SectorBuilder
+import com.stovokor.editor.builder.SectorBuilder
 import com.stovokor.editor.model.repository.SectorRepository
 import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
@@ -28,6 +28,7 @@ import com.stovokor.editor.model.repository.BorderRepository
 import com.stovokor.editor.model.Sector
 import com.stovokor.editor.factory.BorderFactory
 import com.stovokor.util.SectorDeleted
+import com.stovokor.editor.factory.SectorFactory
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -184,7 +185,7 @@ class DrawingState extends BaseState
         val polygons = sector.polygon.divideBy(builder.points)
         polygons.foreach(polygon => {
           val holes = sector.holes.filter(polygon.contains)
-          builder.SectorFactory.create(SectorRepository(), BorderRepository(), polygon, holes)
+          SectorFactory.create(SectorRepository(), BorderRepository(), polygon, holes)
         })
         cancelPolygon
       }
