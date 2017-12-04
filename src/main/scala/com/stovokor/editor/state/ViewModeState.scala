@@ -83,13 +83,14 @@ class ViewModeState extends BaseState with EditorEventListener {
 
   private case class M3D() extends Mode("3d") {
     def exit {
-      disableStates(classOf[Camera3DState], classOf[Edit3DState])
-      removeStates(classOf[Camera3DState], classOf[Edit3DState])
+      disableStates(classOf[Camera3DState], classOf[Edit3DState], classOf[EffectsState])
+      removeStates(classOf[Camera3DState], classOf[Edit3DState], classOf[EffectsState])
     }
     def enter {
       println("entering 3d")
       stateManager.attach(new Camera3DState)
       stateManager.attach(new Edit3DState)
+      stateManager.attach(new EffectsState)
     }
 
   }

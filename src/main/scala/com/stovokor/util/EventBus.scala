@@ -102,6 +102,7 @@ case class SelectionChange(unit: Set[SelectionUnit]) extends EditorEvent
 case class PointerTargetChange(sectorId: Long, target: String) extends EditorEvent
 case class ChangeMaterial(sectorId: Long, target: String) extends EditorEvent
 case class ChangeZoom(factor: Float) extends EditorEvent
+case class ToggleEffects() extends EditorEvent
 
 case class SplitSelection() extends EditorEvent
 case class DeleteSelection() extends EditorEvent

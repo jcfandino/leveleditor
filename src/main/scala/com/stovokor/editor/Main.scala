@@ -1,28 +1,21 @@
 package com.stovokor.editor
 
 import com.jme3.app.SimpleApplication
+import com.jme3.input.controls.InputListener
 import com.jme3.system.AppSettings
 import com.simsilica.lemur.GuiGlobals
-import com.simsilica.lemur.style.BaseStyles
-import com.stovokor.editor.state.GuiState
-import com.stovokor.editor.state.GridState
-import com.stovokor.editor.state.Camera2DState
 import com.simsilica.lemur.event.MouseAppState
-import com.stovokor.editor.state.DrawingState
+import com.simsilica.lemur.style.BaseStyles
 import com.stovokor.editor.input.InputFunctionsMapper
-import com.jme3.input.controls.InputListener
-import com.stovokor.editor.state.ViewModeState
-import com.stovokor.editor.state.Camera3DState
-import com.stovokor.editor.state.SectorPresenterState
-import com.stovokor.editor.state.ModifyingState
-import com.stovokor.editor.state.SelectionState
-import com.stovokor.editor.state.Edit2DModeState
-import com.stovokor.editor.state.SaveOpenFileState
 import com.stovokor.editor.state.ExportMapState
+import com.stovokor.editor.state.GridState
+import com.stovokor.editor.state.GuiState
 import com.stovokor.editor.state.MaterialSelectionState
-import java.io.File
+import com.stovokor.editor.state.SaveOpenFileState
+import com.stovokor.editor.state.SectorPresenterState
 import com.stovokor.editor.state.SettingsEditorState
 import com.stovokor.editor.state.SettingsLoaderState
+import com.stovokor.editor.state.ViewModeState
 
 // Level Editor
 object Main extends SimpleApplication {

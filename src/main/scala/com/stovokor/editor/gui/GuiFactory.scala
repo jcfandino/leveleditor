@@ -43,6 +43,7 @@ import com.stovokor.util.ChangeGridSize
 import com.stovokor.util.ChangeZoom
 import com.stovokor.editor.input.Modes.EditMode
 import com.stovokor.editor.input.Modes.SelectionMode
+import com.stovokor.util.ToggleEffects
 
 object GuiFactory {
 
@@ -157,9 +158,11 @@ object GuiFactory {
     val grid = selectionPanel.addChild(button("view-grid.png", "Grid size", infoText))
     val zoomout = selectionPanel.addChild(button("zoom-out-3.png", "Zoom out", infoText))
     val zoomin = selectionPanel.addChild(button("zoom-in-3.png", "Zoom in", infoText))
+    val fog = selectionPanel.addChild(button("weather-fog-2.png", "Enable 3D Effects", infoText))
     grid.addClickCommands(_ => EventBus.trigger(ChangeGridSize()))
     zoomout.addClickCommands(_ => EventBus.trigger(ChangeZoom(1)))
     zoomin.addClickCommands(_ => EventBus.trigger(ChangeZoom(-1)))
+    fog.addClickCommands(_ => EventBus.trigger(ToggleEffects()))
     selectionPanel
   }
 
