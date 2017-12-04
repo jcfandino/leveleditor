@@ -6,4 +6,6 @@ case class BoundBox(from: Point, to: Point) {
   def maxX = to.x
   def minY = from.y
   def maxY = to.y
+
+  def area = (maxX - minX) * (maxY - minY)
 }

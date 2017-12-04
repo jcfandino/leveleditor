@@ -53,9 +53,13 @@ class SectorBuilder(
       // not a hole
       SectorFactory.create(sectorRepo, borderRepo, polygon)
     } else {
-      val (id, sector) = cuttingHole.flatMap(s => s).head
+      val (id, sector) = findMostInnerSector(cuttingHole.flatMap(s => s))
       val updated = sectorRepo.update(id, sector.cutHole(polygon))
       EventBus.trigger(SectorUpdated(id, updated, true))
     }
+  }
+
+  def findMostInnerSector(sectors: List[(Long, Sector)]) = {
+    sectors.sortBy(_._2.polygon.boundBox.area).head
   }
 }
