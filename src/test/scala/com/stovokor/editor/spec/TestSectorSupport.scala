@@ -34,6 +34,16 @@ trait TestSectorSupport {
     allLinesFound && sectors == 2
   }
 
+  def holeDefinedByPoints(points: Point*) = {
+    val ps = Polygon(points.toList).pointsSorted
+    val stream = Stream continually (ps ++ ps.init sliding ps.length) flatten
+    val lists = stream take ps.length
+    SectorRepository()
+      .findByPoint(ps.head)
+      .find(s => s._2.holes.find(h => lists.contains(h.pointsSorted)).isDefined)
+      .isDefined
+  }
+
   def makeClicks(points: Point*) {
     points.foreach(p => EventBus.trigger(PointClicked(p)))
   }

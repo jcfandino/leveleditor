@@ -29,7 +29,7 @@ class DrawSectorSpec extends FlatSpec
     with GivenWhenThen
     with TestSectorSupport {
 
-  val drawindState = new DrawingState
+  val drawingState = new DrawingState
   val stateManager = mock[AppStateManager]
   val app = mock[SimpleApplication]
   val eventListener = mock[EditorEventListener]
@@ -40,7 +40,11 @@ class DrawSectorSpec extends FlatSpec
     when(GuiGlobals.getInstance.getInputMapper).thenReturn(mock[InputMapper])
     when(app.getRootNode).thenReturn(new Node)
     MaterialFactory.setInstance(mock[MaterialFactory])
-    drawindState.initialize(stateManager, app)
+    drawingState.initialize(stateManager, app)
+  }
+
+  override def afterEach() {
+    drawingState.cleanup()
     SectorRepository().removeAll
     BorderRepository().removeAll
   }

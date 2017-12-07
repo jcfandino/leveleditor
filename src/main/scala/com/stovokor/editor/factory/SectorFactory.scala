@@ -22,11 +22,11 @@ object SectorFactory {
   }
 
   def updateNeighbour(id: Long, sector: Sector, border: List[Line]) = {
-    println(s"updating neighbour $id, $border")
+    //    println(s"updating neighbour $id, $border")
     // The line needs to be reversed. is this always the case?
     // TODO Find the right texture.
     val updatedWalls = sector.openWalls ++ border.map(l => Wall(l.reverse, SurfaceTexture()))
-    println(s" -> updated walls $updatedWalls")
+    //    println(s" -> updated walls $updatedWalls")
     sector.updatedOpenWalls(updatedWalls)
   }
 

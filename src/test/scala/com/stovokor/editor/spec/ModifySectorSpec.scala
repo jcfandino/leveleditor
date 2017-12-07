@@ -46,6 +46,10 @@ class ModifySectorSpec extends FlatSpec
     when(app.getRootNode).thenReturn(new Node)
     MaterialFactory.setInstance(mock[MaterialFactory])
     modifyingState.initialize(stateManager, app)
+  }
+
+  override def afterEach() {
+    modifyingState.cleanup()
     SectorRepository().removeAll
     BorderRepository().removeAll
   }

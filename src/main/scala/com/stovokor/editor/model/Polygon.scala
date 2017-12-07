@@ -88,11 +88,8 @@ case class Polygon(val pointsUnsorted: List[Point]) {
   }
 
   def borderWith(other: Polygon): List[Line] = {
-    println(s"finding border")
     val otherLines = other.lines
-    val inter = lines.filter(l => otherLines.contains(l) || otherLines.contains(l.reverse))
-    println(s"result: $inter")
-    inter
+    lines.filter(l => otherLines.contains(l) || otherLines.contains(l.reverse))
   }
 
   // if the point is right in the border, the result in undetermined!
@@ -143,7 +140,6 @@ case class Polygon(val pointsUnsorted: List[Point]) {
       List(this)
     }
     val isInside = cutInside(cut)
-    println(s"Cutted inside $isInside")
     val (path1, path2) = findPathsBetweenSorted(cut.head, cut.last)
     val cutSorted = if (path1.head == cut.head) cut else cut.reverse // same dir as path1
     val polys = if (isInside) {
