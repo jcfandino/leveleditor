@@ -59,7 +59,7 @@ class SettingsEditorState extends BaseState with EditorEventListener {
   }
 
   def closeDialog(save: Boolean) {
-    settingsDialog.foreach(_.removeFromParent())
+    settingsDialog.foreach(_.removeFromParent)
     if (save) {
       println(s"Settings saved $updatedSettings")
       settingsRepository.update(updatedSettings)

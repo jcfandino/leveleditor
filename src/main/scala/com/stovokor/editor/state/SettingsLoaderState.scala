@@ -62,29 +62,26 @@ class SettingsLoaderState extends BaseState with EditorEventListener {
     }
   }
 
+  def loadRecursively(baseDir: File, dir: File, filter: FileFilter, builder: String => SurfaceMaterial) {
+    if (dir.exists() && dir.isDirectory()) {
+      dir.listFiles(filter).foreach(file => {
+        val relPath = baseDir.toPath.relativize(file.toPath)
+        materialRepository.add(builder(relPath.toString))
+      })
+      dir.listFiles(f => f.isDirectory)
+        .foreach(f => loadRecursively(baseDir, f, filter, builder))
+    }
+  }
+
   def loadSimpleTextures(dir: File) {
     // TODO accept more file types
     val extensions = Set(".png", ".jpg", ".bmp")
-    def isImage(file: File) = {
-      file.isFile() && extensions.find(file.getName.endsWith).isDefined
-    }
-    val texturesDir = new File(dir, "Textures")
-    if (texturesDir.exists() && dir.isDirectory()) {
-      texturesDir.listFiles(isImage(_)).foreach(file => {
-        val relPath = dir.toPath.relativize(file.toPath)
-        materialRepository.add(SimpleMaterial(relPath.toString))
-      })
-    }
+    def isImage(file: File) = file.isFile() && extensions.find(file.getName.endsWith).isDefined
+    loadRecursively(dir, new File(dir, "Textures"), isImage, SimpleMaterial(_))
   }
 
   def loadMaterialDefinitions(dir: File) {
     def isMatDef(file: File) = file.isFile() && file.getName.endsWith(".j3m")
-    val texturesDir = new File(dir, "Materials")
-    if (texturesDir.exists() && dir.isDirectory()) {
-      texturesDir.listFiles(isMatDef(_)).foreach(file => {
-        val relPath = dir.toPath.relativize(file.toPath)
-        materialRepository.add(MatDefMaterial(relPath.toString))
-      })
-    }
+    loadRecursively(dir, new File(dir, "Materials"), isMatDef, MatDefMaterial(_))
   }
 }

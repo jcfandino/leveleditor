@@ -44,6 +44,9 @@ import com.stovokor.util.ChangeZoom
 import com.stovokor.editor.input.Modes.EditMode
 import com.stovokor.editor.input.Modes.SelectionMode
 import com.stovokor.util.ToggleEffects
+import com.simsilica.lemur.Insets3f
+import com.simsilica.lemur.FillMode
+import com.simsilica.lemur.component.QuadBackgroundComponent
 
 object GuiFactory {
 
@@ -211,12 +214,8 @@ object GuiFactory {
 
   def createMaterialPanel(width: Int, height: Int, desc: String, options: List[SurfaceMaterial], callback: Option[SurfaceMaterial] => Unit) = {
     val materialPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
-
-    materialPanel.setLocalTranslation(50, height - 50, 0)
-    materialPanel.setPreferredSize(new Vector3f(width - 100, height - 100, 0))
-    materialPanel.addChild(new Label("Material selection for " + desc))
     val infoText = materialPanel.addChild(new Label(""))
-    val optionsPanel = materialPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
+    val optionsPanel = materialPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.None, FillMode.None)))
     optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 
     options.foreach(mat => {
@@ -228,18 +227,29 @@ object GuiFactory {
       matButton.setSize(new Vector3f(50, 50, 0))
       matButton.setPreferredSize(new Vector3f(matIconSize.x, matIconSize.y, 0))
       matButton.setMaxWidth(matIconSize.x)
-      matButton.addClickCommands(_ => {
-        materialPanel.removeFromParent()
-        callback(Some(mat))
-      })
+      matButton.addClickCommands(_ => callback(Some(mat)))
     })
 
-    val cancel = materialPanel.addChild(button("dialog-cancel-3.png", "cancel", infoText, label = "cancel"))
-    cancel.addClickCommands(_ => {
-      materialPanel.removeFromParent()
-      callback(None)
-    })
-    materialPanel
+    val cancel = button("dialog-cancel-3.png", "cancel", infoText, label = "cancel")
+    val window = createDialog(width, height, "Material selection for " + desc, materialPanel, cancel)
+    cancel.addClickCommands(_ => callback(None))
+    window
+  }
+
+  def createDialog(width: Int, height: Int, title: String, content: Panel, buttons: Button*) = {
+    val window = new Container
+    window.setLocalTranslation(50, height - 50, 0)
+    window.setPreferredSize(new Vector3f(width - 100, height - 100, 0))
+    val titleLabel = window.addChild(new Label(title))
+    titleLabel.setBackground(new QuadBackgroundComponent(ColorRGBA.Brown))
+    titleLabel.setColor(ColorRGBA.LightGray)
+    titleLabel.setTextHAlignment(HAlignment.Center)
+
+    window.addChild(content)
+    val buttonsContainer = window.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.First, FillMode.First)));
+    buttonsContainer.addChild(new Container)
+    buttons.foreach(buttonsContainer.addChild(_))
+    window
   }
 
   def createSettingsPanel(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
@@ -260,11 +270,6 @@ object GuiFactory {
     }
     val settingsPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
 
-    settingsPanel.setLocalTranslation(50, height - 50, 0)
-    settingsPanel.setPreferredSize(new Vector3f(width - 100, height - 100, 0))
-    val title = settingsPanel.addChild(new Container)
-    title.addChild(new Label("Settings"))
-
     val optionsPanel = settingsPanel.addChild(new Container(new SpringGridLayout(Axis.Y, Axis.X)))
     optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 
@@ -284,20 +289,15 @@ object GuiFactory {
     filling.setPreferredSize(new Vector3f(width - 100, height - 200, 0))
     optionsPanel.addChild(filling)
 
-    val buttons = settingsPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
-    buttons.addChild(new Label(""))
-    val save = buttons.addChild(button("dialog-apply.png", "save", label = "save"))
+    val save = button("dialog-apply.png", "save", label = "save")
+    val cancel = button("dialog-cancel-3.png", "cancel", label = "cancel")
+    val window = createDialog(width, height, "Settings", settingsPanel, save, cancel)
     save.addClickCommands(_ => {
-      settingsPanel.removeFromParent()
       close(true)
     })
-    val cancel = buttons.addChild(button("dialog-cancel-3.png", "cancel", label = "cancel"))
     cancel.addClickCommands(_ => {
-      settingsPanel.removeFromParent()
       close(false)
     })
-    buttons.addChild(new Label(""))
-
-    settingsPanel
+    window
   }
 }

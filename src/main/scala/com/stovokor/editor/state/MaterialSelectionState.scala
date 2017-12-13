@@ -67,6 +67,7 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
       SectorSurfaceMutator.mutate(sectorId, target, surface =>
         surface.updateIndex(materialRepository.materials.indexOf(mat)))
     })
+    materialDialog.foreach(_.removeFromParent)
     materialDialog = None
   }
 }

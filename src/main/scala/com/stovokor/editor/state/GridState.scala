@@ -198,17 +198,18 @@ class GridState extends BaseState
       val grid = new Node("grid-" + idx)
       val mat1 = plainColor(Palette.grid1)
       val mat2 = plainColor(Palette.grid2)
+      val mat3 = plainColor(Palette.grid3)
       for (x <- (-spanX to spanX by size)) {
         val line = new Geometry("line",
           new Line(new Vector3f(x, -spanY, 0f), new Vector3f(x, spanY, 0f)))
-        val mat = if (x % 1f == 0f) mat1 else mat2
+        val mat = if (x == 0f) mat3 else if (x % 1f == 0f) mat1 else mat2
         line.setMaterial(mat)
         grid.attachChild(line)
       }
       for (y <- (-spanY to spanY by size)) {
         val line = new Geometry("line",
           new Line(new Vector3f(-spanX, y, 0f), new Vector3f(spanX, y, 0f)))
-        val mat = if (y % 1f == 0f) mat1 else mat2
+        val mat = if (y == 0f) mat3 else if (y % 1f == 0f) mat1 else mat2
         line.setMaterial(mat)
         grid.attachChild(line)
       }
