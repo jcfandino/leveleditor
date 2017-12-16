@@ -18,6 +18,9 @@ import com.stovokor.editor.model.repository.Repositories
 import com.stovokor.editor.model.SimpleMaterial
 import com.stovokor.editor.model.SurfaceMaterial
 import com.stovokor.editor.model.MatDefMaterial
+import com.simsilica.lemur.Panel
+import com.simsilica.lemur.OptionPanel
+import com.simsilica.lemur.OptionPanelState
 
 class MaterialSelectionState extends BaseState with EditorEventListener {
 
@@ -26,11 +29,6 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[ChangeMaterial])
-    // Create debug materials
-    //    materialRepository.add(SimpleMaterial("Textures/Debug1.png"))
-    //    materialRepository.add(SimpleMaterial("Textures/Debug2.png"))
-    //    materialRepository.add(SimpleMaterial("Textures/Debug3.png"))
-    //    materialRepository.add(MatDefMaterial("Materials/DebugDef1.j3m"))
   }
 
   override def cleanup() {
@@ -47,18 +45,14 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
     openMaterialDialog(sectorId, target)
   }
 
-  var materialDialog: Option[Container] = None
-
   def openMaterialDialog(sectorId: Long, target: String) {
-    materialDialog.foreach(_.removeFromParent())
+    optionPanelState.close()
     println("opening material dialog")
     val options = materialRepository.materials
     val description = s"Sector $sectorId - $target"
-    val dialog = GuiFactory.createMaterialPanel(
+    val dialog = GuiFactory.createMaterialDialog(
       cam.getWidth, cam.getHeight, description, options, materialChosen(sectorId, target))
-    dialog.setName("material-dialog")
-    guiNode.attachChild(dialog)
-    materialDialog = Some(dialog)
+    optionPanelState.show(dialog)
   }
 
   def materialChosen(sectorId: Long, target: String)(matOption: Option[SurfaceMaterial]) {
@@ -67,7 +61,8 @@ class MaterialSelectionState extends BaseState with EditorEventListener {
       SectorSurfaceMutator.mutate(sectorId, target, surface =>
         surface.updateIndex(materialRepository.materials.indexOf(mat)))
     })
-    materialDialog.foreach(_.removeFromParent)
-    materialDialog = None
+    optionPanelState.close()
   }
+
+  def optionPanelState = stateManager.getState(classOf[OptionPanelState])
 }

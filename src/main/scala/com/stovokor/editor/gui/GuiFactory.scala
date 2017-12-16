@@ -47,10 +47,15 @@ import com.stovokor.util.ToggleEffects
 import com.simsilica.lemur.Insets3f
 import com.simsilica.lemur.FillMode
 import com.simsilica.lemur.component.QuadBackgroundComponent
+import com.simsilica.lemur.OptionPanel
+import com.simsilica.lemur.Action
+import com.simsilica.lemur.grid.ArrayGridModel
+import com.jme3.texture.Texture
+import com.simsilica.lemur.GuiGlobals
 
 object GuiFactory {
 
-  val matIconSize = new Vector2f(75, 75)
+  val iconBasePath = "Interface/Icons/"
 
   def toolbar(width: Int, height: Int) = {
     val bar = createMainPanel(width, height)
@@ -171,8 +176,6 @@ object GuiFactory {
 
   def createEditPanel(infoText: Label) = {
     val editPanel = new Container(new SpringGridLayout(Axis.X, Axis.Y))
-
-    //    editPanel.setLocalTranslation(0, app.getCamera.getHeight - 210, 0)
     editPanel.addChild(new Label("|"))
     val split = editPanel.addChild(button("format-add-node.png", "Split line", infoText))
     split.addClickCommands(_ => EventBus.trigger(SplitSelection()))
@@ -187,16 +190,11 @@ object GuiFactory {
     bn.foreach(b => b.setText(clean(b.getText)))
   }
 
-  def button(icon: String = null, description: String, infoText: Label = null, label: String = "", iconSize: Vector2f = null): Button = {
+  def button(icon: String = null, description: String, infoText: Label = null, label: String = ""): Button = {
     val button = new Button(label)
     if (icon != null) {
-      val base = if (icon.contains("/")) "" else "Interface/Icons/"
+      val base = if (icon.contains("/")) "" else iconBasePath
       val iconComponent = new IconComponent(base + icon)
-      if (iconSize != null) {
-        val width = iconComponent.getImageTexture.getImage.getWidth
-        val height = iconComponent.getImageTexture.getImage.getWidth
-        iconComponent.setIconScale(new Vector2f(iconSize.x / width, iconSize.y / height))
-      }
       button.setIcon(iconComponent)
     }
     if (infoText != null) {
@@ -212,28 +210,62 @@ object GuiFactory {
     button
   }
 
-  def createMaterialPanel(width: Int, height: Int, desc: String, options: List[SurfaceMaterial], callback: Option[SurfaceMaterial] => Unit) = {
-    val materialPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
-    val infoText = materialPanel.addChild(new Label(""))
-    val optionsPanel = materialPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.None, FillMode.None)))
-    optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
-
-    options.foreach(mat => {
+  def createMaterialPanel(width: Int, height: Int, options: List[SurfaceMaterial], callback: Option[SurfaceMaterial] => Unit) = {
+    val (buttonWidth, buttonHeight) = (75, 75)
+    val materialPanel = new Container(new SpringGridLayout())
+    val infoText = new Label("")
+    val cols = ((width - 150) / buttonWidth) - 1
+    val rows = (height - 200) / buttonHeight
+    def padding(i: Int) = 1 to i map (_ => new Panel)
+    val matrix: Array[Array[Panel]] = options.map(mat => {
       val preview = mat match {
         case SimpleMaterial(path) => path
-        case _                    => "no-preview.png"
+        case _                    => iconBasePath + "no-preview.png"
       }
-      val matButton = optionsPanel.addChild(button(preview, mat.path, infoText, iconSize = matIconSize))
-      matButton.setSize(new Vector3f(50, 50, 0))
-      matButton.setPreferredSize(new Vector3f(matIconSize.x, matIconSize.y, 0))
-      matButton.setMaxWidth(matIconSize.x)
+      val matButton = button(description = preview, infoText = infoText)
+      val tex = GuiGlobals.getInstance().loadTexture(preview, false, false);
+      matButton.setBackground(new QuadBackgroundComponent(tex))
+      matButton.setSize(new Vector3f(buttonWidth, buttonHeight, 0))
+      matButton.setMaxWidth(buttonWidth)
       matButton.addClickCommands(_ => callback(Some(mat)))
+      matButton.asInstanceOf[Panel]
     })
+      .sliding(cols, cols)
+      .map(l => if (l.size == cols) l else l ++ padding(cols - l.size))
+      .map(_.toArray)
+      .toArray
 
-    val cancel = button("dialog-cancel-3.png", "cancel", infoText, label = "cancel")
-    val window = createDialog(width, height, "Material selection for " + desc, materialPanel, cancel)
-    cancel.addClickCommands(_ => callback(None))
+    val gridModel = new ArrayGridModel(matrix)
+    val optionsPanel = materialPanel.addChild(new GridPanel(gridModel))
+    optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
+    optionsPanel.setVisibleColumns(cols)
+    optionsPanel.setVisibleRows(rows)
+
+    val navPanel = materialPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.First, FillMode.First)))
+    navPanel.addChild(infoText)
+    val pgup = navPanel.addChild(button(null, "", label = " << "))
+    val less = navPanel.addChild(button(null, "", label = " < "))
+    val more = navPanel.addChild(button(null, "", label = " > "))
+    val pgdn = navPanel.addChild(button(null, "", label = " >> "))
+    val maxRow = (matrix.length - rows).max(0)
+    less.addClickCommands(_ => optionsPanel.setRow((optionsPanel.getRow - 1).max(0)))
+    more.addClickCommands(_ => optionsPanel.setRow((optionsPanel.getRow + 1).min(maxRow)))
+    pgup.addClickCommands(_ => optionsPanel.setRow((optionsPanel.getRow - rows).max(0)))
+    pgdn.addClickCommands(_ => optionsPanel.setRow((optionsPanel.getRow + rows).min(maxRow)))
+    materialPanel
+  }
+
+  def createMaterialDialog(width: Int, height: Int, desc: String, options: List[SurfaceMaterial], callback: Option[SurfaceMaterial] => Unit) = {
+    val materialPanel = createMaterialPanel(width, height, options, callback)
+    val window = new OptionPanel("Material selection for " + desc, action("cancel", "dialog-cancel-3.png", _ => callback(None)))
+    window.getContainer.addChild(materialPanel)
     window
+  }
+
+  def action(label: String, icon: String, action: Button => Unit): Action = {
+    new Action(label, new IconComponent(iconBasePath + icon)) {
+      def execute(b: Button) = action(b)
+    }
   }
 
   def createDialog(width: Int, height: Int, title: String, content: Panel, buttons: Button*) = {
