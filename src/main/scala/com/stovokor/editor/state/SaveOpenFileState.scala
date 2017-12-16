@@ -81,10 +81,10 @@ class SaveOpenFileState extends BaseState
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
-    func match {
-      case InputFunction.open   => EventBus.trigger(OpenMap())
-      case InputFunction.save   => EventBus.trigger(SaveMap(true))
-      case InputFunction.saveAs => EventBus.trigger(SaveMap(false))
+    if (value == InputState.Positive) func match {
+      case InputFunction.open   => openFile()
+      case InputFunction.save   => saveCurrent()
+      case InputFunction.saveAs => saveAsNewFile()
       case _                    =>
     }
   }

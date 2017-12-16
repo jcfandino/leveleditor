@@ -5,6 +5,10 @@ import com.simsilica.lemur.event.CursorButtonEvent
 import com.simsilica.lemur.event.CursorEventControl
 import com.simsilica.lemur.event.DefaultCursorListener
 import com.simsilica.lemur.event.CursorMotionEvent
+import com.simsilica.lemur.input.InputMapper
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
+import com.simsilica.lemur.input.InputMapper.Mapping
 
 object LemurExtensions {
 
@@ -23,6 +27,15 @@ object LemurExtensions {
           action(event, target, capture)
         }
       })
+    }
+  }
+
+  implicit class InputMapperExtension(mapper: InputMapper) {
+    def map(fun: FunctionId, primary: Int, modifiers: Int*): Mapping = {
+      map(fun, InputState.Positive, primary, modifiers: _*)
+    }
+    def map(fun: FunctionId, bias: InputState, primary: Int, modifiers: Int*): Mapping = {
+      mapper.map(fun, bias, primary, modifiers.map(_.asInstanceOf[Object]): _*)
     }
   }
 }

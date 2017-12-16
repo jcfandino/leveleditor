@@ -72,7 +72,7 @@ class ExportMapState extends BaseState
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     func match {
-      case InputFunction.open => EventBus.trigger(ExportMap())
+      case InputFunction.export => EventBus.trigger(ExportMap())
       case _                  =>
     }
   }
