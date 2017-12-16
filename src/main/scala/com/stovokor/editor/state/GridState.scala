@@ -74,8 +74,6 @@ class GridState extends BaseState
     println(s"set enabled $enabled")
     if (enabled) {
       inputMapper.activateGroup(InputFunction.general)
-    } else {
-      inputMapper.deactivateGroup(InputFunction.general)
     }
   }
 

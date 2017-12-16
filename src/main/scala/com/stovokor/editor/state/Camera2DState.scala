@@ -81,8 +81,8 @@ class Camera2DState extends BaseState
       InputFunction.moveY,
       InputFunction.moveZ,
       InputFunction.mouseWheel)
-    inputMapper.activateGroup(InputFunction.camera);
-    inputMapper.activateGroup(InputFunction.mouse);
+    inputMapper.activateGroup(InputFunction.camera)
+    inputMapper.activateGroup(InputFunction.mouse)
   }
 
   def valueActive(func: FunctionId, value: Double, tpf: Double) {

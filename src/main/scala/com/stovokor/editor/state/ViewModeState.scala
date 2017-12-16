@@ -13,8 +13,15 @@ import com.stovokor.util.SelectionModeSwitch
 import com.stovokor.util.EditModeSwitch
 import com.stovokor.editor.input.Modes.SelectionMode
 import com.stovokor.editor.input.Modes.EditMode
+import com.stovokor.editor.input.InputFunction
+import com.simsilica.lemur.input.StateFunctionListener
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
 
-class ViewModeState extends BaseState with EditorEventListener {
+class ViewModeState extends BaseState
+    with EditorEventListener
+    with CanMapInput
+    with StateFunctionListener {
 
   private var current: Mode = M2D()
 
@@ -28,6 +35,17 @@ class ViewModeState extends BaseState with EditorEventListener {
     EventBus.subscribe(this, ViewModeSwitch())
     M2D().show
     M2D().enter
+    setupInput
+  }
+
+  def setupInput() = {
+    inputMapper.addStateListener(this, InputFunction.switchViewMode)
+    inputMapper.activateGroup(InputFunction.general)
+  }
+
+  def valueChanged(function: FunctionId, state: InputState, value: Double) = function match {
+    case InputFunction.switchViewMode => if (state == InputState.Positive) switch()
+    case _                            =>
   }
 
   def onEvent(event: EditorEvent) = event match {
