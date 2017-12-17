@@ -149,7 +149,6 @@ object GuiFactory {
       EventBus.trigger(SelectionModeSwitch(SelectionMode.Sector))
       decorateFirst(sector, point, line)
     })
-
     selectionPanel
   }
 

@@ -9,6 +9,7 @@ import com.simsilica.lemur.input.InputMapper
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.InputMapper.Mapping
+import com.simsilica.lemur.input.Axis
 
 object LemurExtensions {
 
@@ -31,6 +32,9 @@ object LemurExtensions {
   }
 
   implicit class InputMapperExtension(mapper: InputMapper) {
+    def map(fun: FunctionId, primary: Axis, modifiers: Int*): Mapping = {
+      mapper.map(fun, primary, modifiers.map(_.asInstanceOf[Object]): _*)
+    }
     def map(fun: FunctionId, primary: Int, modifiers: Int*): Mapping = {
       map(fun, InputState.Positive, primary, modifiers: _*)
     }

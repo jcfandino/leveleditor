@@ -46,6 +46,7 @@ class Edit3DState extends BaseState
     inputMapper.addStateListener(this, InputFunction.editTextureScaleY)
     inputMapper.addStateListener(this, InputFunction.changeMaterial)
     inputMapper.addAnalogListener(this, InputFunction.mouseWheel)
+    inputMapper.addAnalogListener(this, InputFunction.mouseWheelShift)
     inputMapper.activateGroup(InputFunction.edit3d)
     inputMapper.activateGroup(InputFunction.mouse)
   }
@@ -95,6 +96,10 @@ class Edit3DState extends BaseState
     case InputFunction.mouseWheel => {
       if (value > 0.0) changeHeight(.1f)
       else if (value < 0.0) changeHeight(-.1f)
+    }
+    case InputFunction.mouseWheelShift => {
+      if (value > 0.0) changeHeight(.01f)
+      else if (value < 0.0) changeHeight(-.01f)
     }
   }
 

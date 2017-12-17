@@ -26,6 +26,8 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.mouseX, Axis.MOUSE_X)
     inputMapper.map(InputFunction.mouseY, Axis.MOUSE_Y)
     inputMapper.map(InputFunction.mouseWheel, Axis.MOUSE_WHEEL)
+    inputMapper.map(InputFunction.mouseWheelShift, Axis.MOUSE_WHEEL, KeyInput.KEY_LSHIFT)
+    inputMapper.map(InputFunction.mouseWheelShift, Axis.MOUSE_WHEEL, KeyInput.KEY_RSHIFT)
 
     inputMapper.map(InputFunction.cancel, KeyInput.KEY_ESCAPE)
     inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G)
@@ -52,14 +54,19 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_RCONTROL)
 
-    // TODO try to reuse pgup and pgdn
+    // sector height
     inputMapper.map(InputFunction.editHeight, KeyInput.KEY_P)
     inputMapper.map(InputFunction.editHeight, InputState.Negative, KeyInput.KEY_O)
+
+    // texture offset
     inputMapper.map(InputFunction.editTextureOffsetX, KeyInput.KEY_L)
     inputMapper.map(InputFunction.editTextureOffsetX, InputState.Negative, KeyInput.KEY_H)
     inputMapper.map(InputFunction.editTextureOffsetY, KeyInput.KEY_K)
     inputMapper.map(InputFunction.editTextureOffsetY, InputState.Negative, KeyInput.KEY_J)
+    inputMapper.map(InputFunction.editTextureOffsetX, Axis.MOUSE_WHEEL, KeyInput.KEY_LSHIFT, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.editTextureOffsetY, Axis.MOUSE_WHEEL, KeyInput.KEY_LCONTROL)
 
+    // texture scale
     inputMapper.map(InputFunction.editTextureScaleX, InputState.Positive, KeyInput.KEY_L, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.editTextureScaleX, InputState.Positive, KeyInput.KEY_L, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.editTextureScaleX, InputState.Negative, KeyInput.KEY_H, KeyInput.KEY_LCONTROL)
@@ -68,6 +75,8 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.editTextureScaleY, InputState.Positive, KeyInput.KEY_K, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.editTextureScaleY, InputState.Negative, KeyInput.KEY_J, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.editTextureScaleY, InputState.Negative, KeyInput.KEY_J, KeyInput.KEY_RCONTROL)
+    inputMapper.map(InputFunction.editTextureScaleX, Axis.MOUSE_WHEEL, KeyInput.KEY_LSHIFT, KeyInput.KEY_LMENU)
+    inputMapper.map(InputFunction.editTextureScaleY, Axis.MOUSE_WHEEL, KeyInput.KEY_LMENU) // ALT
 
     inputMapper.map(InputFunction.changeMaterial, KeyInput.KEY_1)
   }
@@ -84,6 +93,7 @@ object InputFunction {
   val mouseX = new FunctionId(mouse, "mouseX")
   val mouseY = new FunctionId(mouse, "mouseY")
   val mouseWheel = new FunctionId(mouse, "mouseWheel")
+  val mouseWheelShift = new FunctionId(mouse, "mouseWheelShift")
 
   val files = "files"
   val newFile = new FunctionId(files, "newFile")
