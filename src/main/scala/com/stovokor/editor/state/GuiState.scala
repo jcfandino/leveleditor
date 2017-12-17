@@ -8,7 +8,7 @@ import com.stovokor.util.ExitApplication
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EditorEvent
 
-class GuiState extends BaseState with EditorEventListener {
+class GuiState extends BaseState {
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
@@ -16,14 +16,9 @@ class GuiState extends BaseState with EditorEventListener {
     val statusbar = GuiFactory.statusbar(app.getCamera.getWidth, app.getCamera.getHeight)
     guiNode.attachChild(toolbar)
     guiNode.attachChild(statusbar)
-    EventBus.subscribe(this, ExitApplication())
   }
 
   override def update(tpf: Float) {
   }
 
-  def onEvent(event: EditorEvent) = event match {
-    case ExitApplication() => app.stop()
-    case _                 =>
-  }
 }

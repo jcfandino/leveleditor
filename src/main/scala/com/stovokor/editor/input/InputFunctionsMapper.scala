@@ -31,16 +31,26 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G)
     inputMapper.map(InputFunction.resizeGrid, KeyInput.KEY_R)
     inputMapper.map(InputFunction.switchViewMode, KeyInput.KEY_TAB)
+    inputMapper.map(InputFunction.settings, KeyInput.KEY_F12)
+    inputMapper.map(InputFunction.exit, KeyInput.KEY_Q, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.exit, KeyInput.KEY_Q, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.test1, KeyInput.KEY_F1)
     inputMapper.map(InputFunction.test2, KeyInput.KEY_F2)
     inputMapper.map(InputFunction.test3, KeyInput.KEY_F3)
     inputMapper.map(InputFunction.test4, KeyInput.KEY_F4)
 
+    inputMapper.map(InputFunction.newFile, KeyInput.KEY_N, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.newFile, KeyInput.KEY_N, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.open, KeyInput.KEY_O, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.open, KeyInput.KEY_O, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.open, KeyInput.KEY_F9)
     inputMapper.map(InputFunction.save, KeyInput.KEY_S, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.save, KeyInput.KEY_S, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.save, KeyInput.KEY_F5)
     inputMapper.map(InputFunction.saveAs, KeyInput.KEY_S, KeyInput.KEY_LCONTROL, KeyInput.KEY_LSHIFT)
+    inputMapper.map(InputFunction.saveAs, KeyInput.KEY_S, KeyInput.KEY_RCONTROL, KeyInput.KEY_RSHIFT)
+    inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_RCONTROL)
 
     // TODO try to reuse pgup and pgdn
     inputMapper.map(InputFunction.editHeight, KeyInput.KEY_P)
@@ -51,9 +61,13 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.editTextureOffsetY, InputState.Negative, KeyInput.KEY_J)
 
     inputMapper.map(InputFunction.editTextureScaleX, InputState.Positive, KeyInput.KEY_L, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.editTextureScaleX, InputState.Positive, KeyInput.KEY_L, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.editTextureScaleX, InputState.Negative, KeyInput.KEY_H, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.editTextureScaleX, InputState.Negative, KeyInput.KEY_H, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.editTextureScaleY, InputState.Positive, KeyInput.KEY_K, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.editTextureScaleY, InputState.Positive, KeyInput.KEY_K, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.editTextureScaleY, InputState.Negative, KeyInput.KEY_J, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.editTextureScaleY, InputState.Negative, KeyInput.KEY_J, KeyInput.KEY_RCONTROL)
 
     inputMapper.map(InputFunction.changeMaterial, KeyInput.KEY_1)
   }
@@ -72,16 +86,19 @@ object InputFunction {
   val mouseWheel = new FunctionId(mouse, "mouseWheel")
 
   val files = "files"
+  val newFile = new FunctionId(files, "newFile")
   val open = new FunctionId(files, "open")
   val save = new FunctionId(files, "save")
   val saveAs = new FunctionId(files, "saveAs")
   val export = new FunctionId(files, "export")
+  val exit = new FunctionId(files, "exit")
 
   val general = "general"
   val cancel = new FunctionId(general, "cancel")
   val snapToGrid = new FunctionId(general, "snapToGrid")
   val resizeGrid = new FunctionId(general, "resizeGrid")
   val switchViewMode = new FunctionId(general, "switchViewMode")
+  val settings = new FunctionId(general, "settings")
   val test1 = new FunctionId(general, "test1")
   val test2 = new FunctionId(general, "test2")
   val test3 = new FunctionId(general, "test3")
@@ -94,4 +111,5 @@ object InputFunction {
   val editTextureScaleX = new FunctionId(edit3d, "editTextureScaleX")
   val editTextureScaleY = new FunctionId(edit3d, "editTextureScaleY")
   val changeMaterial = new FunctionId(edit3d, "changeMaterial")
+
 }

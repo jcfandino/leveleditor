@@ -33,6 +33,8 @@ import com.stovokor.util.SectorDeleted
 import com.stovokor.util.SectorUpdated
 import com.stovokor.util.JsonFiles
 import com.stovokor.editor.model.MapFile
+import com.stovokor.util.StartNewMap
+import com.stovokor.util.ExitApplication
 
 class SaveOpenFileState extends BaseState
     with EditorEventListener
@@ -44,11 +46,16 @@ class SaveOpenFileState extends BaseState
   val borderRepository = BorderRepository()
 
   var currentFile: Option[String] = None
+  var dirty = false
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[SaveMap])
     EventBus.subscribeByType(this, classOf[OpenMap])
+    EventBus.subscribeByType(this, classOf[SectorUpdated])
+    EventBus.subscribeByType(this, classOf[SectorDeleted])
+    EventBus.subscribe(this, StartNewMap())
+    EventBus.subscribe(this, ExitApplication())
     setupInput
 
     // Auto Load test map
@@ -61,49 +68,80 @@ class SaveOpenFileState extends BaseState
   override def cleanup() {
     super.cleanup
     EventBus.removeFromAll(this)
+    inputMapper.removeStateListener(this, InputFunction.newFile)
     inputMapper.removeStateListener(this, InputFunction.open)
     inputMapper.removeStateListener(this, InputFunction.save)
     inputMapper.removeStateListener(this, InputFunction.saveAs)
+    inputMapper.removeStateListener(this, InputFunction.exit)
   }
 
   def setupInput {
+    inputMapper.addStateListener(this, InputFunction.newFile)
     inputMapper.addStateListener(this, InputFunction.open)
     inputMapper.addStateListener(this, InputFunction.save)
     inputMapper.addStateListener(this, InputFunction.saveAs)
+    inputMapper.addStateListener(this, InputFunction.exit)
     inputMapper.activateGroup(InputFunction.files)
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SaveMap(false) => saveAsNewFile()
-    case SaveMap(true)  => saveCurrent()
-    case OpenMap()      => openFile()
-    case _              =>
+    case StartNewMap()          => startNewMap()
+    case OpenMap()              => openFile()
+    case SaveMap(false)         => saveAsNewFile()
+    case SaveMap(true)          => saveCurrent()
+    case ExitApplication()      => exitApp()
+    case SectorUpdated(_, _, _) => dirty = true
+    case SectorDeleted(_)       => dirty = true
+    case _                      =>
+  }
+
+  def exitApp() = if (confirmAction("exit editor")) {
+    app.stop()
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     if (value == InputState.Positive) func match {
-      case InputFunction.open   => openFile()
-      case InputFunction.save   => saveCurrent()
-      case InputFunction.saveAs => saveAsNewFile()
-      case _                    =>
+      case InputFunction.newFile => startNewMap()
+      case InputFunction.open    => openFile()
+      case InputFunction.save    => saveCurrent()
+      case InputFunction.saveAs  => saveAsNewFile()
+      case InputFunction.exit    => exitApp()
+      case _                     =>
+    }
+  }
+
+  def startNewMap() {
+    if (confirmAction("start new map")) {
+      for ((id, sec) <- SectorRepository().sectors) {
+        EventBus.trigger(SectorDeleted(id))
+      }
+      SectorRepository().removeAll
+      BorderRepository().removeAll
+      currentFile = None
+      dirty = false
     }
   }
 
   def openFile() {
-    // TODO Check unsaved state will be lost
-    // JOptionPane.showConfirmDialog(frame, "You will lose your progress, etc..")
-    val frame = createFrame
-    val fileChooser = new JFileChooser
-    fileChooser.setFileFilter(new FileFilter() {
-      def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".m8")
-      def getDescription = "M8 Editor Maps (*.m8)"
-    })
-    val result = fileChooser.showOpenDialog(frame)
-    if (result == JFileChooser.APPROVE_OPTION) {
-      val file = fileChooser.getSelectedFile
-      openFile(file)
+    if (confirmAction("open file")) {
+      val fileChooser = new JFileChooser
+      fileChooser.setFileFilter(new FileFilter() {
+        def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".m8")
+        def getDescription = "M8 Editor Maps (*.m8)"
+      })
+      val result = fileChooser.showOpenDialog(getSwingFrame)
+      if (result == JFileChooser.APPROVE_OPTION) {
+        val file = fileChooser.getSelectedFile
+        openFile(file)
+      }
+      getSwingFrame.dispose()
     }
-    frame.dispose()
+  }
+
+  def confirmAction(action: String) = {
+    !dirty || JOptionPane.showConfirmDialog(getSwingFrame,
+      s"You will lose your progress, $action anyway?",
+      action.capitalize, JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION
   }
 
   def openFile(file: File) {
@@ -132,11 +170,12 @@ class SaveOpenFileState extends BaseState
     })
     SectorRepository().sectors
       .foreach(entry => EventBus.trigger(SectorUpdated(entry._1, entry._2, true)))
+    dirty = false
   }
 
   def saveAsNewFile() {
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    val frame = createFrame
+    val frame = getSwingFrame
     val fileChooser = new JFileChooser
     fileChooser.setFileFilter(new FileFilter() {
       def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".m8")
@@ -157,6 +196,7 @@ class SaveOpenFileState extends BaseState
       val map = MapFile(1, SectorRepository().sectors, BorderRepository().borders)
       JsonFiles.save(currentFile.get, map)
     }
+    dirty = false
   }
 
 }

@@ -4,7 +4,7 @@ import javax.swing.JFrame
 
 trait CanOpenDialog {
 
-  def createFrame = {
+  lazy val getSwingFrame = {
     val frame = new JFrame()
     frame.setLocationRelativeTo(null)
     frame.setUndecorated(true)

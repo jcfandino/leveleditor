@@ -86,6 +86,7 @@ case class ExitApplication() extends EditorEvent
 
 case class SaveMap(overwrite: Boolean) extends EditorEvent
 case class OpenMap() extends EditorEvent
+case class StartNewMap() extends EditorEvent
 case class ExportMap() extends EditorEvent
 case class EditSettings() extends EditorEvent
 case class SettingsUpdated() extends EditorEvent

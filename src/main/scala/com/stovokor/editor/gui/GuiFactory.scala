@@ -52,6 +52,7 @@ import com.simsilica.lemur.Action
 import com.simsilica.lemur.grid.ArrayGridModel
 import com.jme3.texture.Texture
 import com.simsilica.lemur.GuiGlobals
+import com.stovokor.util.StartNewMap
 
 object GuiFactory {
 
@@ -105,20 +106,12 @@ object GuiFactory {
     val settings = generalPanel.addChild(button("configure-5.png", "Settings...", infoText))
     val exit = generalPanel.addChild(button("application-exit-2.png", "Exit editor", infoText))
     exit.addClickCommands(_ => EventBus.trigger(ExitApplication()))
+    newMap.addClickCommands(_ => EventBus.trigger(StartNewMap()))
     open.addClickCommands(_ => EventBus.trigger(OpenMap()))
     save.addClickCommands(_ => EventBus.trigger(SaveMap(true)))
     saveAs.addClickCommands(_ => EventBus.trigger(SaveMap(false)))
     export.addClickCommands(_ => EventBus.trigger(ExportMap()))
     settings.addClickCommands(_ => EventBus.trigger(EditSettings()))
-    val restart = generalPanel.addChild(button("edit-clear-3.png", "Reset map", infoText))
-    restart.addClickCommands(_ => {
-      // TODO Extract this to a state and call with an event
-      for ((id, sec) <- SectorRepository().sectors) {
-        EventBus.trigger(SectorDeleted(id))
-      }
-      SectorRepository().removeAll
-      BorderRepository().removeAll
-    })
     val mode3d = generalPanel.addChild(button("blockdevice.png", "Switch 2D/3D mode", infoText))
     mode3d.addClickCommands(_ => EventBus.trigger(ViewModeSwitch()))
     val draw = generalPanel.addChild(button("draw-freehand.png", "Draw sector", infoText))
@@ -179,15 +172,15 @@ object GuiFactory {
     editPanel.addChild(new Label("|"))
     val split = editPanel.addChild(button("format-add-node.png", "Split line", infoText))
     split.addClickCommands(_ => EventBus.trigger(SplitSelection()))
-    val remove = editPanel.addChild(button("format-remove-node.png", "Delete selected points", infoText))
-    remove.addClickCommands(_ => EventBus.trigger(DeleteSelection()))
+    // TODO Not implemented yet
+    // val remove = editPanel.addChild(button("format-remove-node.png", "Delete selected points", infoText))
+    // remove.addClickCommands(_ => EventBus.trigger(DeleteSelection()))
     editPanel
   }
 
   def decorateFirst(b1: Button, bn: Button*) {
-    def clean(s: String) = s.replaceAll("\\*", "")
-    b1.setText(b1.getText + "*")
-    bn.foreach(b => b.setText(clean(b.getText)))
+    b1.setBackground(new QuadBackgroundComponent(ColorRGBA.Blue))
+    bn.foreach(b => b.setBackground(new Button("").getBackground))
   }
 
   def button(icon: String = null, description: String, infoText: Label = null, label: String = ""): Button = {
@@ -287,7 +280,7 @@ object GuiFactory {
   def createSettingsPanel(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
     val dialogOpener = new CanOpenDialog {
       def openDirectoryFinder() = {
-        val frame = createFrame
+        val frame = getSwingFrame
         val fileChooser = new JFileChooser
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
         val result = fileChooser.showOpenDialog(frame)

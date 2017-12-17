@@ -71,15 +71,15 @@ class ExportMapState extends BaseState
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
-    func match {
+    if (value == InputState.Positive) func match {
       case InputFunction.export => EventBus.trigger(ExportMap())
-      case _                  =>
+      case _                    =>
     }
   }
 
   def exportAsJ3o() {
     // Create a Lemur window with options for the export
-    val frame = createFrame
+    val frame = getSwingFrame
     val fileChooser = new JFileChooser
     fileChooser.setFileFilter(new FileFilter() {
       def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".j3o")

@@ -28,7 +28,7 @@ object TestApp extends SimpleApplication
   }
 
   def simpleInitApp() = {
-    val frame = createFrame
+    val frame = getSwingFrame
     val fileChooser = new JFileChooser
     fileChooser.setFileFilter(new FileFilter() {
       def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".j3o")

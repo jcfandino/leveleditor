@@ -1,39 +1,38 @@
 package com.stovokor.editor.state
 
-import com.simsilica.lemur.input.StateFunctionListener
-import com.stovokor.util.EditorEventListener
-import com.stovokor.util.EditorEvent
-import com.jme3.app.state.AppStateManager
-import com.stovokor.editor.input.InputFunction
-import com.stovokor.util.ExportMap
-import com.stovokor.util.EventBus
 import com.jme3.app.Application
-import com.stovokor.util.ChangeMaterial
-import com.stovokor.editor.model.repository.BorderRepository
-import com.stovokor.editor.model.repository.SectorRepository
-import com.stovokor.util.SectorSurfaceMutator
-import com.stovokor.editor.gui.GuiFactory
+import com.jme3.app.state.AppStateManager
 import com.simsilica.lemur.Container
-import com.stovokor.editor.model.repository.Repositories
-import com.stovokor.editor.model.SimpleMaterial
-import com.stovokor.editor.model.SurfaceMaterial
-import com.stovokor.editor.model.MatDefMaterial
-import com.stovokor.util.EditSettings
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
+import com.simsilica.lemur.input.StateFunctionListener
+import com.stovokor.editor.gui.GuiFactory
+import com.stovokor.editor.input.InputFunction
 import com.stovokor.editor.model.Settings
+import com.stovokor.editor.model.repository.Repositories
+import com.stovokor.util.EditSettings
+import com.stovokor.util.EditorEvent
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EventBus
 import com.stovokor.util.SettingsUpdated
 
-class SettingsEditorState extends BaseState with EditorEventListener {
+class SettingsEditorState extends BaseState
+    with EditorEventListener
+    with CanMapInput
+    with StateFunctionListener {
 
   val settingsRepository = Repositories.settingsRepository
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribe(this, EditSettings())
+    setupInput
   }
 
   override def cleanup() {
     super.cleanup
     EventBus.removeFromAll(this)
+    inputMapper.removeStateListener(this, InputFunction.settings)
   }
 
   def onEvent(event: EditorEvent) = event match {
@@ -41,6 +40,17 @@ class SettingsEditorState extends BaseState with EditorEventListener {
     case _              =>
   }
 
+  def setupInput {
+    inputMapper.addStateListener(this, InputFunction.settings)
+    inputMapper.activateGroup(InputFunction.general)
+  }
+
+  def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
+    if (value == InputState.Positive) func match {
+      case InputFunction.settings => openSettingsDialog()
+      case _                      =>
+    }
+  }
   var settingsDialog: Option[Container] = None
   var updatedSettings = Settings()
 
