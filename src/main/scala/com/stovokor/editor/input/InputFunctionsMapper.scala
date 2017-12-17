@@ -30,12 +30,14 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.mouseWheelShift, Axis.MOUSE_WHEEL, KeyInput.KEY_RSHIFT)
 
     inputMapper.map(InputFunction.cancel, KeyInput.KEY_ESCAPE)
-    inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G)
-    inputMapper.map(InputFunction.resizeGrid, KeyInput.KEY_R)
+    inputMapper.map(InputFunction.resizeGrid, KeyInput.KEY_G)
+    inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G, KeyInput.KEY_LCONTROL)
+    inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.switchViewMode, KeyInput.KEY_TAB)
     inputMapper.map(InputFunction.settings, KeyInput.KEY_F12)
     inputMapper.map(InputFunction.exit, KeyInput.KEY_Q, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.exit, KeyInput.KEY_Q, KeyInput.KEY_RCONTROL)
+    inputMapper.map(InputFunction.help, KeyInput.KEY_F1)
     inputMapper.map(InputFunction.test1, KeyInput.KEY_F1)
     inputMapper.map(InputFunction.test2, KeyInput.KEY_F2)
     inputMapper.map(InputFunction.test3, KeyInput.KEY_F3)
@@ -54,7 +56,7 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_RCONTROL)
 
-    // sector height
+    // sector height - TODO
     inputMapper.map(InputFunction.editHeight, KeyInput.KEY_P)
     inputMapper.map(InputFunction.editHeight, InputState.Negative, KeyInput.KEY_O)
 
@@ -78,7 +80,7 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.editTextureScaleX, Axis.MOUSE_WHEEL, KeyInput.KEY_LSHIFT, KeyInput.KEY_LMENU)
     inputMapper.map(InputFunction.editTextureScaleY, Axis.MOUSE_WHEEL, KeyInput.KEY_LMENU) // ALT
 
-    inputMapper.map(InputFunction.changeMaterial, KeyInput.KEY_1)
+    inputMapper.map(InputFunction.changeMaterial, KeyInput.KEY_M)
   }
 }
 
@@ -109,6 +111,7 @@ object InputFunction {
   val resizeGrid = new FunctionId(general, "resizeGrid")
   val switchViewMode = new FunctionId(general, "switchViewMode")
   val settings = new FunctionId(general, "settings")
+  val help = new FunctionId(general, "help")
   val test1 = new FunctionId(general, "test1")
   val test2 = new FunctionId(general, "test2")
   val test3 = new FunctionId(general, "test3")

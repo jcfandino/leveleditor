@@ -1,0 +1,39 @@
+                ============ Keyboard shortcuts ============
+
+ -= General =-
+
+F1                  : Show help
+F12                 : Open settings panel
+Ctrl+N              : Start new map
+Ctrl+O/F9           : Open map file
+CTRL+S/F5           : Save current file
+CTRL+Shift+S        : Save as new file
+Ctrl+E              : Export map as JMonkeyEngine file
+Ctrl+Q              : Exit editor
+Tab                 : Toggle editor mode 2D/3D
+
+ -= Mode 2D =-
+
+G                   : Change grid size
+Ctrl+G              : Toggle snap to grid
+WASD/Arrows         : Move camera
+PgUpPgDn/[]/Wheel   : Change zoom
+1                   : Select points
+2                   : Select lines
+3                   : Select sectors
+Space               : Insert node
+
+ -= Mode 3D =-
+
+WASD+Arrows         : Move camera
+Wheel               : Change floor or ceiling height
+Shift+Wheel         : Change floor or ceiling height (slowly)
+Ctrl+Wheel /
+HL                  : Change texture horizontal offset
+Ctrl+Shift+Wheel /
+JK                  : Change texture vertical offset
+Alt+Wheel /
+Ctrl+HL             : Change texture horizontal scale
+Alt+Shift+Wheel /
+Ctrl+JK             : Change texture vertical scale
+M                   : Change surface material

@@ -53,10 +53,12 @@ import com.simsilica.lemur.grid.ArrayGridModel
 import com.jme3.texture.Texture
 import com.simsilica.lemur.GuiGlobals
 import com.stovokor.util.StartNewMap
+import com.stovokor.util.ShowHelp
 
-object GuiFactory {
+object GuiFactory extends CanOpenDialog {
 
   val iconBasePath = "Interface/Icons/"
+  lazy val helpText = io.Source.fromInputStream(getClass.getResourceAsStream("/help.txt")).mkString
 
   def toolbar(width: Int, height: Int) = {
     val bar = createMainPanel(width, height)
@@ -104,6 +106,7 @@ object GuiFactory {
     val saveAs = generalPanel.addChild(button("document-save-as-5.png", "Save as...", infoText))
     val export = generalPanel.addChild(button("lorry-go.png", "Export...", infoText))
     val settings = generalPanel.addChild(button("configure-5.png", "Settings...", infoText))
+    val help = generalPanel.addChild(button("help.png", "Help...", infoText))
     val exit = generalPanel.addChild(button("application-exit-2.png", "Exit editor", infoText))
     exit.addClickCommands(_ => EventBus.trigger(ExitApplication()))
     newMap.addClickCommands(_ => EventBus.trigger(StartNewMap()))
@@ -112,6 +115,7 @@ object GuiFactory {
     saveAs.addClickCommands(_ => EventBus.trigger(SaveMap(false)))
     export.addClickCommands(_ => EventBus.trigger(ExportMap()))
     settings.addClickCommands(_ => EventBus.trigger(EditSettings()))
+    help.addClickCommands(_ => EventBus.trigger(ShowHelp()))
     val mode3d = generalPanel.addChild(button("blockdevice.png", "Switch 2D/3D mode", infoText))
     mode3d.addClickCommands(_ => EventBus.trigger(ViewModeSwitch()))
     val draw = generalPanel.addChild(button("draw-freehand.png", "Draw sector", infoText))
@@ -249,7 +253,8 @@ object GuiFactory {
 
   def createMaterialDialog(width: Int, height: Int, desc: String, options: List[SurfaceMaterial], callback: Option[SurfaceMaterial] => Unit) = {
     val materialPanel = createMaterialPanel(width, height, options, callback)
-    val window = new OptionPanel("Material selection for " + desc, action("cancel", "dialog-cancel-3.png", _ => callback(None)))
+    val window = new OptionPanel(null, action("cancel", "dialog-cancel-3.png", _ => callback(None)))
+    window.setTitle("Material selection for " + desc)
     window.getContainer.addChild(materialPanel)
     window
   }
@@ -260,23 +265,7 @@ object GuiFactory {
     }
   }
 
-  def createDialog(width: Int, height: Int, title: String, content: Panel, buttons: Button*) = {
-    val window = new Container
-    window.setLocalTranslation(50, height - 50, 0)
-    window.setPreferredSize(new Vector3f(width - 100, height - 100, 0))
-    val titleLabel = window.addChild(new Label(title))
-    titleLabel.setBackground(new QuadBackgroundComponent(ColorRGBA.Brown))
-    titleLabel.setColor(ColorRGBA.LightGray)
-    titleLabel.setTextHAlignment(HAlignment.Center)
-
-    window.addChild(content)
-    val buttonsContainer = window.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.First, FillMode.First)));
-    buttonsContainer.addChild(new Container)
-    buttons.foreach(buttonsContainer.addChild(_))
-    window
-  }
-
-  def createSettingsPanel(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
+  def createSettingsDialog(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
     val dialogOpener = new CanOpenDialog {
       def openDirectoryFinder() = {
         val frame = getSwingFrame
@@ -310,10 +299,24 @@ object GuiFactory {
     val filling = new Container
     filling.setPreferredSize(new Vector3f(width - 100, height - 200, 0))
     optionsPanel.addChild(filling)
-    val window = new OptionPanel("Settings",
+    val window = new OptionPanel(null,
       action("Cancel", "dialog-cancel-3.png", _ => close(false)),
       action("Save", "dialog-apply.png", _ => close(true)))
+    window.setTitle("Settings")
     window.getContainer.addChild(optionsPanel)
+    window
+  }
+
+  def createHelpDialog(width: Int, height: Int, callback: () => Unit) = {
+    val helpPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X))
+    helpPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
+    val label = helpPanel.addChild(new Label(helpText))
+    label.setFont(GuiGlobals.getInstance.loadFont("Interface/Fonts/Console.fnt"))
+    label.setColor(ColorRGBA.White)
+    label.setFontSize(16f)
+    label.setBackground(new QuadBackgroundComponent(new ColorRGBA(0, 0, 0, .6f)))
+    val window = new OptionPanel(null, action("Dismiss", "dialog-cancel-3.png", _ => callback()))
+    window.getContainer.addChild(helpPanel)
     window
   }
 }

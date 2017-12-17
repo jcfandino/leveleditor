@@ -2,7 +2,7 @@ package com.stovokor.editor.state
 
 import com.jme3.app.Application
 import com.jme3.app.state.AppStateManager
-import com.simsilica.lemur.Container
+import com.simsilica.lemur.OptionPanelState
 import com.simsilica.lemur.input.FunctionId
 import com.simsilica.lemur.input.InputState
 import com.simsilica.lemur.input.StateFunctionListener
@@ -15,10 +15,9 @@ import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
 import com.stovokor.util.SettingsUpdated
-import com.simsilica.lemur.OptionPanel
-import com.simsilica.lemur.OptionPanelState
+import com.stovokor.util.ShowHelp
 
-class SettingsEditorState extends BaseState
+class HelpWindowState extends BaseState
     with EditorEventListener
     with CanMapInput
     with StateFunctionListener {
@@ -27,56 +26,45 @@ class SettingsEditorState extends BaseState
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
-    EventBus.subscribe(this, EditSettings())
+    EventBus.subscribe(this, ShowHelp())
     setupInput
   }
 
   override def cleanup() {
     super.cleanup
     EventBus.removeFromAll(this)
-    inputMapper.removeStateListener(this, InputFunction.settings)
+    inputMapper.removeStateListener(this, InputFunction.help)
     inputMapper.removeStateListener(this, InputFunction.cancel)
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case EditSettings() => openSettingsDialog()
-    case _              =>
+    case ShowHelp() => openHelpDialog()
+    case _          =>
   }
 
   def setupInput {
-    inputMapper.addStateListener(this, InputFunction.settings)
+    inputMapper.addStateListener(this, InputFunction.help)
     inputMapper.addStateListener(this, InputFunction.cancel)
     inputMapper.activateGroup(InputFunction.general)
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     if (value == InputState.Positive) func match {
-      case InputFunction.settings => openSettingsDialog()
-      case InputFunction.cancel   => closeDialog(false)
-      case _                      =>
+      case InputFunction.help   => openHelpDialog()
+      case InputFunction.cancel => closeDialog()
+      case _                    =>
     }
   }
-  var updatedSettings = Settings()
 
-  def openSettingsDialog() {
-    println("opening settings dialog")
+  def openHelpDialog() {
+    println("opening help dialog")
     optionPanelState.close()
-    updatedSettings = settingsRepository.get()
-    val dialog = GuiFactory.createSettingsDialog(cam.getWidth, cam.getHeight, updatedSettings, settingsUpdated, closeDialog)
+    val dialog = GuiFactory.createHelpDialog(cam.getWidth, cam.getHeight, closeDialog)
     optionPanelState.show(dialog)
   }
 
-  def settingsUpdated(updated: Settings) {
-    updatedSettings = updated
-  }
-
-  def closeDialog(save: Boolean) {
+  def closeDialog() {
     optionPanelState.close()
-    if (save) {
-      println(s"Settings saved $updatedSettings")
-      settingsRepository.update(updatedSettings)
-      EventBus.trigger(SettingsUpdated())
-    }
   }
 
   def optionPanelState = stateManager.getState(classOf[OptionPanelState])

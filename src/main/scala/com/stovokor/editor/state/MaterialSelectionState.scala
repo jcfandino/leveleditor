@@ -21,19 +21,38 @@ import com.stovokor.editor.model.MatDefMaterial
 import com.simsilica.lemur.Panel
 import com.simsilica.lemur.OptionPanel
 import com.simsilica.lemur.OptionPanelState
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.InputState
 
-class MaterialSelectionState extends BaseState with EditorEventListener {
+class MaterialSelectionState extends BaseState
+    with EditorEventListener
+    with CanMapInput
+    with StateFunctionListener {
 
   val materialRepository = Repositories.materialRepository
 
   override def initialize(stateManager: AppStateManager, simpleApp: Application) {
     super.initialize(stateManager, simpleApp)
     EventBus.subscribeByType(this, classOf[ChangeMaterial])
+    setupInput
+  }
+
+  def setupInput {
+    inputMapper.addStateListener(this, InputFunction.cancel)
+    inputMapper.activateGroup(InputFunction.general)
   }
 
   override def cleanup() {
     super.cleanup
     EventBus.removeFromAll(this)
+    inputMapper.removeStateListener(this, InputFunction.cancel)
+  }
+
+  def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
+    if (value == InputState.Positive) func match {
+      case InputFunction.cancel => optionPanelState.close()
+      case _                    =>
+    }
   }
 
   def onEvent(event: EditorEvent) = event match {

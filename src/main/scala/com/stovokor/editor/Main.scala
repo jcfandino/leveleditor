@@ -17,6 +17,7 @@ import com.stovokor.editor.state.SettingsEditorState
 import com.stovokor.editor.state.SettingsLoaderState
 import com.stovokor.editor.state.ViewModeState
 import com.simsilica.lemur.OptionPanelState
+import com.stovokor.editor.state.HelpWindowState
 
 // Level Editor
 object Main extends SimpleApplication {
@@ -57,6 +58,7 @@ object Main extends SimpleApplication {
     stateManager.attach(new SaveOpenFileState)
     stateManager.attach(new SettingsEditorState)
     stateManager.attach(new OptionPanelState)
+    stateManager.attach(new HelpWindowState)
 
   }
 
