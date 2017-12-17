@@ -40,6 +40,7 @@ class Edit3DState extends BaseState
 
   def setupInput() {
     inputMapper.addStateListener(this, InputFunction.editHeight)
+    inputMapper.addStateListener(this, InputFunction.editHeightSlow)
     inputMapper.addStateListener(this, InputFunction.editTextureOffsetX)
     inputMapper.addStateListener(this, InputFunction.editTextureOffsetY)
     inputMapper.addStateListener(this, InputFunction.editTextureScaleX)
@@ -51,6 +52,20 @@ class Edit3DState extends BaseState
     inputMapper.activateGroup(InputFunction.mouse)
   }
 
+  override def cleanup() {
+    super.cleanup
+    EventBus.removeFromAll(this)
+    inputMapper.removeStateListener(this, InputFunction.editHeight)
+    inputMapper.removeStateListener(this, InputFunction.editHeightSlow)
+    inputMapper.removeStateListener(this, InputFunction.editTextureOffsetX)
+    inputMapper.removeStateListener(this, InputFunction.editTextureOffsetY)
+    inputMapper.removeStateListener(this, InputFunction.editTextureScaleX)
+    inputMapper.removeStateListener(this, InputFunction.editTextureScaleY)
+    inputMapper.removeStateListener(this, InputFunction.changeMaterial)
+    inputMapper.removeStateListener(this, InputFunction.mouseWheel)
+    inputMapper.removeStateListener(this, InputFunction.mouseWheelShift)
+  }
+
   def onEvent(event: EditorEvent) = event match {
     case PointerTargetChange(sectorId, target) => {
       println(s"Pointing $target of sector $sectorId")
@@ -59,7 +74,8 @@ class Edit3DState extends BaseState
     case _ =>
   }
 
-  val heightStep = 0.01f
+  val heightStep = 0.1f
+  val heightStepSlow = 0.01f
   val offsetStep = 0.01f
   val scaleStep = 0.1f
 
@@ -67,7 +83,11 @@ class Edit3DState extends BaseState
     functionId match {
       case InputFunction.editHeight => {
         if (state == InputState.Positive) changeHeight(heightStep)
-        else if (state == InputState.Negative) changeHeight(heightStep)
+        else if (state == InputState.Negative) changeHeight(-heightStep)
+      }
+      case InputFunction.editHeightSlow => {
+        if (state == InputState.Positive) changeHeight(heightStepSlow)
+        else if (state == InputState.Negative) changeHeight(-heightStepSlow)
       }
       case InputFunction.editTextureOffsetX => {
         if (state == InputState.Positive) changeTextureOffset(-offsetStep, 0f)
@@ -94,12 +114,12 @@ class Edit3DState extends BaseState
 
   def valueActive(functionId: FunctionId, value: Double, tpf: Double) = functionId match {
     case InputFunction.mouseWheel => {
-      if (value > 0.0) changeHeight(.1f)
-      else if (value < 0.0) changeHeight(-.1f)
+      if (value > 0.0) changeHeight(heightStep)
+      else if (value < 0.0) changeHeight(-heightStep)
     }
     case InputFunction.mouseWheelShift => {
-      if (value > 0.0) changeHeight(.01f)
-      else if (value < 0.0) changeHeight(-.01f)
+      if (value > 0.0) changeHeight(heightStepSlow)
+      else if (value < 0.0) changeHeight(-heightStepSlow)
     }
   }
 

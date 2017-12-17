@@ -21,13 +21,16 @@ PgUpPgDn/[]/Wheel   : Change zoom
 1                   : Select points
 2                   : Select lines
 3                   : Select sectors
-Space               : Insert node
+I                   : Insert mode
+F                   : Hole to sector mode
+Space/LeftClick     : Interact
 
  -= Mode 3D =-
 
 WASD+Arrows         : Move camera
-Wheel               : Change floor or ceiling height
-Shift+Wheel         : Change floor or ceiling height (slowly)
+Wheel/OP            : Change floor or ceiling height
+Shift+Wheel /
+Shift+OP            : Change floor or ceiling height (slowly)
 Ctrl+Wheel /
 HL                  : Change texture horizontal offset
 Ctrl+Shift+Wheel /

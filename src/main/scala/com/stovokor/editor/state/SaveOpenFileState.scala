@@ -39,7 +39,6 @@ import com.stovokor.util.ExitApplication
 class SaveOpenFileState extends BaseState
     with EditorEventListener
     with CanMapInput
-    with CanOpenDialog
     with StateFunctionListener {
 
   val sectorRepository = SectorRepository()
@@ -129,17 +128,16 @@ class SaveOpenFileState extends BaseState
         def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".m8")
         def getDescription = "M8 Editor Maps (*.m8)"
       })
-      val result = fileChooser.showOpenDialog(getSwingFrame)
+      val result = fileChooser.showOpenDialog(null)
       if (result == JFileChooser.APPROVE_OPTION) {
         val file = fileChooser.getSelectedFile
         openFile(file)
       }
-      getSwingFrame.dispose()
     }
   }
 
   def confirmAction(action: String) = {
-    !dirty || JOptionPane.showConfirmDialog(getSwingFrame,
+    !dirty || JOptionPane.showConfirmDialog(null,
       s"You will lose your progress, $action anyway?",
       action.capitalize, JOptionPane.YES_NO_OPTION) == JOptionPane.OK_OPTION
   }
@@ -175,18 +173,16 @@ class SaveOpenFileState extends BaseState
 
   def saveAsNewFile() {
     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-    val frame = getSwingFrame
     val fileChooser = new JFileChooser
     fileChooser.setFileFilter(new FileFilter() {
       def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".m8")
       def getDescription = "M8 Editor Maps (*.m8)"
     })
-    val result = fileChooser.showSaveDialog(frame)
+    val result = fileChooser.showSaveDialog(null)
     if (result == JFileChooser.APPROVE_OPTION) {
       currentFile = Some(fileChooser.getSelectedFile.getAbsolutePath)
       saveCurrent()
     }
-    frame.dispose()
   }
 
   def saveCurrent() {

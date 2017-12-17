@@ -40,7 +40,6 @@ import com.stovokor.editor.control.HighlightControl
 class ExportMapState extends BaseState
     with EditorEventListener
     with CanMapInput
-    with CanOpenDialog
     with StateFunctionListener {
 
   val sectorRepository = SectorRepository()
@@ -79,7 +78,6 @@ class ExportMapState extends BaseState
 
   def exportAsJ3o() {
     // Create a Lemur window with options for the export
-    val frame = getSwingFrame
     val fileChooser = new JFileChooser
     fileChooser.setFileFilter(new FileFilter() {
       def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".j3o")
@@ -88,13 +86,12 @@ class ExportMapState extends BaseState
     if (currentFile.isDefined) {
       fileChooser.setSelectedFile(new File(currentFile.get))
     }
-    val result = fileChooser.showSaveDialog(frame)
+    val result = fileChooser.showSaveDialog(null)
     if (result == JFileChooser.APPROVE_OPTION) {
       val selected = fileChooser.getSelectedFile.getAbsolutePath
       currentFile = Some(if (selected.endsWith(".j3o")) selected else selected + ".j3o")
       JMEMapExporter.export(currentFile.get)
     }
-    frame.dispose()
   }
 
   trait MapExporter {

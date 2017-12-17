@@ -35,7 +35,6 @@ import com.stovokor.editor.model.SimpleMaterial
 import com.stovokor.editor.model.MatDefMaterial
 import com.stovokor.util.EditSettings
 import com.stovokor.editor.model.Settings
-import com.stovokor.editor.state.CanOpenDialog
 import javax.swing.JFileChooser
 import java.io.File
 import javax.swing.filechooser.FileFilter
@@ -54,8 +53,9 @@ import com.jme3.texture.Texture
 import com.simsilica.lemur.GuiGlobals
 import com.stovokor.util.StartNewMap
 import com.stovokor.util.ShowHelp
+import com.stovokor.editor.input.Modes
 
-object GuiFactory extends CanOpenDialog {
+object GuiFactory {
 
   val iconBasePath = "Interface/Icons/"
   lazy val helpText = io.Source.fromInputStream(getClass.getResourceAsStream("/help.txt")).mkString
@@ -120,7 +120,7 @@ object GuiFactory extends CanOpenDialog {
     mode3d.addClickCommands(_ => EventBus.trigger(ViewModeSwitch()))
     val draw = generalPanel.addChild(button("draw-freehand.png", "Draw sector", infoText))
     draw.addClickCommands(_ => {
-      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.Point))
       EventBus.trigger(EditModeSwitch(EditMode.Draw))
     })
     val fillHole = generalPanel.addChild(button("applications-development-4.png", "Hole to sector", infoText))
@@ -135,8 +135,8 @@ object GuiFactory extends CanOpenDialog {
   def createSelectionPanel(infoText: Label) = {
     val selectionPanel = new Container(new SpringGridLayout(Axis.X, Axis.Y))
     selectionPanel.addChild(new Label("|"))
-    val point = selectionPanel.addChild(button("office-chart-scatter.png", "Select points", infoText))
-    val line = selectionPanel.addChild(button("office-chart-polar.png", "Select lines", infoText))
+    val point = selectionPanel.addChild(button("edit-node.png", "Select points", infoText))
+    val line = selectionPanel.addChild(button("draw-line-3.png", "Select lines", infoText))
     val sector = selectionPanel.addChild(button("office-chart-polar-stacked.png", "Select sectors", infoText))
     point.addClickCommands(_ => {
       EventBus.trigger(EditModeSwitch(EditMode.Select))
@@ -266,21 +266,17 @@ object GuiFactory extends CanOpenDialog {
   }
 
   def createSettingsDialog(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
-    val dialogOpener = new CanOpenDialog {
       def openDirectoryFinder() = {
-        val frame = getSwingFrame
         val fileChooser = new JFileChooser
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
-        val result = fileChooser.showOpenDialog(frame)
+        val result = fileChooser.showOpenDialog(null)
         var selected: Option[String] = None
         if (result == JFileChooser.APPROVE_OPTION) {
           val file = fileChooser.getSelectedFile
           selected = Some(file.getAbsolutePath)
         }
-        frame.dispose()
         selected
       }
-    }
     val optionsPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X))
     optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 
@@ -290,7 +286,7 @@ object GuiFactory extends CanOpenDialog {
     val change = assetPathPanel.addChild(button("magnifier.png", "Find"))
     change.setPreferredSize(new Vector3f())
     change.addClickCommands(_ => {
-      dialogOpener.openDirectoryFinder().foreach(path => {
+      openDirectoryFinder().foreach(path => {
         println(s"Selected path: $path")
         update(current.updateAssetBasePath(path))
         currentPath.setText(path)

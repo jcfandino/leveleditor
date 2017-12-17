@@ -11,14 +11,23 @@ import com.stovokor.util.EventBus
 import com.stovokor.util.SelectionChange
 import com.stovokor.editor.input.Modes.EditMode
 import com.simsilica.lemur.FillMode
+import com.stovokor.editor.input.InputFunction
+import com.simsilica.lemur.input.FunctionId
+import com.simsilica.lemur.input.StateFunctionListener
+import com.simsilica.lemur.input.InputState
+import com.stovokor.util.SelectionModeSwitch
+import com.stovokor.editor.input.Modes.SelectionMode
 
-class Edit2DModeState extends BaseState with EditorEventListener {
+class Edit2DModeState extends BaseState
+    with EditorEventListener
+    with CanMapInput
+    with StateFunctionListener {
 
   var modeKey = EditMode.Select
   val modes: Map[EditMode, EditModeStrategy] = Map(
-      (EditMode.Select, SelectionMode), 
-      (EditMode.Draw, DrawingMode),
-      (EditMode.Fill,FillMode))
+    (EditMode.Select, SelectingMode),
+    (EditMode.Draw, DrawingMode),
+    (EditMode.Fill, FillMode))
 
   def mode = modes(modeKey)
 
@@ -27,11 +36,49 @@ class Edit2DModeState extends BaseState with EditorEventListener {
     EventBus.subscribeByType(this, classOf[EditModeSwitch])
     modes(EditMode.Draw).exit
     mode.enter
+    setupInput
   }
 
   override def cleanup() {
     super.cleanup
     EventBus.removeFromAll(this)
+    inputMapper.removeStateListener(this, InputFunction.clickKey)
+    inputMapper.removeStateListener(this, InputFunction.insertMode)
+    inputMapper.removeStateListener(this, InputFunction.selectPoints)
+    inputMapper.removeStateListener(this, InputFunction.selectLines)
+    inputMapper.removeStateListener(this, InputFunction.selectSectors)
+    inputMapper.removeStateListener(this, InputFunction.fillMode)
+  }
+
+  def setupInput {
+    inputMapper.addStateListener(this, InputFunction.cancel)
+    inputMapper.addStateListener(this, InputFunction.clickKey)
+    inputMapper.addStateListener(this, InputFunction.insertMode)
+    inputMapper.addStateListener(this, InputFunction.selectPoints)
+    inputMapper.addStateListener(this, InputFunction.selectLines)
+    inputMapper.addStateListener(this, InputFunction.selectSectors)
+    inputMapper.addStateListener(this, InputFunction.fillMode)
+    inputMapper.activateGroup(InputFunction.general)
+  }
+
+  def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
+    if (value == InputState.Positive) func match {
+      case InputFunction.insertMode => setMode(EditMode.Draw)
+      case InputFunction.fillMode => setMode(EditMode.Fill)
+      case InputFunction.selectPoints => {
+        setMode(EditMode.Select)
+        EventBus.trigger(SelectionModeSwitch(SelectionMode.Point))
+      }
+      case InputFunction.selectLines => {
+        setMode(EditMode.Select)
+        EventBus.trigger(SelectionModeSwitch(SelectionMode.Line))
+      }
+      case InputFunction.selectSectors => {
+        setMode(EditMode.Select)
+        EventBus.trigger(SelectionModeSwitch(SelectionMode.Sector))
+      }
+      case _ =>
+    }
   }
 
   def onEvent(event: EditorEvent) = event match {
@@ -40,8 +87,8 @@ class Edit2DModeState extends BaseState with EditorEventListener {
   }
 
   def setMode(newMode: EditMode) {
-    println(s"new edit mode $newMode")
     if (newMode != modeKey) {
+      println(s"edit mode $newMode")
       mode.exit
       EventBus.trigger(SelectionChange(Set()))
       modeKey = newMode
@@ -54,7 +101,7 @@ class Edit2DModeState extends BaseState with EditorEventListener {
     def exit
   }
 
-  object SelectionMode extends EditModeStrategy("selection") {
+  object SelectingMode extends EditModeStrategy("selecting") {
 
     def exit {
       println("exiting selection")

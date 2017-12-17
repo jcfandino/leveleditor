@@ -95,6 +95,7 @@ class GridState extends BaseState
     })
     inputMapper.addStateListener(this, InputFunction.snapToGrid)
     inputMapper.addStateListener(this, InputFunction.resizeGrid)
+    inputMapper.addStateListener(this, InputFunction.clickKey)
     inputMapper.activateGroup(InputFunction.general)
   }
 
@@ -106,6 +107,9 @@ class GridState extends BaseState
       }
       case InputFunction.resizeGrid => {
         changeGridSize()
+      }
+      case InputFunction.clickKey => {
+        EventBus.trigger(PointClicked(GridSnapper.snap(Point(mousePos.x, mousePos.y))))
       }
       case _ =>
     }

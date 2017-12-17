@@ -5,13 +5,11 @@ import java.io.File
 import com.jme3.app.SimpleApplication
 import com.jme3.asset.plugins.FileLocator
 import com.jme3.system.AppSettings
-import com.stovokor.editor.state.CanOpenDialog
 
 import javax.swing.JFileChooser
 import javax.swing.filechooser.FileFilter
 
-object TestApp extends SimpleApplication
-    with CanOpenDialog {
+object TestApp extends SimpleApplication {
 
   def main(args: Array[String]) {
     val sets = new AppSettings(true)
@@ -28,13 +26,12 @@ object TestApp extends SimpleApplication
   }
 
   def simpleInitApp() = {
-    val frame = getSwingFrame
     val fileChooser = new JFileChooser
     fileChooser.setFileFilter(new FileFilter() {
       def accept(file: File) = file.isDirectory() || file.getPath.endsWith(".j3o")
       def getDescription = ".j3o"
     })
-    val result = fileChooser.showOpenDialog(frame)
+    val result = fileChooser.showOpenDialog(null)
     if (result == JFileChooser.APPROVE_OPTION) {
       val file = fileChooser.getSelectedFile
 

@@ -35,6 +35,13 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.snapToGrid, KeyInput.KEY_G, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.switchViewMode, KeyInput.KEY_TAB)
     inputMapper.map(InputFunction.settings, KeyInput.KEY_F12)
+    inputMapper.map(InputFunction.insertMode, KeyInput.KEY_I)
+    inputMapper.map(InputFunction.fillMode, KeyInput.KEY_F)
+    inputMapper.map(InputFunction.clickKey, KeyInput.KEY_SPACE)
+    inputMapper.map(InputFunction.selectPoints, KeyInput.KEY_1)
+    inputMapper.map(InputFunction.selectLines, KeyInput.KEY_2)
+    inputMapper.map(InputFunction.selectSectors, KeyInput.KEY_3)
+    inputMapper.map(InputFunction.settings, KeyInput.KEY_F12)
     inputMapper.map(InputFunction.exit, KeyInput.KEY_Q, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.exit, KeyInput.KEY_Q, KeyInput.KEY_RCONTROL)
     inputMapper.map(InputFunction.help, KeyInput.KEY_F1)
@@ -56,9 +63,13 @@ object InputFunctionsMapper {
     inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_LCONTROL)
     inputMapper.map(InputFunction.export, KeyInput.KEY_E, KeyInput.KEY_RCONTROL)
 
-    // sector height - TODO
+    // sector height
     inputMapper.map(InputFunction.editHeight, KeyInput.KEY_P)
     inputMapper.map(InputFunction.editHeight, InputState.Negative, KeyInput.KEY_O)
+    inputMapper.map(InputFunction.editHeightSlow, KeyInput.KEY_P, KeyInput.KEY_LSHIFT)
+    inputMapper.map(InputFunction.editHeightSlow, KeyInput.KEY_P, KeyInput.KEY_RSHIFT)
+    inputMapper.map(InputFunction.editHeightSlow, InputState.Negative, KeyInput.KEY_O, KeyInput.KEY_LSHIFT)
+    inputMapper.map(InputFunction.editHeightSlow, InputState.Negative, KeyInput.KEY_O, KeyInput.KEY_RSHIFT)
 
     // texture offset
     inputMapper.map(InputFunction.editTextureOffsetX, KeyInput.KEY_L)
@@ -111,6 +122,12 @@ object InputFunction {
   val resizeGrid = new FunctionId(general, "resizeGrid")
   val switchViewMode = new FunctionId(general, "switchViewMode")
   val settings = new FunctionId(general, "settings")
+  val insertMode = new FunctionId(general, "insertMode")
+  val fillMode = new FunctionId(general, "fillMode")
+  val clickKey = new FunctionId(general, "clickKey")
+  val selectPoints = new FunctionId(general, "selectPoints")
+  val selectLines = new FunctionId(general, "selectLines")
+  val selectSectors = new FunctionId(general, "selectSectors")
   val help = new FunctionId(general, "help")
   val test1 = new FunctionId(general, "test1")
   val test2 = new FunctionId(general, "test2")
@@ -119,6 +136,7 @@ object InputFunction {
 
   val edit3d = "edit3d"
   val editHeight = new FunctionId(edit3d, "editHeight")
+  val editHeightSlow = new FunctionId(edit3d, "editHeightSlow")
   val editTextureOffsetX = new FunctionId(edit3d, "editTextureOffsetX")
   val editTextureOffsetY = new FunctionId(edit3d, "editTextureOffsetY")
   val editTextureScaleX = new FunctionId(edit3d, "editTextureScaleX")
