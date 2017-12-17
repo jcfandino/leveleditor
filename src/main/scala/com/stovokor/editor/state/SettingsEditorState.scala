@@ -15,6 +15,8 @@ import com.stovokor.util.EditorEvent
 import com.stovokor.util.EditorEventListener
 import com.stovokor.util.EventBus
 import com.stovokor.util.SettingsUpdated
+import com.simsilica.lemur.OptionPanel
+import com.simsilica.lemur.OptionPanelState
 
 class SettingsEditorState extends BaseState
     with EditorEventListener
@@ -51,17 +53,14 @@ class SettingsEditorState extends BaseState
       case _                      =>
     }
   }
-  var settingsDialog: Option[Container] = None
   var updatedSettings = Settings()
 
   def openSettingsDialog() {
     println("opening settings dialog")
-    settingsDialog.foreach(_.removeFromParent())
+    optionPanelState.close()
     updatedSettings = settingsRepository.get()
     val dialog = GuiFactory.createSettingsPanel(cam.getWidth, cam.getHeight, updatedSettings, settingsUpdated, closeDialog)
-    dialog.setName("material-dialog")
-    guiNode.attachChild(dialog)
-    settingsDialog = Some(dialog)
+    optionPanelState.show(dialog)
   }
 
   def settingsUpdated(updated: Settings) {
@@ -69,12 +68,14 @@ class SettingsEditorState extends BaseState
   }
 
   def closeDialog(save: Boolean) {
-    settingsDialog.foreach(_.removeFromParent)
+    optionPanelState.close()
     if (save) {
       println(s"Settings saved $updatedSettings")
       settingsRepository.update(updatedSettings)
       EventBus.trigger(SettingsUpdated())
     }
   }
+
+  def optionPanelState = stateManager.getState(classOf[OptionPanelState])
 
 }

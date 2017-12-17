@@ -292,9 +292,7 @@ object GuiFactory {
         selected
       }
     }
-    val settingsPanel = new Container(new SpringGridLayout()) //Axis.Y, Axis.X))
-
-    val optionsPanel = settingsPanel.addChild(new Container(new SpringGridLayout(Axis.Y, Axis.X)))
+    val optionsPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X))
     optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 
     val assetPathPanel = optionsPanel.addChild(new Container(new SpringGridLayout(Axis.X, Axis.Y)))
@@ -312,16 +310,10 @@ object GuiFactory {
     val filling = new Container
     filling.setPreferredSize(new Vector3f(width - 100, height - 200, 0))
     optionsPanel.addChild(filling)
-
-    val save = button("dialog-apply.png", "save", label = "save")
-    val cancel = button("dialog-cancel-3.png", "cancel", label = "cancel")
-    val window = createDialog(width, height, "Settings", settingsPanel, save, cancel)
-    save.addClickCommands(_ => {
-      close(true)
-    })
-    cancel.addClickCommands(_ => {
-      close(false)
-    })
+    val window = new OptionPanel("Settings",
+      action("Cancel", "dialog-cancel-3.png", _ => close(false)),
+      action("Save", "dialog-apply.png", _ => close(true)))
+    window.getContainer.addChild(optionsPanel)
     window
   }
 }
