@@ -29,6 +29,9 @@ import com.stovokor.editor.model.Sector
 import com.stovokor.editor.factory.BorderFactory
 import com.stovokor.util.SectorDeleted
 import com.stovokor.editor.factory.SectorFactory
+import com.stovokor.util.EditModeSwitch
+import com.stovokor.editor.input.Modes.EditMode
+import com.stovokor.util.JmeExtensions._
 
 class DrawingState extends BaseState
     with EditorEventListener
@@ -49,6 +52,7 @@ class DrawingState extends BaseState
     super.initialize(stateManager, simpleApp)
     get2DNode.attachChild(new Node("currentDraw"))
     EventBus.subscribeByType(this, classOf[PointClicked])
+    EventBus.subscribeByType(this, classOf[EditModeSwitch])
     EventBus.subscribe(this, ViewModeSwitch())
     setupInput
   }
@@ -68,18 +72,17 @@ class DrawingState extends BaseState
     inputMapper.activateGroup(InputFunction.general)
   }
 
-  def onEvent(event: EditorEvent) {
-    event match {
-      case PointClicked(point) => if (isEnabled) {
-        addPoint(point.x, point.y)
-        for ((sectorId, sector) <- sectorRepository.findByPoint(point)) {
-          currentBuilder = currentBuilder.map(_.add(sectorId))
-          checkCuttingSector(sectorId, sector)
-        }
+  def onEvent(event: EditorEvent) = event match {
+    case PointClicked(point) => if (isEnabled) {
+      addPoint(point.x, point.y)
+      for ((sectorId, sector) <- sectorRepository.findByPoint(point)) {
+        currentBuilder = currentBuilder.map(_.add(sectorId))
+        checkCuttingSector(sectorId, sector)
       }
-      case ViewModeSwitch() => cancelPolygon
-      case _                =>
     }
+    case ViewModeSwitch()  => cancelPolygon
+    case EditModeSwitch(m) => if (m != EditMode.Draw) cancelPolygon
+    case _                 =>
   }
 
   def addPoint(x: Float, y: Float) {
@@ -114,8 +117,8 @@ class DrawingState extends BaseState
   def redrawCurrent {
     val points = currentBuilder.map(_.points).orElse(Some(List())).get
     val lines = currentBuilder.map(_.lines).orElse(Some(List())).get
-    getDrawNode.removeFromParent
-    val node = new Node("currentDraw")
+    val node = getDrawNode
+    node.detachAllChildren
     for (point <- points) {
       val vertex = new Geometry("point", K.vertexBox)
       vertex.setLocalTranslation(point.x, point.y, 0f)
@@ -132,7 +135,7 @@ class DrawingState extends BaseState
     get2DNode.attachChild(node)
   }
 
-  def getDrawNode = get2DNode.getChild("currentDraw")
+  def getDrawNode = getOrCreateNode(get2DNode, "currentDraw")
 
   def isDrawing = currentBuilder.isDefined
 
@@ -140,10 +143,10 @@ class DrawingState extends BaseState
   }
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
-    func match {
+    if (value == InputState.Positive) func match {
       case InputFunction.cancel => cancelPolygon
-      case InputFunction.test1  => if (value == InputState.Positive) drawTestRoom(0f, 0f)
-      case InputFunction.test2  => if (value == InputState.Positive) drawTestRoom(0f, 10f)
+      case InputFunction.test1  => drawTestRoom(0f, 0f)
+      case InputFunction.test2  => drawTestRoom(0f, 10f)
       case _                    =>
     }
   }

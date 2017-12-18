@@ -63,18 +63,24 @@ class Edit2DModeState extends BaseState
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     if (value == InputState.Positive) func match {
-      case InputFunction.insertMode => setMode(EditMode.Draw)
-      case InputFunction.fillMode => setMode(EditMode.Fill)
+      case InputFunction.insertMode => {
+        EventBus.trigger(EditModeSwitch(EditMode.Draw))
+        EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
+      }
+      case InputFunction.fillMode => {
+        EventBus.trigger(EditModeSwitch(EditMode.Fill))
+        EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
+      }
       case InputFunction.selectPoints => {
-        setMode(EditMode.Select)
+        EventBus.trigger(EditModeSwitch(EditMode.Select))
         EventBus.trigger(SelectionModeSwitch(SelectionMode.Point))
       }
       case InputFunction.selectLines => {
-        setMode(EditMode.Select)
+        EventBus.trigger(EditModeSwitch(EditMode.Select))
         EventBus.trigger(SelectionModeSwitch(SelectionMode.Line))
       }
       case InputFunction.selectSectors => {
-        setMode(EditMode.Select)
+        EventBus.trigger(EditModeSwitch(EditMode.Select))
         EventBus.trigger(SelectionModeSwitch(SelectionMode.Sector))
       }
       case _ =>

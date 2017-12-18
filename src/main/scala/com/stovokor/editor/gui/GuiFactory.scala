@@ -119,14 +119,16 @@ object GuiFactory {
     val mode3d = generalPanel.addChild(button("blockdevice.png", "Switch 2D/3D mode", infoText))
     mode3d.addClickCommands(_ => EventBus.trigger(ViewModeSwitch()))
     val draw = generalPanel.addChild(button("draw-freehand.png", "Draw sector", infoText))
+    draw.setName("drawSector")
     draw.addClickCommands(_ => {
-      EventBus.trigger(SelectionModeSwitch(SelectionMode.Point))
       EventBus.trigger(EditModeSwitch(EditMode.Draw))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
     })
     val fillHole = generalPanel.addChild(button("applications-development-4.png", "Hole to sector", infoText))
+    fillHole.setName("fillHole")
     fillHole.addClickCommands(_ => {
-      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
       EventBus.trigger(EditModeSwitch(EditMode.Fill))
+      EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
     })
 
     generalPanel
@@ -138,20 +140,20 @@ object GuiFactory {
     val point = selectionPanel.addChild(button("edit-node.png", "Select points", infoText))
     val line = selectionPanel.addChild(button("draw-line-3.png", "Select lines", infoText))
     val sector = selectionPanel.addChild(button("office-chart-polar-stacked.png", "Select sectors", infoText))
+    point.setName("selectPoint")
     point.addClickCommands(_ => {
       EventBus.trigger(EditModeSwitch(EditMode.Select))
       EventBus.trigger(SelectionModeSwitch(SelectionMode.Point))
-      decorateFirst(point, line, sector)
     })
+    line.setName("selectLine")
     line.addClickCommands(_ => {
       EventBus.trigger(EditModeSwitch(EditMode.Select))
       EventBus.trigger(SelectionModeSwitch(SelectionMode.Line))
-      decorateFirst(line, point, sector)
     })
+    sector.setName("selectSector")
     sector.addClickCommands(_ => {
       EventBus.trigger(EditModeSwitch(EditMode.Select))
       EventBus.trigger(SelectionModeSwitch(SelectionMode.Sector))
-      decorateFirst(sector, point, line)
     })
     selectionPanel
   }
@@ -179,11 +181,6 @@ object GuiFactory {
     // val remove = editPanel.addChild(button("format-remove-node.png", "Delete selected points", infoText))
     // remove.addClickCommands(_ => EventBus.trigger(DeleteSelection()))
     editPanel
-  }
-
-  def decorateFirst(b1: Button, bn: Button*) {
-    b1.setBackground(new QuadBackgroundComponent(ColorRGBA.Blue))
-    bn.foreach(b => b.setBackground(new Button("").getBackground))
   }
 
   def button(icon: String = null, description: String, infoText: Label = null, label: String = ""): Button = {

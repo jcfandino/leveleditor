@@ -95,7 +95,7 @@ class ViewModeState extends BaseState
       stateManager.attach(new Edit2DModeState)
       //      disableStates(classOf[DrawingState]) // we want this to be disable at start
       EventBus.trigger(SelectionModeSwitch(SelectionMode.None))
-      EventBus.trigger(EditModeSwitch(EditMode.Draw))
+      EventBus.trigger(EditModeSwitch(EditMode.Select))
     }
   }
 
