@@ -54,6 +54,7 @@ import com.simsilica.lemur.GuiGlobals
 import com.stovokor.util.StartNewMap
 import com.stovokor.util.ShowHelp
 import com.stovokor.editor.input.Modes
+import com.stovokor.util.ToggleSnapToGrid
 
 object GuiFactory {
 
@@ -77,6 +78,7 @@ object GuiFactory {
   def statusbar(width: Int, height: Int) = {
     val bar = new Container
     val text = new Label("Hello")
+    text.setName("statusText")
     text.setPreferredSize(new Vector3f(width, 0, 0))
     bar.addChild(text)
     bar.setLocalTranslation(200, 22, 0)
@@ -162,10 +164,13 @@ object GuiFactory {
     val selectionPanel = new Container(new SpringGridLayout(Axis.X, Axis.Y))
     selectionPanel.addChild(new Label("|"))
     val grid = selectionPanel.addChild(button("view-grid.png", "Grid size", infoText))
+    val snap = selectionPanel.addChild(button("snap-orto.png", "Snap to grid", infoText))
     val zoomout = selectionPanel.addChild(button("zoom-out-3.png", "Zoom out", infoText))
     val zoomin = selectionPanel.addChild(button("zoom-in-3.png", "Zoom in", infoText))
     val fog = selectionPanel.addChild(button("weather-fog-2.png", "Enable 3D Effects", infoText))
     grid.addClickCommands(_ => EventBus.trigger(ChangeGridSize()))
+    snap.setName("snapToGrid")
+    snap.addClickCommands(_ => EventBus.trigger(ToggleSnapToGrid()))
     zoomout.addClickCommands(_ => EventBus.trigger(ChangeZoom(1)))
     zoomin.addClickCommands(_ => EventBus.trigger(ChangeZoom(-1)))
     fog.addClickCommands(_ => EventBus.trigger(ToggleEffects()))

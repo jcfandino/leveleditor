@@ -40,6 +40,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Callable
 import com.jme3.app.SimpleApplication
+import com.stovokor.util.ToggleSnapToGrid
 
 class GridState extends BaseState
     with MaterialFactoryClient
@@ -65,6 +66,7 @@ class GridState extends BaseState
     get2DNode.attachChild(node)
     setupInput(node.getChild("pickPlane"))
     EventBus.subscribe(this, ChangeGridSize())
+    EventBus.subscribe(this, ToggleSnapToGrid())
     GridSnapper.setStep(gridSteps(gridStepIndex))
     new GridLoader(app).load(gridSteps, node)
   }
@@ -101,23 +103,17 @@ class GridState extends BaseState
 
   def valueChanged(func: FunctionId, value: InputState, tpf: Double) {
     if (isEnabled && value == InputState.Positive) func match {
-      case InputFunction.snapToGrid => {
-        val enabled = GridSnapper.toggle
-        println(s"snap to grid is $enabled")
-      }
-      case InputFunction.resizeGrid => {
-        changeGridSize()
-      }
-      case InputFunction.clickKey => {
-        EventBus.trigger(PointClicked(GridSnapper.snap(Point(mousePos.x, mousePos.y))))
-      }
-      case _ =>
+      case InputFunction.snapToGrid => EventBus.trigger(ToggleSnapToGrid())
+      case InputFunction.resizeGrid => EventBus.trigger(ChangeGridSize())
+      case InputFunction.clickKey   => EventBus.trigger(PointClicked(GridSnapper.snap(Point(mousePos.x, mousePos.y))))
+      case _                        =>
     }
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case ChangeGridSize() => changeGridSize()
-    case _                =>
+    case ChangeGridSize()   => changeGridSize()
+    case ToggleSnapToGrid() => GridSnapper.toggle
+    case _                  =>
   }
 
   def createOrigin(): Spatial = {

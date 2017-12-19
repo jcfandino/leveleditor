@@ -15,6 +15,10 @@ import com.simsilica.lemur.component.QuadBackgroundComponent
 import com.jme3.math.ColorRGBA
 import com.stovokor.util.EditModeSwitch
 import com.stovokor.editor.input.Modes.EditMode
+import com.stovokor.util.ToggleSnapToGrid
+import com.stovokor.util.GridSnapper
+import com.stovokor.util.ChangeGridSize
+import com.simsilica.lemur.Label
 
 class GuiState extends BaseState
     with EditorEventListener {
@@ -24,6 +28,9 @@ class GuiState extends BaseState
 
   var selectionModeToUpdate: Option[SelectionMode] = None
   var editModeToUpdate: Option[EditMode] = None
+  var snapToGridUpdate = true
+  var statusTextToUpdate = true
+
   var toolbar: Container = null
   var statusbar: Container = null
 
@@ -35,6 +42,8 @@ class GuiState extends BaseState
     guiNode.attachChild(statusbar)
     EventBus.subscribeByType(this, classOf[SelectionModeSwitch])
     EventBus.subscribeByType(this, classOf[EditModeSwitch])
+    EventBus.subscribe(this, ToggleSnapToGrid())
+    EventBus.subscribe(this, ChangeGridSize())
   }
 
   override def cleanup {
@@ -53,6 +62,15 @@ class GuiState extends BaseState
       decorate("fillHole", editModeToUpdate, EditMode.Fill)
       editModeToUpdate = None
     }
+    if (snapToGridUpdate) {
+      decorate("snapToGrid", Some(GridSnapper.snapToGrid), true)
+      snapToGridUpdate = false
+    }
+    if (statusTextToUpdate) {
+      val message = s"Grid size: ${GridSnapper.gridStep}"
+      val text = statusbar.getChild("statusText").asInstanceOf[Label].setText(message)
+      statusTextToUpdate = false
+    }
   }
 
   def decorate(name: String, mode: Option[Any], when: Any) {
@@ -63,6 +81,8 @@ class GuiState extends BaseState
   def onEvent(event: EditorEvent) = event match {
     case SelectionModeSwitch(m) => setSelectionMode(m)
     case EditModeSwitch(m)      => setEditMode(m)
+    case ToggleSnapToGrid()     => snapToGridUpdate = true
+    case ChangeGridSize()       => statusTextToUpdate = true
     case _                      =>
   }
 

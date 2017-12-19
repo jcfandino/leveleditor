@@ -91,6 +91,7 @@ case class ExportMap() extends EditorEvent
 case class EditSettings() extends EditorEvent
 case class SettingsUpdated() extends EditorEvent
 case class ChangeGridSize() extends EditorEvent
+case class ToggleSnapToGrid() extends EditorEvent
 case class ShowHelp() extends EditorEvent
 
 case class PointClicked(point: Point) extends EditorEvent
