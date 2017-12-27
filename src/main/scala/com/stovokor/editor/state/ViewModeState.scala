@@ -44,7 +44,7 @@ class ViewModeState extends BaseState
   }
 
   def valueChanged(function: FunctionId, state: InputState, value: Double) = function match {
-    case InputFunction.switchViewMode => if (state == InputState.Positive) switch()
+    case InputFunction.switchViewMode => if (state == InputState.Positive) EventBus.trigger(ViewModeSwitch())
     case _                            =>
   }
 

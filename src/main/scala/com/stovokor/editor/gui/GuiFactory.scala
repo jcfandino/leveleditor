@@ -76,12 +76,19 @@ object GuiFactory {
   }
 
   def statusbar(width: Int, height: Int) = {
-    val bar = new Container
-    val text = new Label("Hello")
-    text.setName("statusText")
-    text.setPreferredSize(new Vector3f(width, 0, 0))
+    val offset = 200
+    val bar = new Container(new SpringGridLayout(Axis.X, Axis.Y, FillMode.First, FillMode.None))
+    bar.setPreferredSize(new Vector3f(width - offset, 0, 0))
+    bar.setLocalTranslation(offset, 22, 0)
+    val text = new Label("")
+    text.setName("gridText")
     bar.addChild(text)
-    bar.setLocalTranslation(200, 22, 0)
+    bar.addChild(new Label("|"))
+
+    val mousePos = new Label("")
+    mousePos.setName("positionText")
+    mousePos.setPreferredSize(new Vector3f(200, 0, 0))
+    bar.addChild(mousePos)
     bar
   }
 
@@ -268,17 +275,17 @@ object GuiFactory {
   }
 
   def createSettingsDialog(width: Int, height: Int, current: => Settings, update: Settings => Unit, close: Boolean => Unit) = {
-      def openDirectoryFinder() = {
-        val fileChooser = new JFileChooser
-        fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
-        val result = fileChooser.showOpenDialog(null)
-        var selected: Option[String] = None
-        if (result == JFileChooser.APPROVE_OPTION) {
-          val file = fileChooser.getSelectedFile
-          selected = Some(file.getAbsolutePath)
-        }
-        selected
+    def openDirectoryFinder() = {
+      val fileChooser = new JFileChooser
+      fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY)
+      val result = fileChooser.showOpenDialog(null)
+      var selected: Option[String] = None
+      if (result == JFileChooser.APPROVE_OPTION) {
+        val file = fileChooser.getSelectedFile
+        selected = Some(file.getAbsolutePath)
       }
+      selected
+    }
     val optionsPanel = new Container(new SpringGridLayout(Axis.Y, Axis.X))
     optionsPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
 

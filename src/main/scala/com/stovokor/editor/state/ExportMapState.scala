@@ -5,7 +5,6 @@ import com.jme3.app.state.AppStateManager
 import com.stovokor.util.PointClicked
 import com.stovokor.editor.input.InputFunction
 import com.stovokor.editor.model.repository.BorderRepository
-import com.stovokor.util.ViewModeSwitch
 import com.jme3.scene.Node
 import com.stovokor.util.EventBus
 import com.jme3.app.Application
