@@ -1,26 +1,26 @@
 package com.stovokor.editor.state
 
-import com.jme3.app.state.AppStateManager
-import com.jme3.app.SimpleApplication
 import com.jme3.app.Application
-import com.stovokor.util.EditorEventListener
-import com.stovokor.util.EditorEvent
-import com.stovokor.util.SelectionModeSwitch
-import com.stovokor.util.EventBus
-import com.stovokor.util.PointClicked
-import com.stovokor.editor.model.Point
-import com.stovokor.editor.model.repository.SectorRepository
-import com.stovokor.editor.model.Line
-import com.stovokor.util.SelectionChange
-import com.stovokor.util.SectorUpdated
-import com.stovokor.editor.model.Sector
-import com.stovokor.util.LineClicked
+import com.jme3.app.state.AppStateManager
 import com.stovokor.editor.input.Modes.SelectionMode
-import com.stovokor.util.SectorClicked
+import com.stovokor.editor.model.SelectionLine
+import com.stovokor.editor.model.SelectionPoint
 import com.stovokor.editor.model.SelectionSector
 import com.stovokor.editor.model.SelectionUnit
-import com.stovokor.editor.model.SelectionPoint
-import com.stovokor.editor.model.SelectionLine
+import com.stovokor.editor.model.repository.SectorRepository
+import com.stovokor.util.EditorEvent
+import com.stovokor.util.EditorEventListener
+import com.stovokor.util.EventBus
+import com.stovokor.util.LineClicked
+import com.stovokor.util.PointClicked
+import com.stovokor.util.SectorClicked
+import com.stovokor.util.SelectionChange
+import com.stovokor.util.SelectionModeSwitch
+import com.stovokor.util.SplitSelection
+import com.stovokor.util.DeleteSelection
+import com.stovokor.util.SectorUpdated
+import com.stovokor.editor.model.Sector
+import com.stovokor.util.ViewModeSwitch
 
 // only for 2d
 class SelectionState extends BaseState
@@ -44,6 +44,8 @@ class SelectionState extends BaseState
     EventBus.subscribeByType(this, classOf[PointClicked])
     EventBus.subscribeByType(this, classOf[LineClicked])
     EventBus.subscribeByType(this, classOf[SectorClicked])
+    EventBus.subscribeByType(this, classOf[SectorUpdated])
+    EventBus.subscribe(this, ViewModeSwitch())
   }
 
   override def cleanup() {
@@ -52,11 +54,28 @@ class SelectionState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case SelectionModeSwitch(m) => if (modeKey != m) setMode(m)
-    case PointClicked(point)    => select(SelectionPoint(point))
-    case LineClicked(line)      => select(SelectionLine(line))
-    case SectorClicked(id)      => select(SelectionSector(id, sectorRepository.get(id)))
-    case _                      =>
+    case SelectionModeSwitch(m)          => if (modeKey != m) setMode(m)
+    case PointClicked(point)             => select(SelectionPoint(point))
+    case LineClicked(line)               => select(SelectionLine(line))
+    case SectorClicked(id)               => select(SelectionSector(id, sectorRepository.get(id)))
+    case ViewModeSwitch()                => clearSelection()
+    case SectorUpdated(id, newSector, _) => adjustSelectionAfterChange(newSector)
+    case _                               =>
+  }
+
+  /**
+   * Cleanup selection after an update (e.g. dragging) to avoid weird behavoir.
+   * It would be nice to update with the updated unit (e.g. a point/line moved) but it's only
+   * easy to do for the sector.
+   */
+  def adjustSelectionAfterChange(newSector: Sector) {
+    selection = selection.flatMap[SelectionUnit, Set[SelectionUnit]](s => s match {
+      case SelectionPoint(point)       => if (newSector.contains(point)) Set(s) else Set()
+      case SelectionLine(line)         => if (newSector.polygon.lines.contains(line)) Set(s) else Set()
+      case SelectionSector(id, sector) => Set(SelectionSector(id, newSector))
+      case _                           => Set(s)
+    })
+    EventBus.trigger(SelectionChange(selection))
   }
 
   def setMode(newMode: SelectionMode) {
@@ -70,10 +89,15 @@ class SelectionState extends BaseState
     EventBus.trigger(SelectionChange(selection))
   }
 
+  def clearSelection() = {
+    selection = Set()
+    EventBus.trigger(SelectionChange(selection))
+  }
+
   abstract trait SelectionModeStrategy {
     def select(unit: SelectionUnit) {
       if (sectorsMatching(unit).isEmpty) {
-        selection = Set()
+        clearSelection()
       } else if (selection.contains(unit)) {
         selection = selection -- Set(unit)
       } else {
@@ -90,7 +114,7 @@ class SelectionState extends BaseState
 
   object ModeOff extends SelectionModeStrategy {
     override def select(unit: SelectionUnit) {
-      selection = Set()
+      clearSelection()
     }
   }
 

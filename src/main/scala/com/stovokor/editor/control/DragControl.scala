@@ -25,8 +25,7 @@ import com.stovokor.editor.model.Sector
 import com.stovokor.util.SectorDragged
 import com.stovokor.util.SectorClicked
 
-abstract class DragControl
-    extends AbstractControl {
+abstract class DragControl extends AbstractControl {
 
   var isDragging = false
   var oldPos = new Vector2f()
@@ -88,15 +87,6 @@ abstract class DragControl
 
   override def controlRender(rm: RenderManager, vp: ViewPort) = {}
 
-}
-
-// object to share the selection mode among controls
-object SelectionModeHolder extends EditorEventListener {
-  var current = SelectionMode.None
-  def onEvent(event: EditorEvent) = event match {
-    case SelectionModeSwitch(m) => current = m
-    case _                      =>
-  }
 }
 
 class PointDragControl(point: Point) extends DragControl {

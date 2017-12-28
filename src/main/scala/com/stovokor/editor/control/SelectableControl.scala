@@ -15,8 +15,7 @@ import com.stovokor.editor.model.SelectionUnit
 
 class SelectableControl(
   val baseColor: ColorRGBA, selectionUnit: SelectionUnit)
-    extends AbstractControl
-    with EditorEventListener {
+    extends AbstractControl {
 
   var selected = false
   var initialized = false
@@ -24,15 +23,18 @@ class SelectableControl(
   def controlUpdate(tpf: Float) {
     if (!initialized) {
       initialized = false
-      EventBus.subscribeByType(this, classOf[SelectionChange])
+      EventBus.subscribeByType(SelectionUnitsHolder, classOf[SelectionChange])
     }
+    setSelected(SelectionUnitsHolder.current contains selectionUnit)
   }
 
   def setSelected(s: Boolean) {
-    doIfGeometry(geo => {
-      geo.getMaterial.setColor("Color", getColor(s))
-    })
-    selected = s
+    if (selected != s) {
+      doIfGeometry(geo => {
+        geo.getMaterial.setColor("Color", getColor(s))
+      })
+      selected = s
+    }
   }
 
   def getColor(select: Boolean) = if (select) Palette.selectedElement else baseColor
@@ -44,10 +46,5 @@ class SelectableControl(
   }
 
   def controlRender(rm: RenderManager, vp: ViewPort) {
-  }
-
-  def onEvent(event: EditorEvent) = event match {
-    case SelectionChange(ps) => setSelected(ps contains selectionUnit)
-    case _                   =>
   }
 }
