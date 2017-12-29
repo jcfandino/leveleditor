@@ -23,6 +23,7 @@ import com.stovokor.editor.control.SectorDragControl
 import com.stovokor.editor.model.SelectionPoint
 import com.stovokor.editor.model.SelectionLine
 import com.stovokor.editor.model.SelectionSector
+import com.jme3.math.Vector2f
 
 object Mesh2dFactory {
   def apply(assetManager: AssetManager) = new Mesh2dFactory(assetManager)
@@ -65,6 +66,7 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
   }
 
   def draw2dLine(node: Node, color: ColorRGBA, line: com.stovokor.editor.model.Line) {
+    val center = new Vector3f((line.b.x + line.a.x) / 2f, (line.b.y + line.a.y) / 2f, 0)
     val lineNode = new Node("line")
     // a line
     val lineGeo = new Geometry("line", new Line(
@@ -84,12 +86,28 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     val clickableLine = new Geometry("clickableLine", new Box(0.2f, 0.2f, 0.2f))
     clickableLine.setMaterial(plainColor(ColorRGBA.Pink))
     clickableLine.setCullHint(CullHint.Always)
+    // vertices
+    val lineHalfDist = new Vector2f((line.b.x - line.a.x) / 2f, (line.b.y - line.a.y) / 2f)
+    val pointA = new Geometry("linePointA", K.lineBox)
+    pointA.setLocalTranslation(-lineHalfDist.x, -lineHalfDist.y, 0f)
+    pointA.setMaterial(plainColor(color))
+    pointA.addControl(new ConstantSizeOnScreenControl())
+    val pointB = new Geometry("linePointB", K.lineBox)
+    pointB.setLocalTranslation(lineHalfDist.x, lineHalfDist.y, 0f)
+    pointB.setMaterial(plainColor(color))
+    pointB.addControl(new ConstantSizeOnScreenControl())
+    // also line to show when dragging
+    val linePreview = lineGeo.clone()
+    linePreview.setLocalTranslation(-center.x, -center.y, 0f)
 
     val lineSelector = new Node("lineSelector")
     lineSelector.addControl(new LineDragControl(line))
     lineSelector.attachChild(lineBox)
     lineSelector.attachChild(clickableLine)
-    lineSelector.setLocalTranslation((line.b.x + line.a.x) / 2f, (line.b.y + line.a.y) / 2f, 0)
+    lineSelector.attachChild(pointA)
+    lineSelector.attachChild(pointB)
+    lineSelector.attachChild(linePreview)
+    lineSelector.setLocalTranslation(center)
 
     lineNode.attachChild(lineSelector)
     lineNode.setLocalTranslation(0, 0, Mode2DLayers.lines)
