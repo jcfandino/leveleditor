@@ -61,11 +61,11 @@ class FillHoleSpec extends FlatSpec
    *    |                       |
    *    |                       |
    *    |                       |
-   * 2  J       K-------G       L
+   * 2  J       K-------G-------L
    *    |       | T---S |       |
    *    |       | |   | |       |
    *    |       | Q---R |       |
-   * 1  D       C-------F       I
+   * 1  D       C-------F-------I
    *    |                       |
    * 0  |   ø                   |
    *    |                       |
@@ -123,7 +123,7 @@ class FillHoleSpec extends FlatSpec
     Given("A big squared sector")
     makeClicks(x, h, p, m, x)
 
-    And("An innser square is drawn inside it")
+    And("An inner square is drawn inside it")
     makeClicks(c, f, g, k, c)
     startFillHole()
     makeClicks(c.move(.1f, .1f))
@@ -132,7 +132,7 @@ class FillHoleSpec extends FlatSpec
     startDrawing()
     makeClicks(q, r, s, t, q)
     startFillHole()
-    fillHoleState.setEnabled(true)
+    //    fillHoleState.setEnabled(true)
     makeClicks(q.move(.1f, .1f))
 
     Then("There should be a big sector with a hole filled")
@@ -149,6 +149,32 @@ class FillHoleSpec extends FlatSpec
 
     And("borders connecting the inner sector")
     assert(borderDefinedByPoints(q, r, s, t))
+  }
+
+  it should "Be able to extend a sector with a hole in it" in {
+    Given("A big squred sector")
+    makeClicks(c, f, g, k, c)
+
+    And("An inner sector is drawn inside it")
+    makeClicks(q, r, s, t, q)
+    startFillHole()
+    makeClicks(q.move(.1f, .1f))
+
+    When("I extend the big sector to a side")
+    startDrawing()
+    makeClicks(f, i, l, g)
+
+    Then("There should be a big sector with a hole filled")
+    assert(sectorDefinedByPoints(c, f, g, k))
+    assert(holeDefinedByPoints(q, r, s, t))
+
+    And("another sector filling the hole")
+    assert(sectorDefinedByPoints(q, r, s, t))
+    assert(borderDefinedByPoints(q, r, s, t))
+
+    And("another sector to the right of the big one")
+    assert(sectorDefinedByPoints(f, i, l, g))
+    assert(borderDefinedByPoints(f, g))
   }
 
   def startDrawing() {

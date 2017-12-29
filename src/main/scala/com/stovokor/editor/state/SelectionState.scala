@@ -64,7 +64,7 @@ class SelectionState extends BaseState
   }
 
   /**
-   * Cleanup selection after an update (e.g. dragging) to avoid weird behavoir.
+   * Cleanup selection after an update (e.g. dragging) to avoid weird behavior.
    * It would be nice to update with the updated unit (e.g. a point/line moved) but it's only
    * easy to do for the sector.
    */

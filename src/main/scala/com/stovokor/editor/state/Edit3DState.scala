@@ -55,15 +55,15 @@ class Edit3DState extends BaseState
   override def cleanup() {
     super.cleanup
     EventBus.removeFromAll(this)
-    inputMapper.removeStateListener(this, InputFunction.editHeight)
-    inputMapper.removeStateListener(this, InputFunction.editHeightSlow)
-    inputMapper.removeStateListener(this, InputFunction.editTextureOffsetX)
-    inputMapper.removeStateListener(this, InputFunction.editTextureOffsetY)
-    inputMapper.removeStateListener(this, InputFunction.editTextureScaleX)
-    inputMapper.removeStateListener(this, InputFunction.editTextureScaleY)
-    inputMapper.removeStateListener(this, InputFunction.changeMaterial)
-    inputMapper.removeStateListener(this, InputFunction.mouseWheel)
-    inputMapper.removeStateListener(this, InputFunction.mouseWheelShift)
+    inputMapper.removeStateListener(this, InputFunction.editHeight,
+      InputFunction.editHeightSlow,
+      InputFunction.editTextureOffsetX,
+      InputFunction.editTextureOffsetY,
+      InputFunction.editTextureScaleX,
+      InputFunction.editTextureScaleY,
+      InputFunction.changeMaterial)
+    inputMapper.removeAnalogListener(this, InputFunction.mouseWheel,
+      InputFunction.mouseWheelShift)
   }
 
   def onEvent(event: EditorEvent) = event match {
@@ -128,9 +128,10 @@ class Edit3DState extends BaseState
       val (sectorId, target) = lastTarget.get
       println(s"edit height of $lastTarget by $factor")
       val sector = sectorRepository.get(sectorId)
-      val updated =
-        if (target == "floor") sector.updatedFloor(sector.floor.move(factor))
-        else sector.updatedCeiling(sector.ceiling.move(factor))
+      val updated = target match {
+        case "floor" => sector.updatedFloor(sector.floor.move(factor))
+        case _       => sector.updatedCeiling(sector.ceiling.move(factor))
+      }
       recalculateBorders(sectorId, updated)
       sectorRepository.update(sectorId, updated)
       EventBus.trigger(SectorUpdated(sectorId, updated, false))

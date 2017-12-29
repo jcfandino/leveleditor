@@ -42,7 +42,8 @@ class Camera2DState extends BaseState
     inputMapper.removeAnalogListener(this,
       InputFunction.moveX,
       InputFunction.moveY,
-      InputFunction.moveZ)
+      InputFunction.moveZ,
+      InputFunction.mouseWheel)
   }
 
   def animSpeed = 0.02f * animZoom
