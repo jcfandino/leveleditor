@@ -18,6 +18,8 @@ import com.stovokor.editor.state.SettingsLoaderState
 import com.stovokor.editor.state.ViewModeState
 import com.simsilica.lemur.OptionPanelState
 import com.stovokor.editor.state.HelpWindowState
+import com.jme3.math.ColorRGBA
+import com.stovokor.editor.gui.Palette
 
 // Level Editor
 object Main extends SimpleApplication {
@@ -60,6 +62,7 @@ object Main extends SimpleApplication {
     stateManager.attach(new OptionPanelState)
     stateManager.attach(new HelpWindowState)
 
+    viewPort.setBackgroundColor(Palette.background)
   }
 
   def getInputListener = {

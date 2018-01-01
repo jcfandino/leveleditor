@@ -1,7 +1,6 @@
 package com.stovokor.editor.factory
 
 import com.jme3.asset.AssetManager
-import com.jme3.math.ColorRGBA
 import com.jme3.math.FastMath
 import com.jme3.math.Quaternion
 import com.jme3.math.Vector3f
@@ -24,6 +23,8 @@ import com.stovokor.editor.model.SelectionPoint
 import com.stovokor.editor.model.SelectionLine
 import com.stovokor.editor.model.SelectionSector
 import com.jme3.math.Vector2f
+import com.stovokor.editor.gui.Palette
+import com.jme3.math.ColorRGBA
 
 object Mesh2dFactory {
   def apply(assetManager: AssetManager) = new Mesh2dFactory(assetManager)
@@ -35,8 +36,8 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     val node = new Node("sector2d")
     sector.polygon.pointsSorted.foreach(p => draw2dVertex(node, p))
     sector.holes.flatMap(_.pointsSorted).foreach(p => draw2dVertex(node, p))
-    sector.openWalls.filter(w => ascending(w.line)).foreach(w => draw2dLine(node, ColorRGBA.Brown.mult(2), w.line))
-    sector.closedWalls.foreach(w => draw2dLine(node, ColorRGBA.LightGray, w.line))
+    sector.openWalls.filter(w => ascending(w.line)).foreach(w => draw2dLine(node, Palette.lineOpenWall, w.line))
+    sector.closedWalls.foreach(w => draw2dLine(node, Palette.lineClosedWall, w.line))
     draw2dSector(node, sectorId: Long, sector)
     node
   }
@@ -49,12 +50,12 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     val vertex = new Node("point")
     // visual point
     val pointView = new Geometry("point", K.vertexBox)
-    pointView.setMaterial(plainColor(ColorRGBA.LightGray))
-    pointView.addControl(new SelectableControl(ColorRGBA.LightGray, SelectionPoint(point)))
+    pointView.setMaterial(plainColor(Palette.vertex))
+    pointView.addControl(new SelectableControl(Palette.vertex, SelectionPoint(point)))
     // clickable point
     val clickableRadius = 0.2f
     val clickableVertex = new Geometry("clickablePoint", new Box(clickableRadius, clickableRadius, clickableRadius))
-    clickableVertex.setMaterial(plainColor(ColorRGBA.DarkGray))
+    clickableVertex.setMaterial(plainColor(Palette.vertex))
     clickableVertex.setCullHint(CullHint.Always)
 
     vertex.attachChild(pointView)
@@ -84,7 +85,7 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     lineBox.addControl(new ConstantSizeOnScreenControl())
     // clickable control
     val clickableLine = new Geometry("clickableLine", new Box(0.2f, 0.2f, 0.2f))
-    clickableLine.setMaterial(plainColor(ColorRGBA.Pink))
+    clickableLine.setMaterial(plainColor(Palette.lineClosedWall))
     clickableLine.setCullHint(CullHint.Always)
     // vertices
     val lineHalfDist = new Vector2f((line.b.x - line.a.x) / 2f, (line.b.y - line.a.y) / 2f)
@@ -118,12 +119,12 @@ class Mesh2dFactory(val assetManager: AssetManager) extends MaterialFactoryClien
     val area = new Node("sector-area")
     // visual point
     val centerView = new Geometry("sector-center", K.sectorBox)
-    centerView.setMaterial(plainColor(ColorRGBA.LightGray))
-    centerView.addControl(new SelectableControl(ColorRGBA.LightGray, SelectionSector(sectorId, sector)))
+    centerView.setMaterial(plainColor(Palette.sectorCenter))
+    centerView.addControl(new SelectableControl(Palette.sectorCenter, SelectionSector(sectorId, sector)))
     // clickable point
     val clickableRadius = 0.2f
     val clickableCenter = new Geometry("clickableCenter", new Box(clickableRadius, clickableRadius, clickableRadius))
-    clickableCenter.setMaterial(plainColor(ColorRGBA.DarkGray))
+    clickableCenter.setMaterial(plainColor(Palette.sectorCenter))
     clickableCenter.setCullHint(CullHint.Always)
 
     val pos = sector.polygon.center

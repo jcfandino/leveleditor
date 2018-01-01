@@ -12,7 +12,6 @@ import com.stovokor.editor.input.Modes.SelectionMode
 import com.simsilica.lemur.Container
 import com.simsilica.lemur.Button
 import com.simsilica.lemur.component.QuadBackgroundComponent
-import com.jme3.math.ColorRGBA
 import com.stovokor.util.EditModeSwitch
 import com.stovokor.editor.input.Modes.EditMode
 import com.stovokor.util.ToggleSnapToGrid
@@ -24,12 +23,13 @@ import com.jme3.input.controls.MouseAxisTrigger
 import com.jme3.input.MouseInput
 import com.jme3.math.Vector2f
 import com.stovokor.util.ViewModeSwitch
+import com.stovokor.editor.gui.Palette
 
 class GuiState extends BaseState
     with EditorEventListener {
 
   def unselectedBackground = new Button("").getBackground
-  def selectedBackground = new QuadBackgroundComponent(ColorRGBA.Blue)
+  def selectedBackground = new QuadBackgroundComponent(Palette.buttonSelected)
 
   var selectionModeToUpdate: Option[SelectionMode] = None
   var editModeToUpdate: Option[EditMode] = None

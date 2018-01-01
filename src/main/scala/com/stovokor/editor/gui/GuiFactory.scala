@@ -95,7 +95,7 @@ object GuiFactory {
   def createMainPanel(width: Int, height: Int) = {
     val toolbarPanel = new Container(new SpringGridLayout(Axis.X, Axis.Y))
     val title = new Label(" M8 Editor ")
-    title.setColor(ColorRGBA.Orange)
+    title.setColor(Palette.title)
     toolbarPanel.addChild(title)
     toolbarPanel.setLocalTranslation(0, height, 0)
     toolbarPanel
@@ -317,9 +317,9 @@ object GuiFactory {
     helpPanel.setPreferredSize(new Vector3f(width - 100, height - 150, 0))
     val label = helpPanel.addChild(new Label(helpText))
     label.setFont(GuiGlobals.getInstance.loadFont("Interface/Fonts/Console.fnt"))
-    label.setColor(ColorRGBA.White)
+    label.setColor(Palette.helpForeground)
     label.setFontSize(16f)
-    label.setBackground(new QuadBackgroundComponent(new ColorRGBA(0, 0, 0, .6f)))
+    label.setBackground(new QuadBackgroundComponent(Palette.helpBackground))
     val window = new OptionPanel(null, action("Dismiss", "dialog-cancel-3.png", _ => callback()))
     window.getContainer.addChild(helpPanel)
     window
