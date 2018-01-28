@@ -12,7 +12,7 @@
         <scala.version>${scala.version.minor}.${scala.version.rev}</scala.version>
         <scala.plugin.version>2.15.2</scala.plugin.version>
         <json4s.version>3.5.3</json4s.version>
-        <jme.version>3.1.0-stable</jme.version>
+        <jme.version>3.2.0-stable</jme.version>
         <slf4j.version>1.7.5</slf4j.version>
         <logback.version>1.0.13</logback.version>
     </properties>
