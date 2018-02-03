@@ -44,6 +44,7 @@ class EffectsState extends BaseState
 
     EventBus.subscribe(this, ToggleEffects())
     setupInput
+    setEffectsEnabled(true)
   }
 
   override def cleanup() {

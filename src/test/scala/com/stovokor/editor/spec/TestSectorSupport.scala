@@ -31,7 +31,19 @@ trait TestSectorSupport {
       .flatMap(b => List(b._2.sectorA, b._2.sectorB))
       .toSet
       .size
-    allLinesFound && sectors == 2
+    allLinesFound && sectors > 1
+  }
+
+  def borderBetweenSectors(pointSectorA: Point, pointSectorB: Point) = {
+    val resultA = SectorRepository().findInside(pointSectorA)
+    val resultB = SectorRepository().findInside(pointSectorB)
+    resultA.foreach(x => println(s" - $x"))
+    resultB.foreach(x => println(s" - $x"))
+    if (!resultA.isEmpty && !resultB.isEmpty) {
+      val (idA, sectorA) = resultA.head
+      val (idB, sectorB) = resultB.head
+      BorderRepository().findFrom(idA).map(_._2).exists(_.sectorB == idB)
+    } else false
   }
 
   def holeDefinedByPoints(points: Point*) = {

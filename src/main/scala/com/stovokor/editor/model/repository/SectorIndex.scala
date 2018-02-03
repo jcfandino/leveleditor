@@ -24,8 +24,8 @@ class CombinedSectorIndex extends SectorIndex {
     pointIndex.find(point)
   }
 
-  def findInside(point: Point): Set[Long] = {
-    solidIndex.find(point)
+  def findInside(point: Point, ignoreHoles: Boolean): Set[Long] = {
+    solidIndex.find(point, ignoreHoles)
   }
 
   def find(point: Point): Set[Long] = {
@@ -85,6 +85,7 @@ class SectorIndexSolid extends SectorIndex {
   def indexSector(id: Long, sector: Sector) {
     def order(f: BoundBox => Float): IdSector => Float = (ids) => f(ids._2.polygon.boundBox)
 
+    removeSector(id) // need to remove previous value first
     fromX = ((id, sector) :: fromX).sortBy(order(_.from.x))
     fromY = ((id, sector) :: fromY).sortBy(order(_.from.y))
     toX = ((id, sector) :: toX).sortBy(order(_.to.x))
@@ -99,14 +100,24 @@ class SectorIndexSolid extends SectorIndex {
     toY = filter(toY)
   }
 
+  // inside polygon? ignore holes
   def find(point: Point) = {
+    find(point, false)
+  }
+
+  def find(point: Point, ignoreHoles: Boolean) = {
     def box(ids: IdSector) = ids._2.polygon.boundBox
     val startBeforeX = fromX.takeWhile(s => box(s).from.x < point.x)
     val startBeforeY = fromY.takeWhile(s => box(s).from.y < point.y)
     val endAfterX = toX.dropWhile(s => box(s).to.x < point.x)
     val endAfterY = toY.dropWhile(s => box(s).to.y < point.y)
     val intersection = startBeforeX.intersect(endAfterX).intersect(startBeforeY.intersect(endAfterY))
-    intersection.filter(_._2.contains(point))
+    intersection
+      .groupBy(_._1)
+      .flatMap(r => List(r._2.head))
+      .filter(pair =>
+        if (ignoreHoles) pair._2.insidePolygon(point)
+        else pair._2.inside(point))
       .map(_._1)
       .toSet
   }

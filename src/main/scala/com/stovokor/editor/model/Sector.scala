@@ -99,9 +99,14 @@ case class Sector(
       .updatedClosedWalls(updateWalls(closedWalls))
   }
 
-  def contains(point: Point) = {
-    // this takes holes into consideration.
-    polygon.contains(point) && holes.find(_.contains(point)).isEmpty
+  def inside(point: Point) = {
+    polygon.inside(point) && (
+      holes.forall(p => !p.inside(point)) ||
+      holes.flatMap(_.pointsUnsorted).contains(point))
+  }
+
+  def insidePolygon(point: Point) = {
+    polygon.inside(point)
   }
 
   def triangulate = Triangulator.triangulate(polygon, holes)

@@ -93,7 +93,7 @@ case class Polygon(val pointsUnsorted: List[Point]) {
   }
 
   // if the point is right in the border, the result in undetermined!
-  def contains(point: Point): Boolean = {
+  def inside(point: Point): Boolean = {
     // https://wrf.ecse.rpi.edu//Research/Short_Notes/pnpoly.html
     lines
       .map(line => (line.a.y > point.y) != (line.b.y > point.y) &&
@@ -103,12 +103,12 @@ case class Polygon(val pointsUnsorted: List[Point]) {
   }
 
   // when all the points of the other polygon are inside this polygon
-  def contains(other: Polygon): Boolean = {
-    other.pointsSorted.forall(contains)
+  def inside(other: Polygon): Boolean = {
+    other.pointsSorted.forall(inside)
   }
 
   def innerPoints(ps: List[Point]) = if (ps.length < 3) List() else ps.slice(1, ps.length - 1)
-  def cutInside(cut: List[Point]) = cut.size == 2 || innerPoints(cut).find(contains).isDefined
+  def cutInside(cut: List[Point]) = cut.size == 2 || innerPoints(cut).find(inside).isDefined
 
   def sharedLines(other: Polygon): List[Line] = {
     val otherLines = (other.lines.flatMap(_.andReverse)).toSet

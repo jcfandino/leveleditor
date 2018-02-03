@@ -8,11 +8,11 @@
 
     <properties>
         <scala.version.minor>2.12</scala.version.minor>
-        <scala.version.rev>3</scala.version.rev>
+        <scala.version.rev>5</scala.version.rev>
         <scala.version>${scala.version.minor}.${scala.version.rev}</scala.version>
-        <scala.plugin.version>2.15.2</scala.plugin.version>
+        <scala.plugin.version>3.3.2</scala.plugin.version>
         <json4s.version>3.5.3</json4s.version>
-        <jme.version>3.2.0-stable</jme.version>
+        <jme.version>3.2.1-stable</jme.version>
         <slf4j.version>1.7.5</slf4j.version>
         <logback.version>1.0.13</logback.version>
     </properties>
@@ -99,8 +99,8 @@
         <finalName>level-editor-${buildNumber}</finalName>
         <plugins>
             <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
                 <version>${scala.plugin.version}</version>
                 <executions>
                     <execution>

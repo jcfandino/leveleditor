@@ -35,24 +35,27 @@ class SectorBuilder(
   def isCuttingSector(sectorId: Long, sectorRepository: SectorRepository) = {
     //TODO this makes some problems, maybe I should delete it and force the user to
     // redraw the common line
-    neighbours.filter(sectorId.equals).size > 1 && neighbours.filter(neighbours(0).equals).size > 1
+    neighbours.size > 1 &&
+      neighbours.head == neighbours.last &&
+      neighbours.head == sectorId &&
+      sectorRepository.get(sectorId).polygon.pointsUnsorted.contains(first)
+    //    val value = neighbours.filter(sectorId.equals).size > 1 && neighbours.filter(neighbours(0).equals).size > 1
+    //    println(s"isCuttingSector? $value")
+    //    value
     // false
   }
-
-  def build() = Sector(
-    polygon = polygonBuilder.build,
-    floor = Surface(0f, SurfaceTexture()),
-    ceiling = Surface(3f, SurfaceTexture()),
-    openWalls = List())
 
   def build(sectorRepo: SectorRepository, borderRepo: BorderRepository) = {
     val polygon = polygonBuilder.build
     // check if this new polygon is inscribed inside another, in which case cut a hole
-    val cuttingHole = points.map(sectorRepo.findInside)
+    val cuttingHole = points.map(p => sectorRepo.findInside(p, true))
     if (cuttingHole.isEmpty || !cuttingHole.forall(s => !s.isEmpty)) {
       // not a hole
+      println("building new sector (not hole)")
+      println(s"why not? ($cuttingHole) and (${!cuttingHole.forall(s => !s.isEmpty)})")
       SectorFactory.create(sectorRepo, borderRepo, polygon)
     } else {
+      println("cutting hole in sector")
       val (id, sector) = findMostInnerSector(cuttingHole.flatMap(s => s))
       val updated = sectorRepo.update(id, sector.cutHole(polygon))
       EventBus.trigger(SectorUpdated(id, updated, true))
