@@ -31,7 +31,7 @@ trait TestSectorSupport {
       .flatMap(b => List(b._2.sectorA, b._2.sectorB))
       .toSet
       .size
-    allLinesFound && sectors == 2
+    allLinesFound && sectors > 1
   }
 
   def holeDefinedByPoints(points: Point*) = {

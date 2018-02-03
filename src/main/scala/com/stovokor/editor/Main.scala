@@ -20,6 +20,8 @@ import com.simsilica.lemur.OptionPanelState
 import com.stovokor.editor.state.HelpWindowState
 import com.jme3.math.ColorRGBA
 import com.stovokor.editor.gui.Palette
+import com.jme3.app.DetailedProfilerState
+import com.jme3.app.BasicProfilerState
 
 // Level Editor
 object Main extends SimpleApplication {
@@ -61,6 +63,8 @@ object Main extends SimpleApplication {
     stateManager.attach(new SettingsEditorState)
     stateManager.attach(new OptionPanelState)
     stateManager.attach(new HelpWindowState)
+//        stateManager.attach(new DetailedProfilerState())
+//        stateManager.attach(new BasicProfilerState())
 
     viewPort.setBackgroundColor(Palette.background)
   }

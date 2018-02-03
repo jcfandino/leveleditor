@@ -79,6 +79,7 @@ trait EditorEventListener {
 
 abstract class EditorEvent
 
+//TODO replace empty classes with objects
 case class ViewModeSwitch() extends EditorEvent
 case class EditModeSwitch(m: EditMode) extends EditorEvent
 case class SelectionModeSwitch(m: SelectionMode) extends EditorEvent

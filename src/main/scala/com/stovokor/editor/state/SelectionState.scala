@@ -70,7 +70,7 @@ class SelectionState extends BaseState
    */
   def adjustSelectionAfterChange(newSector: Sector) {
     selection = selection.flatMap[SelectionUnit, Set[SelectionUnit]](s => s match {
-      case SelectionPoint(point)       => if (newSector.contains(point)) Set(s) else Set()
+      case SelectionPoint(point)       => if (newSector.inside(point)) Set(s) else Set()
       case SelectionLine(line)         => if (newSector.polygon.lines.contains(line)) Set(s) else Set()
       case SelectionSector(id, sector) => Set(SelectionSector(id, newSector))
       case _                           => Set(s)

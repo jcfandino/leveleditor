@@ -59,7 +59,7 @@ class SaveOpenFileState extends BaseState
     // Auto Load test map
     val file = new File(System.getProperty("user.home") + "/test.m8")
     if (file.exists()) {
-      openFile(file)
+//      openFile(file)
     }
   }
 

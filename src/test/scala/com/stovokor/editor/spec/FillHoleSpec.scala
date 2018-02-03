@@ -57,33 +57,32 @@ class FillHoleSpec extends FlatSpec
   behavior of "Filling hole state"
 
   /*
-   * 3  M-------N-------O-------P
-   *    |                       |
-   *    |                       |
-   *    |                       |
-   * 2  J       K-------G-------L
-   *    |       | T---S |       |
-   *    |       | |   | |       |
-   *    |       | Q---R |       |
-   * 1  D       C-------F-------I
-   *    |                       |
-   * 0  |   ø                   |
-   *    |                       |
-   * -1 X-------B-------E-------H
+   * 3  M-------N-------O-------P-------U
+   *    |                       |       |
+   *    |                       |       |
+   *    |                       |       |
+   * 2  J       K-------G-------L-------V
+   *    |       | T---S |       |       |
+   *    |       | |   | |       |       |
+   *    |       | Q---R |       |       |
+   * 1  D       C-------F-------I-------W
+   *    |                       |       |
+   * 0  |   ø                   |       |
+   *    |                       |       |
+   * -1 X-------B-------E-------H-------Y
    *
-   *   -1   0   1       2       3
+   *   -1   0   1       2       3       4
    */
-  val (
-    m, n, o, p,
-    j, k, g, l,
-    d, c, f, i,
-    x, b, e, h,
-    q, r, s, t) = (
-    Point(-1, 3), Point(1, 3), Point(2, 3), Point(3, 3),
-    Point(-1, 2), Point(1, 2), Point(2, 2), Point(3, 2),
-    Point(-1, 1), Point(1, 1), Point(2, 1), Point(3, 1),
-    Point(-1, -1), Point(1, -1), Point(2, -1), Point(3, -1),
-    Point(1.2, 1.2), Point(1.8, 1.2), Point(1.8, 1.8), Point(1.2, 1.8))
+  val (m, n, o, p, u) =
+    (Point(-1, 3), Point(1, 3), Point(2, 3), Point(3, 3), Point(4, 3))
+  val (j, k, g, l, v) =
+    (Point(-1, 2), Point(1, 2), Point(2, 2), Point(3, 2), Point(4, 2))
+  val (d, c, f, i, w) =
+    (Point(-1, 1), Point(1, 1), Point(2, 1), Point(3, 1), Point(4, 1))
+  val (x, b, e, h, y) =
+    (Point(-1, -1), Point(1, -1), Point(2, -1), Point(3, -1), Point(4, -1))
+  val (q, r, s, t) =
+    (Point(1.2, 1.2), Point(1.8, 1.2), Point(1.8, 1.8), Point(1.2, 1.8))
 
   it should "be able to draw a hole in a sector" in {
     Given("A big squared sector")
@@ -175,6 +174,56 @@ class FillHoleSpec extends FlatSpec
     And("another sector to the right of the big one")
     assert(sectorDefinedByPoints(f, i, l, g))
     assert(borderDefinedByPoints(f, g))
+  }
+
+  it should "Be able to draw two holes next to each other" in {
+    Given("A big squared sector")
+    makeClicks(x, y, u, m, x)
+
+    And("Another square is drawn inside it")
+    println("~ Drawing first hole")
+    makeClicks(c, f, g, k, c)
+
+    When("Another square is drawn next to the hole")
+    println("~ Drawing second hole")
+    makeClicks(f, i, l, g, f)
+
+    Then("There should be a big sector with two holes")
+    assert(sectorDefinedByPoints(x, y, u, m))
+    assert(holeDefinedByPoints(c, f, g, k))
+    assert(holeDefinedByPoints(f, i, l, g))
+  }
+
+  it should "Be able to draw two subsectors next to each other" in {
+    Given("A big squared sector")
+    makeClicks(x, y, u, m, x)
+
+    And("Another square is drawn inside it")
+    println("~ Drawing first hole")
+    makeClicks(c, f, g, k, c)
+//    startFillHole()
+//    makeClicks(c.move(.1f, .1f))
+
+    When("Another square is next to the subsector")
+    println("~ Drawing second hole")
+//    startDrawing()
+    makeClicks(f, i, l, g, f)
+    startFillHole()
+    makeClicks(c.move(.1f, .1f))
+    makeClicks(f.move(.1f, .1f))
+
+    Then("There should be a big sector with two holes filled")
+    assert(sectorDefinedByPoints(x, y, u, m))
+    assert(holeDefinedByPoints(c, f, g, k))
+    assert(holeDefinedByPoints(f, i, l, g))
+
+    And("the first subsector is filled")
+    assert(sectorDefinedByPoints(c, f, g, k))
+    assert(borderDefinedByPoints(c, f, g, k))
+
+    And("the second subsector is filled")
+    assert(sectorDefinedByPoints(f, i, l, g))
+    assert(borderDefinedByPoints(f, i, l, g))
   }
 
   def startDrawing() {

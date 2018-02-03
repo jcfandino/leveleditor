@@ -99,9 +99,16 @@ case class Sector(
       .updatedClosedWalls(updateWalls(closedWalls))
   }
 
-  def contains(point: Point) = {
+  def inside(point: Point) = {
     // this takes holes into consideration.
-    polygon.contains(point) && holes.find(_.contains(point)).isEmpty
+    println(s"checking point inside sector:")
+    println(s" - polygon.inside? ${polygon.inside(point)}")
+    println(s" - not inside any hole? ${holes.find(_.inside(point)).isEmpty}")
+    println(s" - over hole point? ${holes.flatMap(_.pointsUnsorted).contains(point)}")
+    polygon.inside(point) && (
+      // inside in uncertain for points on border
+      holes.find(_.inside(point)).isEmpty ||
+      holes.flatMap(_.pointsUnsorted).contains(point))
   }
 
   def triangulate = Triangulator.triangulate(polygon, holes)

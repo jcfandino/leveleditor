@@ -54,7 +54,7 @@ class FillHoleState extends BaseState
     val polygons = sectors.map(_._2.polygon).toSet
     sectors.foreach(p => p match {
       case (id, sector) => {
-        sector.holes.find(_.contains(point)).foreach(polygon => {
+        sector.holes.find(_.inside(point)).foreach(polygon => {
           if (!polygons.contains(polygon)) {
             SectorFactory.create(sectorRepository, borderRepository, polygon)
           } else {

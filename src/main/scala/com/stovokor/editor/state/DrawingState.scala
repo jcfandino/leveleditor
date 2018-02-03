@@ -73,26 +73,19 @@ class DrawingState extends BaseState
   }
 
   def onEvent(event: EditorEvent) = event match {
-    case PointClicked(point) => if (isEnabled) {
-      addPoint(point.x, point.y)
-      for ((sectorId, sector) <- sectorRepository.findByPoint(point)) {
-        currentBuilder = currentBuilder.map(_.add(sectorId))
-        checkCuttingSector(sectorId, sector)
-      }
-    }
-    case ViewModeSwitch()  => cancelPolygon
-    case EditModeSwitch(m) => if (m != EditMode.Draw) cancelPolygon
-    case _                 =>
+    case PointClicked(point) => if (isEnabled) addPoint(point)
+    case ViewModeSwitch()    => cancelPolygon
+    case EditModeSwitch(m)   => if (m != EditMode.Draw) cancelPolygon
+    case _                   =>
   }
 
-  def addPoint(x: Float, y: Float) {
+  def addPoint(point: Point) {
     val isDoubleClick = System.currentTimeMillis - lastClick < 200 &&
-      currentBuilder.map(b => b.last.distance(Point(x, y)) < 0.1f).orElse(Some(false)).get
+      currentBuilder.map(b => b.last.distance(point) < 0.1f).orElse(Some(false)).get
     lastClick = System.currentTimeMillis
     currentBuilder = currentBuilder match {
-      case None => Some(SectorBuilder.start(Point(x, y)))
+      case None => Some(SectorBuilder.start(point))
       case Some(builder) => {
-        val point = Point(x, y)
         if (point.distance(builder.first) < minDistance || isDoubleClick) {
           if (builder.size > 2) {
             println(s"polygon completed ${builder.size}")
@@ -103,8 +96,8 @@ class DrawingState extends BaseState
             Some(builder)
           }
         } else if (point.distance(builder.last) > minDistance) {
-          println(s"adding point ($x,$y) size: ${builder.size}")
-          Some(builder.add(Point(x, y)))
+          println(s"adding point $point size: ${builder.size}")
+          Some(builder.add(point))
         } else {
           println(s"ignored, too close to last")
           Some(builder)
@@ -112,6 +105,15 @@ class DrawingState extends BaseState
       }
     }
     redrawCurrent
+    if (currentBuilder.isDefined) {
+      // TODO this is being executed when drawing a hole next to another
+      for ((sectorId, sector) <- sectorRepository.findByPoint(point)) {
+        if (sector.polygon.pointsUnsorted.contains(point)) {
+          currentBuilder = currentBuilder.map(_.add(sectorId))
+          checkCuttingSector(sectorId, sector)
+        }
+      }
+    }
   }
 
   def redrawCurrent {
@@ -187,7 +189,7 @@ class DrawingState extends BaseState
         // Create new sectors
         val polygons = sector.polygon.divideBy(builder.points)
         polygons.foreach(polygon => {
-          val holes = sector.holes.filter(polygon.contains)
+          val holes = sector.holes.filter(polygon.inside)
           SectorFactory.create(SectorRepository(), BorderRepository(), polygon, holes)
         })
         cancelPolygon

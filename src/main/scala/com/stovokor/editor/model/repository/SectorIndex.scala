@@ -106,7 +106,7 @@ class SectorIndexSolid extends SectorIndex {
     val endAfterX = toX.dropWhile(s => box(s).to.x < point.x)
     val endAfterY = toY.dropWhile(s => box(s).to.y < point.y)
     val intersection = startBeforeX.intersect(endAfterX).intersect(startBeforeY.intersect(endAfterY))
-    intersection.filter(_._2.contains(point))
+    intersection.filter(_._2.inside(point))
       .map(_._1)
       .toSet
   }

@@ -318,7 +318,7 @@ object GuiFactory {
     val label = helpPanel.addChild(new Label(helpText))
     label.setFont(GuiGlobals.getInstance.loadFont("Interface/Fonts/Console.fnt"))
     label.setColor(Palette.helpForeground)
-    label.setFontSize(16f)
+    label.setFontSize(12f)
     label.setBackground(new QuadBackgroundComponent(Palette.helpBackground))
     val window = new OptionPanel(null, action("Dismiss", "dialog-cancel-3.png", _ => callback()))
     window.getContainer.addChild(helpPanel)
